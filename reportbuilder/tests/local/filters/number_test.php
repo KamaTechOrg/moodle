@@ -31,39 +31,36 @@ use core_reportbuilder\local\report\filter;
  * @copyright   2021 David Matamoros <davidmc@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class number_test extends advanced_testcase {
+class number_test extends advanced_testcase {
 
     /**
      * Data provider for {@see test_get_sql_filter_simple}
      *
      * @return array[]
      */
-    public static function get_sql_filter_simple_provider(): array {
+    public function get_sql_filter_simple_provider(): array {
         return [
             [number::ANY_VALUE, null, null, true],
             [number::IS_NOT_EMPTY, null, null, true],
             [number::IS_EMPTY, null, null, false],
-            [number::LESS_THAN, 122.5, null, false],
+            [number::LESS_THAN, 1, null, false],
             [number::LESS_THAN, 123, null, false],
-            [number::LESS_THAN, 123.5, null, true],
-            [number::GREATER_THAN, 122.5, null, true],
+            [number::LESS_THAN, 124, null, true],
+            [number::GREATER_THAN, 1, null, true],
             [number::GREATER_THAN, 123, null, false],
-            [number::GREATER_THAN, 123.5, null, false],
-            [number::EQUAL_TO, 122, null, false],
+            [number::GREATER_THAN, 124, null, false],
             [number::EQUAL_TO, 123, null, true],
             [number::EQUAL_TO, 124, null, false],
-            [number::EQUAL_OR_LESS_THAN, 122, null, false],
-            [number::EQUAL_OR_LESS_THAN, 123, null, true],
             [number::EQUAL_OR_LESS_THAN, 124, null, true],
+            [number::EQUAL_OR_LESS_THAN, 123, null, true],
+            [number::EQUAL_OR_LESS_THAN, 122, null, false],
             [number::EQUAL_OR_GREATER_THAN, 122, null, true],
             [number::EQUAL_OR_GREATER_THAN, 123, null, true],
             [number::EQUAL_OR_GREATER_THAN, 124, null, false],
-            [number::RANGE, 121, 122, false],
             [number::RANGE, 122, 124, true],
-            [number::RANGE, 122, 123, true],
-            [number::RANGE, 122.5, 123.5, true],
-            [number::RANGE, 123, 124, true],
             [number::RANGE, 124, 125, false],
+            [number::RANGE, 122, 123, true],
+            [number::RANGE, 123, 124, true],
         ];
     }
 
@@ -71,13 +68,13 @@ final class number_test extends advanced_testcase {
      * Test getting filter SQL
      *
      * @param int $operator
-     * @param float|null $value1
-     * @param float|null $value2
+     * @param int|null $value1
+     * @param int|null $value2
      * @param bool $expectmatch
      *
      * @dataProvider get_sql_filter_simple_provider
      */
-    public function test_get_sql_filter_simple(int $operator, ?float $value1, ?float $value2, bool $expectmatch): void {
+    public function test_get_sql_filter_simple(int $operator, ?int $value1, ?int $value2, bool $expectmatch): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -114,7 +111,7 @@ final class number_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public static function get_sql_filter_invalid_provider(): array {
+    public function get_sql_filter_invalid_provider(): array {
         return [
             [number::LESS_THAN],
             [number::GREATER_THAN],

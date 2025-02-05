@@ -21,8 +21,12 @@ namespace core_reportbuilder\local\helpers;
 use core_reportbuilder_generator;
 use core_reportbuilder_testcase;
 use core_reportbuilder\local\entities\user;
-use core_reportbuilder\local\filters\{boolean_select, date, select, text};
-use core_reportbuilder\local\report\{column, filter};
+use core_reportbuilder\local\filters\boolean_select;
+use core_reportbuilder\local\filters\date;
+use core_reportbuilder\local\filters\select;
+use core_reportbuilder\local\filters\text;
+use core_reportbuilder\local\report\column;
+use core_reportbuilder\local\report\filter;
 use core_user\reportbuilder\datasource\users;
 
 defined('MOODLE_INTERNAL') || die();
@@ -38,7 +42,7 @@ require_once("{$CFG->dirroot}/reportbuilder/tests/helpers.php");
  * @copyright   2021 David Matamoros <davidmc@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class user_profile_fields_test extends core_reportbuilder_testcase {
+class user_profile_fields_test extends core_reportbuilder_testcase {
 
     /**
      * Generate custom profile fields, one of each type
@@ -47,30 +51,28 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      */
     private function generate_userprofilefields(): user_profile_fields {
         $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'checkbox', 'name' => 'Checkbox field', 'datatype' => 'checkbox', 'defaultdata' => 1]);
-
-        // This field is available only to admins.
-        $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'datetime', 'name' => 'Date field', 'datatype' => 'datetime', 'param2' => 2022, 'param3' => 0,
-                'defaultdata' => 0, 'visible' => PROFILE_VISIBLE_NONE]);
+            'shortname' => 'checkbox', 'name' => 'Checkbox field', 'datatype' => 'checkbox']);
 
         $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'menu', 'name' => 'Menu field', 'datatype' => 'menu', 'param1' => "Cat\nDog", 'defaultdata' => 'Cat']);
+            'shortname' => 'datetime', 'name' => 'Date field', 'datatype' => 'datetime', 'param2' => 2022, 'param3' => 0]);
+
+        $this->getDataGenerator()->create_custom_profile_field([
+            'shortname' => 'menu', 'name' => 'Menu field', 'datatype' => 'menu', 'param1' => "Cat\nDog"]);
 
         $this->getDataGenerator()->create_custom_profile_field([
             'shortname' => 'Social', 'name' => 'msn', 'datatype' => 'social', 'param1' => 'msn']);
 
         $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'text', 'name' => 'Text field', 'datatype' => 'text', 'defaultdata' => 'default']);
+            'shortname' => 'text', 'name' => 'Text field', 'datatype' => 'text']);
 
         $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'textarea', 'name' => 'Textarea field', 'datatype' => 'textarea', 'defaultdata' => 'Default']);
+            'shortname' => 'textarea', 'name' => 'Textarea field', 'datatype' => 'textarea']);
 
         $userentity = new user();
         $useralias = $userentity->get_table_alias('user');
 
         // Create an instance of the userprofilefield helper.
-        return new user_profile_fields("{$useralias}.id", $userentity->get_entity_name());
+        return new user_profile_fields("$useralias.id", $userentity->get_entity_name());
     }
 
     /**
@@ -78,126 +80,85 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      */
     public function test_get_columns(): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
+
+        $userentity = new user();
+        $useralias = $userentity->get_table_alias('user');
 
         // Get pre-existing user profile fields.
-        $userentity = new user();
-        $initialcolumns = (new user_profile_fields(
-            $userentity->get_table_alias('user') . '.id',
-            $userentity->get_entity_name(),
-        ))->get_columns();
-
-        // Create a field which will duplicate one of the subsequently generated fields (case-insensitive shortname).
-        $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'CHECKBOX',
-            'name' => 'Duplicate checkbox field',
-            'datatype' => 'checkbox',
-        ]);
+        $initialuserprofilefields = new user_profile_fields("$useralias.id", $userentity->get_entity_name());
+        $initialcolumns = $initialuserprofilefields->get_columns();
+        $initialcolumntitles = array_map(static function(column $column): string {
+            return $column->get_title();
+        }, $initialcolumns);
+        $initialcolumntypes = array_map(static function(column $column): int {
+            return $column->get_type();
+        }, $initialcolumns);
 
         // Add new custom profile fields.
         $userprofilefields = $this->generate_userprofilefields();
+        $columns = $userprofilefields->get_columns();
 
-        // Ensure pre-existing fields are ignored in subsequent assertions.
-        $columns = array_slice($userprofilefields->get_columns(), count($initialcolumns));
-        $this->assertCount(6, $columns);
+        // Columns count should be equal to start + 6.
+        $this->assertCount(count($initialcolumns) + 6, $columns);
         $this->assertContainsOnlyInstancesOf(column::class, $columns);
 
-        // Column titles.
-        $this->assertEquals([
+        // Assert column titles.
+        $columntitles = array_map(static function(column $column): string {
+            return $column->get_title();
+        }, $columns);
+        $expectedcolumntitles = array_merge($initialcolumntitles, [
             'Checkbox field',
             'Date field',
             'Menu field',
             'MSN ID',
             'Text field',
             'Textarea field',
-        ], array_map(
-            fn(column $column): string => $column->get_title(),
-            $columns,
-        ));
+        ]);
+        $this->assertEquals($expectedcolumntitles, $columntitles);
 
-        // Column types.
-        $this->assertEquals([
+        // Assert column types.
+        $columntypes = array_map(static function(column $column): int {
+            return $column->get_type();
+        }, $columns);
+        $expectedcolumntypes = array_merge($initialcolumntypes, [
             column::TYPE_BOOLEAN,
             column::TYPE_TIMESTAMP,
             column::TYPE_TEXT,
             column::TYPE_TEXT,
             column::TYPE_TEXT,
             column::TYPE_LONGTEXT,
-        ], array_map(
-            fn(column $column): int => $column->get_type(),
-            $columns,
-        ));
-
-        // Column sortable.
-        $this->assertEquals([
-            true,
-            true,
-            true,
-            true,
-            true,
-            false,
-        ], array_map(
-            fn(column $column): bool => $column->get_is_sortable(),
-            $columns,
-        ));
-
-        // Column available.
-        $this->assertEquals([
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-        ], array_map(
-            fn(column $column): bool => $column->get_is_available(),
-            $columns,
-        ));
-
-        // Column available, for non-privileged user.
-        $this->setUser(null);
-        $this->assertEquals([
-            true,
-            false,
-            true,
-            true,
-            true,
-            true,
-        ], array_map(
-            fn(column $column): bool => $column->get_is_available(),
-            array_slice($userprofilefields->get_columns(), count($initialcolumns)),
-        ));
+        ]);
+        $this->assertEquals($expectedcolumntypes, $columntypes);
     }
 
     /**
-     * Test that joins added to the profile fields helper are present in its columns/filters
+     * Test for add_join
      */
     public function test_add_join(): void {
         $this->resetAfterTest();
 
         $userprofilefields = $this->generate_userprofilefields();
+        $columns = $userprofilefields->get_columns();
+        $this->assertCount(1, ($columns[0])->get_joins());
 
-        // We always join on the user info data table.
-        $columnjoins = $userprofilefields->get_columns()[0]->get_joins();
-        $this->assertCount(1, $columnjoins);
-        $this->assertStringStartsWith('LEFT JOIN {user_info_data}', $columnjoins[0]);
-
-        $filterjoins = $userprofilefields->get_filters()[0]->get_joins();
-        $this->assertCount(1, $filterjoins);
-        $this->assertStringStartsWith('LEFT JOIN {user_info_data}', $filterjoins[0]);
-
-        // Add additional join.
         $userprofilefields->add_join('JOIN {test} t ON t.id = id');
+        $columns = $userprofilefields->get_columns();
+        $this->assertCount(2, ($columns[0])->get_joins());
+    }
 
-        $columnjoins = $userprofilefields->get_columns()[0]->get_joins();
-        $this->assertCount(2, $columnjoins);
-        $this->assertEquals('JOIN {test} t ON t.id = id', $columnjoins[0]);
-        $this->assertStringStartsWith('LEFT JOIN {user_info_data}', $columnjoins[1]);
+    /**
+     * Test for add_joins
+     */
+    public function test_add_joins(): void {
+        $this->resetAfterTest();
 
-        $filterjoins = $userprofilefields->get_filters()[0]->get_joins();
-        $this->assertCount(2, $filterjoins);
-        $this->assertEquals('JOIN {test} t ON t.id = id', $filterjoins[0]);
-        $this->assertStringStartsWith('LEFT JOIN {user_info_data}', $filterjoins[1]);
+        $userprofilefields = $this->generate_userprofilefields();
+        $columns = $userprofilefields->get_columns();
+        $this->assertCount(1, ($columns[0])->get_joins());
+
+        $userprofilefields->add_joins(['JOIN {test} t ON t.id = id', 'JOIN {test2} t2 ON t2.id = id']);
+        $columns = $userprofilefields->get_columns();
+        $this->assertCount(3, ($columns[0])->get_joins());
     }
 
     /**
@@ -205,69 +166,38 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      */
     public function test_get_filters(): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
+
+        $userentity = new user();
+        $useralias = $userentity->get_table_alias('user');
 
         // Get pre-existing user profile fields.
-        $userentity = new user();
-        $initialfilters = (new user_profile_fields(
-            $userentity->get_table_alias('user') . '.id',
-            $userentity->get_entity_name(),
-        ))->get_filters();
-
-        // Create a field which will duplicate one of the subsequently generated fields (case-insensitive shortname).
-        $this->getDataGenerator()->create_custom_profile_field([
-            'shortname' => 'CHECKBOX',
-            'name' => 'Duplicate checkbox field',
-            'datatype' => 'checkbox',
-        ]);
+        $initialuserprofilefields = new user_profile_fields("$useralias.id", $userentity->get_entity_name());
+        $initialfilters = $initialuserprofilefields->get_filters();
+        $initialfilterheaders = array_map(static function(filter $filter): string {
+            return $filter->get_header();
+        }, $initialfilters);
 
         // Add new custom profile fields.
         $userprofilefields = $this->generate_userprofilefields();
+        $filters = $userprofilefields->get_filters();
 
-        // Ensure pre-existing fields are ignored in subsequent assertions.
-        $filters = array_slice($userprofilefields->get_filters(), count($initialfilters));
-        $this->assertCount(6, $filters);
+        // Filters count should be equal to start + 6.
+        $this->assertCount(count($initialfilters) + 6, $filters);
         $this->assertContainsOnlyInstancesOf(filter::class, $filters);
 
-        // Filter headers.
-        $this->assertEquals([
+        // Assert filter headers.
+        $filterheaders = array_map(static function(filter $filter): string {
+            return $filter->get_header();
+        }, $filters);
+        $expectedfilterheaders = array_merge($initialfilterheaders, [
             'Checkbox field',
             'Date field',
             'Menu field',
             'MSN ID',
             'Text field',
             'Textarea field',
-        ], array_map(
-            fn(filter $filter): string => $filter->get_header(),
-            $filters,
-        ));
-
-        // Filter available.
-        $this->assertEquals([
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-        ], array_map(
-            fn(filter $filter): bool => $filter->get_is_available(),
-            $filters,
-        ));
-
-        // Filter available, for non-privileged user.
-        $this->setUser(null);
-        $this->assertEquals([
-            true,
-            false,
-            true,
-            true,
-            true,
-            true,
-        ], array_map(
-            fn(filter $filter): bool => $filter->get_is_available(),
-            array_slice($userprofilefields->get_filters(), count($initialfilters)),
-        ));
+        ]);
+        $this->assertEquals($expectedfilterheaders, $filterheaders);
     }
 
     /**
@@ -275,15 +205,15 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      */
     public function test_custom_report_content(): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
+
+        $userprofilefields = $this->generate_userprofilefields();
 
         // Create test subject with user profile fields content.
-        $this->generate_userprofilefields();
-        $this->getDataGenerator()->create_user([
+        $user = $this->getDataGenerator()->create_user([
             'firstname' => 'Zebedee',
-            'profile_field_checkbox' => 0,
+            'profile_field_checkbox' => true,
             'profile_field_datetime' => '2021-12-09',
-            'profile_field_menu' => 'Dog',
+            'profile_field_menu' => 'Cat',
             'profile_field_Social' => 12345,
             'profile_field_text' => 'Hello',
             'profile_field_textarea' => 'Goodbye',
@@ -294,7 +224,7 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
         $report = $generator->create_report(['name' => 'Users', 'source' => users::class, 'default' => 0]);
 
         // Add user profile field columns to the report.
-        $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:firstname', 'sortenabled' => 1]);
+        $firstname = $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:firstname']);
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:profilefield_checkbox']);
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:profilefield_datetime']);
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:profilefield_menu']);
@@ -302,26 +232,29 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:profilefield_text']);
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:profilefield_textarea']);
 
+        // Sort the report, Admin -> Zebedee for consistency.
+        report::toggle_report_column_sorting($report->get('id'), $firstname->get('id'), true);
+
         $content = $this->get_custom_report_content($report->get('id'));
         $this->assertEquals([
             [
-                'Admin',
-                'Yes',
-                'Not set',
-                'Cat',
-                '',
-                'default',
-                format_text('Default', options: ['overflowdiv' => true]),
+                'c0_firstname' => 'Admin',
+                'c1_data' => '',
+                'c2_data' => '',
+                'c3_data' => '',
+                'c4_data' => '',
+                'c5_data' => '',
+                'c6_data' => '',
             ], [
-                'Zebedee',
-                'No',
-                '9 December 2021',
-                'Dog',
-                '12345',
-                'Hello',
-                format_text('Goodbye', options: ['overflowdiv' => true]),
+                'c0_firstname' => 'Zebedee',
+                'c1_data' => 'Yes',
+                'c2_data' => '9 December 2021',
+                'c3_data' => 'Cat',
+                'c4_data' => '12345',
+                'c5_data' => 'Hello',
+                'c6_data' => '<div class="no-overflow">Goodbye</div>',
             ],
-        ], array_map('array_values', $content));
+        ], $content);
     }
 
     /**
@@ -329,66 +262,52 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      *
      * @return array[]
      */
-    public static function custom_report_filter_provider(): array {
+    public function custom_report_filter_provider(): array {
         return [
             'Filter by checkbox profile field' => ['user:profilefield_checkbox', [
-                'user:profilefield_checkbox_operator' => boolean_select::NOT_CHECKED,
-            ], 'testuser'],
-            'Filter by checkbox profile field (default)' => ['user:profilefield_checkbox', [
                 'user:profilefield_checkbox_operator' => boolean_select::CHECKED,
+            ], 'testuser'],
+            'Filter by checkbox profile field (empty)' => ['user:profilefield_checkbox', [
+                'user:profilefield_checkbox_operator' => boolean_select::NOT_CHECKED,
             ], 'admin'],
             'Filter by datetime profile field' => ['user:profilefield_datetime', [
                 'user:profilefield_datetime_operator' => date::DATE_RANGE,
                 'user:profilefield_datetime_from' => 1622502000,
             ], 'testuser'],
-            'Filter by datetime profile field (no match)' => ['user:profilefield_datetime', [
-                'user:profilefield_datetime_operator' => date::DATE_RANGE,
-                'user:profilefield_datetime_from' => 1672531200,
-            ]],
+            'Filter by datetime profile field (empty)' => ['user:profilefield_datetime', [
+                'user:profilefield_datetime_operator' => date::DATE_EMPTY,
+            ], 'admin'],
             'Filter by menu profile field' => ['user:profilefield_menu', [
                 'user:profilefield_menu_operator' => select::EQUAL_TO,
                 'user:profilefield_menu_value' => 'Dog',
             ], 'testuser'],
-            'Filter by menu profile field (default)' => ['user:profilefield_menu', [
-                'user:profilefield_menu_operator' => select::EQUAL_TO,
-                'user:profilefield_menu_value' => 'Cat',
+            'Filter by menu profile field (empty)' => ['user:profilefield_menu', [
+                'user:profilefield_menu_operator' => select::NOT_EQUAL_TO,
+                'user:profilefield_menu_value' => 'Dog',
             ], 'admin'],
-            'Filter by menu profile field (no match)' => ['user:profilefield_menu', [
-                'user:profilefield_menu_operator' => select::EQUAL_TO,
-                'user:profilefield_menu_value' => 'Fish',
-            ]],
             'Filter by social profile field' => ['user:profilefield_social', [
                 'user:profilefield_social_operator' => text::IS_EQUAL_TO,
                 'user:profilefield_social_value' => '12345',
             ], 'testuser'],
-            'Filter by social profile field (no match)' => ['user:profilefield_social', [
-                'user:profilefield_social_operator' => text::IS_EQUAL_TO,
-                'user:profilefield_social_value' => '54321',
-            ]],
+            'Filter by social profile field (empty)' => ['user:profilefield_social', [
+                'user:profilefield_social_operator' => text::IS_EMPTY,
+            ], 'admin'],
             'Filter by text profile field' => ['user:profilefield_text', [
                 'user:profilefield_text_operator' => text::IS_EQUAL_TO,
                 'user:profilefield_text_value' => 'Hello',
             ], 'testuser'],
-            'Filter by text profile field (default)' => ['user:profilefield_text', [
-                'user:profilefield_text_operator' => text::IS_EQUAL_TO,
-                'user:profilefield_text_value' => 'default',
+            'Filter by text profile field (empty)' => ['user:profilefield_text', [
+                'user:profilefield_text_operator' => text::IS_NOT_EQUAL_TO,
+                'user:profilefield_text_value' => 'Hello',
             ], 'admin'],
-            'Filter by text profile field (no match)' => ['user:profilefield_text', [
-                'user:profilefield_text_operator' => text::IS_EQUAL_TO,
-                'user:profilefield_text_value' => 'hola',
-            ]],
             'Filter by textarea profile field' => ['user:profilefield_textarea', [
                 'user:profilefield_textarea_operator' => text::IS_EQUAL_TO,
                 'user:profilefield_textarea_value' => 'Goodbye',
             ], 'testuser'],
-            'Filter by textarea profile field (default)' => ['user:profilefield_textarea', [
-                'user:profilefield_textarea_operator' => text::IS_EQUAL_TO,
-                'user:profilefield_textarea_value' => 'Default',
+            'Filter by textarea profile field (empty)' => ['user:profilefield_textarea', [
+                'user:profilefield_textarea_operator' => text::DOES_NOT_CONTAIN,
+                'user:profilefield_textarea_value' => 'Goodbye',
             ], 'admin'],
-            'Filter by textarea profile field (no match)' => ['user:profilefield_textarea', [
-                'user:profilefield_textarea_operator' => text::IS_EMPTY,
-                'user:profilefield_textarea_value' => 'Adios',
-            ]],
         ];
     }
 
@@ -397,19 +316,19 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
      *
      * @param string $filtername
      * @param array $filtervalues
-     * @param string|null $expectmatch
+     * @param string $expectmatchuser
      *
      * @dataProvider custom_report_filter_provider
      */
-    public function test_custom_report_filter(string $filtername, array $filtervalues, ?string $expectmatch = null): void {
+    public function test_custom_report_filter(string $filtername, array $filtervalues, string $expectmatchuser): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
+
+        $userprofilefields = $this->generate_userprofilefields();
 
         // Create test subject with user profile fields content.
-        $this->generate_userprofilefields();
-        $this->getDataGenerator()->create_user([
+        $user = $this->getDataGenerator()->create_user([
             'username' => 'testuser',
-            'profile_field_checkbox' => 0,
+            'profile_field_checkbox' => true,
             'profile_field_datetime' => '2021-12-09',
             'profile_field_menu' => 'Dog',
             'profile_field_Social' => '12345',
@@ -428,12 +347,8 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
         $generator->create_filter(['reportid' => $report->get('id'), 'uniqueidentifier' => $filtername]);
         $content = $this->get_custom_report_content($report->get('id'), 0, $filtervalues);
 
-        if ($expectmatch !== null) {
-            $this->assertCount(1, $content);
-            $this->assertEquals($expectmatch, reset($content[0]));
-        } else {
-            $this->assertEmpty($content);
-        }
+        $this->assertCount(1, $content);
+        $this->assertEquals($expectmatchuser, reset($content[0]));
     }
 
     /**
@@ -448,8 +363,8 @@ final class user_profile_fields_test extends core_reportbuilder_testcase {
 
         $this->resetAfterTest();
 
-        $this->generate_userprofilefields();
-        $this->getDataGenerator()->create_user([
+        $userprofilefields = $this->generate_userprofilefields();
+        $user = $this->getDataGenerator()->create_user([
             'profile_field_checkbox' => true,
             'profile_field_datetime' => '2021-12-09',
             'profile_field_menu' => 'Dog',

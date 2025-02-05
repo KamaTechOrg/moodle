@@ -134,19 +134,16 @@ class viewcontent implements renderable, templatable {
                 'data-uses' => count($this->content->get_uses()),
                 'data-contentid' => $this->content->get_id(),
                 'data-contextid' => $this->content->get_contextid(),
-                'class' => 'text-danger',
-                ];
+            ];
         }
 
         $dropdown = [];
         if ($options) {
             foreach ($options as $key => $attribs) {
                 $url = $attribs['url'] ?? '#';
-                $extraclasses = $attribs['class'] ?? '';
                 $dropdown['options'][] = [
                     'label' => $key,
                     'url' => $url,
-                    'extraclasses' => $extraclasses,
                     'attributes' => array_map(function ($key, $value) {
                         return [
                             'name' => $key,
@@ -173,10 +170,6 @@ class viewcontent implements renderable, templatable {
         // Get the content type html.
         $contenthtml = $this->contenttype->get_view_content($this->content);
         $data->contenthtml = $contenthtml;
-
-        $handler = \core_contentbank\customfield\content_handler::create();
-        $customfields = $handler->get_instance_data($this->content->get_id());
-        $data->customfieldshtml = $handler->display_custom_fields_data($customfields);
 
         // Check if the user can edit this content type.
         if ($this->contenttype->can_edit($this->content)) {

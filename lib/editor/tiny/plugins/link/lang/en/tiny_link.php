@@ -25,6 +25,7 @@
 $string['browserepositories'] = 'Browse repositories...';
 $string['createlink'] = 'Create link';
 $string['enterurl'] = 'Enter a URL';
+$string['helplinktext'] = 'Link';
 $string['openinnewwindow'] = 'Open in new window';
 $string['pluginname'] = 'Link';
 $string['link'] = 'Link';
@@ -32,6 +33,3 @@ $string['unlink'] = 'Unlink';
 $string['updatelink'] = 'Update link';
 $string['privacy:metadata'] = 'The link plugin for TinyMCE does not store any personal data.';
 $string['texttodisplay'] = 'Text to display';
-
-// Deprecated since Moodle 4.5.
-$string['helplinktext'] = 'Link';

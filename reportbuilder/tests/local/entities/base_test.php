@@ -43,26 +43,14 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 David Matamoros <davidmc@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class base_test extends advanced_testcase {
+class base_test extends advanced_testcase {
 
     /**
      * Test entity table alias
      */
     public function test_get_table_alias(): void {
         $entity = new base_test_entity();
-
-        $mytablealias = $entity->get_table_alias('mytable');
-        $this->assertMatchesRegularExpression('/^rbalias(\d+)$/', $mytablealias);
-
-        $myothertablealias = $entity->get_table_alias('myothertable');
-        $this->assertMatchesRegularExpression('/^rbalias(\d+)$/', $myothertablealias);
-
-        // They must differ.
-        $this->assertNotEquals($mytablealias, $myothertablealias);
-
-        // Re-request both, ensure they are identical to what we previously received.
-        $this->assertEquals($mytablealias, $entity->get_table_alias('mytable'));
-        $this->assertEquals($myothertablealias, $entity->get_table_alias('myothertable'));
+        $this->assertEquals('m', $entity->get_table_alias('mytable'));
     }
 
     /**
@@ -75,24 +63,6 @@ final class base_test extends advanced_testcase {
         $this->expectExceptionMessage('Coding error detected, it must be fixed by a programmer: ' .
             'Invalid table name (nonexistingalias)');
         $entity->get_table_alias('nonexistingalias');
-    }
-
-    /**
-     * Test getting all table aliases
-     */
-    public function test_get_table_aliases(): void {
-        $entity = new base_test_entity();
-
-        [
-            'mytable' => $mytablealias,
-            'myothertable' => $myothertablealias,
-        ] = $entity->get_table_aliases();
-
-        $this->assertMatchesRegularExpression('/^rbalias(\d+)$/', $mytablealias);
-        $this->assertMatchesRegularExpression('/^rbalias(\d+)$/', $myothertablealias);
-
-        // They must differ.
-        $this->assertNotEquals($mytablealias, $myothertablealias);
     }
 
     /**
@@ -126,10 +96,8 @@ final class base_test extends advanced_testcase {
             'mytable' => 'newalias',
             'myothertable' => 'newalias2',
         ]);
-        $this->assertEquals([
-            'mytable' => 'newalias',
-            'myothertable' => 'newalias2',
-        ], $entity->get_table_aliases());
+        $this->assertEquals('newalias', $entity->get_table_alias('mytable'));
+        $this->assertEquals('newalias2', $entity->get_table_alias('myothertable'));
     }
 
     /**
@@ -190,6 +158,50 @@ final class base_test extends advanced_testcase {
         $newtitle = new lang_string('fullname');
         $entity->set_entity_title($newtitle);
         $this->assertEquals($newtitle, $entity->get_entity_title());
+    }
+
+    /**
+     * Test adding single join
+     */
+    public function test_add_join(): void {
+        $entity = new base_test_entity();
+
+        $tablejoin = "JOIN {course} c2 ON c2.id = c1.id";
+        $entity->add_join($tablejoin);
+
+        $this->assertEquals([$tablejoin], $entity->get_joins());
+    }
+
+    /**
+     * Test adding multiple joins
+     */
+    public function test_add_joins(): void {
+        $entity = new base_test_entity();
+
+        $tablejoins = [
+            "JOIN {course} c2 ON c2.id = c1.id",
+            "JOIN {course} c3 ON c3.id = c1.id",
+        ];
+        $entity->add_joins($tablejoins);
+
+        $this->assertEquals($tablejoins, $entity->get_joins());
+    }
+
+    /**
+     * Test adding duplicate joins
+     */
+    public function test_add_duplicate_joins(): void {
+        $entity = new base_test_entity();
+
+        $tablejoins = [
+            "JOIN {course} c2 ON c2.id = c1.id",
+            "JOIN {course} c3 ON c3.id = c1.id",
+        ];
+        $entity
+            ->add_joins($tablejoins)
+            ->add_joins($tablejoins);
+
+        $this->assertEquals($tablejoins, $entity->get_joins());
     }
 
     /**
@@ -302,10 +314,10 @@ class base_test_entity extends base {
      *
      * @return array
      */
-    protected function get_default_tables(): array {
+    protected function get_default_table_aliases(): array {
         return [
-            'mytable',
-            'myothertable',
+            'mytable' => 'm',
+            'myothertable' => 'o',
         ];
     }
 

@@ -36,14 +36,12 @@ use stdClass;
 class context extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
-        return [
-            'context',
-        ];
+    protected function get_default_table_aliases(): array {
+        return ['context' => 'ctx'];
     }
 
     /**
@@ -136,14 +134,17 @@ class context extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
             ->add_fields("{$contextalias}.contextlevel")
             ->set_is_sortable(true)
-            ->add_callback(static function(?string $level): string {
+            // It doesn't make sense to offer integer aggregation methods for this column.
+            ->set_disabled_aggregation(['avg', 'max', 'min', 'sum'])
+            ->add_callback(static function(?int $level): string {
                 if ($level === null) {
                     return '';
                 }
 
-                return context_helper::get_level_name((int) $level);
+                return context_helper::get_level_name($level);
             });
 
         // Path.

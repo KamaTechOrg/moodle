@@ -45,13 +45,6 @@ class feed implements \renderable, \templatable {
     protected $title = null;
 
     /**
-     * The feed's channel link.
-     *
-     * @var string|null
-     */
-    protected ?string $channellink;
-
-    /**
      * An array of renderable feed items
      *
      * @var array
@@ -85,13 +78,11 @@ class feed implements \renderable, \templatable {
      * @param string $title The title of the RSS feed
      * @param boolean $showtitle Whether to show the title
      * @param boolean $showimage Whether to show the channel image
-     * @param string|null $channellink The channel link of the RSS feed
      */
-    public function __construct($title, $showtitle = true, $showimage = true, ?string $channellink = null) {
+    public function __construct($title, $showtitle = true, $showimage = true) {
         $this->title = $title;
         $this->showtitle = $showtitle;
         $this->showimage = $showimage;
-        $this->channellink = $channellink;
     }
 
     /**
@@ -106,7 +97,6 @@ class feed implements \renderable, \templatable {
             'title' => $this->showtitle ? $this->title : null,
             'image' => null,
             'items' => array(),
-            'channellink' => $this->channellink ?? null,
         );
 
         if ($this->showimage && $this->image) {
@@ -139,15 +129,6 @@ class feed implements \renderable, \templatable {
      */
     public function get_title() {
         return $this->title;
-    }
-
-    /**
-     * Set the feed channel link.
-     *
-     * @param \moodle_url|null $channellink the URL to the channel website.
-     */
-    public function set_channellink(?\moodle_url $channellink) {
-        $this->channellink = $channellink;
     }
 
     /**

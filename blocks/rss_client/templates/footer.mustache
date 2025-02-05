@@ -30,10 +30,13 @@
 
     Example context (json):
     {
-        "hasfailedfeeds": true,
-        "manageurl": "http://moodle.web/blocks/rss_client/managefeeds.php?courseid=1"
+        "channellink": "https://www.example.com/feeds/rss"
     }
 }}
+{{#channellink}}
+    <a href="{{{channellink}}}">{{#str}} clientchannellink, block_rss_client {{/str}}</a>
+    {{#hasfailedfeeds}}<br>{{/hasfailedfeeds}}
+{{/channellink}}
 {{#hasfailedfeeds}}
-    <a href="{{{manageurl}}}" class="d-block mb-3">{{#str}} failedfeeds, block_rss_client {{/str}}</a>
+    <a href="{{{manageurl}}}">{{#str}} failedfeeds, block_rss_client {{/str}}</a>
 {{/hasfailedfeeds}}

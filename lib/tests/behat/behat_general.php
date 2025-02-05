@@ -134,7 +134,7 @@ class behat_general extends behat_base {
         // Getting the refresh time and the url if present.
         if (strstr($content, 'url') != false) {
 
-            [$waittime, $url] = explode(';', $content);
+            list($waittime, $url) = explode(';', $content);
 
             // Cleaning the URL value.
             $url = trim(substr($url, strpos($url, 'http')));
@@ -974,8 +974,8 @@ class behat_general extends behat_base {
             $msg .= " in the '{$containerelement}' '{$containerselectortype}'";
         }
 
-        [$preselector, $prelocator] = $this->transform_selector($preselectortype, $preelement);
-        [$postselector, $postlocator] = $this->transform_selector($postselectortype, $postelement);
+        list($preselector, $prelocator) = $this->transform_selector($preselectortype, $preelement);
+        list($postselector, $postlocator) = $this->transform_selector($postselectortype, $postelement);
 
         $newlines = [
             "\r\n",
@@ -1185,7 +1185,11 @@ EOF;
             throw new DriverException('Unable to obtain task lock for scheduled task');
         }
         $task->set_lock($lock);
-        $cronlock->release();
+        if (!$task->is_blocking()) {
+            $cronlock->release();
+        } else {
+            $task->set_cron_lock($cronlock);
+        }
 
         try {
             // Prepare the renderer.
@@ -1449,8 +1453,7 @@ EOF;
         // Get row xpath.
         // Some drivers make XPath relative to the current context, so use descendant.
         $rowxpath = $tablexpath . "/tbody/tr[descendant::*[@class='rowtitle'][normalize-space(.)=" . $rowliteral . "] | " . "
-            descendant::th[contains(normalize-space(.)," . $rowliteral . ")] | " . "
-            descendant::td[contains(normalize-space(.)," . $rowliteral . ")]]";
+            descendant::th[normalize-space(.)=" . $rowliteral . "] | descendant::td[normalize-space(.)=" . $rowliteral . "]]";
 
         $columnvaluexpath = $rowxpath . $columnpositionxpath . "[contains(normalize-space(.)," . $valueliteral . ")]";
 
@@ -1737,7 +1740,7 @@ EOF;
     public function following_should_download_between_and_bytes($link, $minexpectedsize, $maxexpectedsize) {
         // If the minimum is greater than the maximum then swap the values.
         if ((int)$minexpectedsize > (int)$maxexpectedsize) {
-            [$minexpectedsize, $maxexpectedsize] = [$maxexpectedsize, $minexpectedsize];
+            list($minexpectedsize, $maxexpectedsize) = array($maxexpectedsize, $minexpectedsize);
         }
 
         $exception = new ExpectationException('Error while downloading data from ' . $link, $this->getSession());
@@ -2101,7 +2104,7 @@ EOF;
         $validmodifiers = array('ctrl', 'alt', 'shift', 'meta');
         $char = $key;
         if (strpos($key, '-')) {
-            [$modifier, $char] = preg_split('/-/', $key, 2);
+            list($modifier, $char) = preg_split('/-/', $key, 2);
             $modifier = strtolower($modifier);
             if (!in_array($modifier, $validmodifiers)) {
                 throw new ExpectationException(sprintf('Unknown key modifier: %s.', $modifier),
@@ -2390,23 +2393,9 @@ EOF;
      * @param string $plugin Plugin we look for
      * @param string $plugintype The type of the plugin
      */
-    #[\core\attribute\example('I enable "subsection" "mod" plugin')]
     public function i_enable_plugin($plugin, $plugintype) {
         $class = core_plugin_manager::resolve_plugininfo_class($plugintype);
         $class::enable_plugin($plugin, true);
-    }
-
-    /**
-     * Disable an specific plugin.
-     *
-     * @When /^I disable "(?P<plugin_string>(?:[^"]|\\")*)" "(?P<plugintype_string>[^"]*)" plugin$/
-     * @param string $plugin Plugin we look for
-     * @param string $plugintype The type of the plugin
-     */
-    #[\core\attribute\example('I disable "page" "mod" plugin')]
-    public function i_disable_plugin($plugin, $plugintype) {
-        $class = core_plugin_manager::resolve_plugininfo_class($plugintype);
-        $class::enable_plugin($plugin, false);
     }
 
     /**
@@ -2507,235 +2496,5 @@ EOF;
                 $session
             );
         }
-    }
-
-    /**
-     * Toggles the specified admin switch.
-     *
-     * @When /^I toggle the "(?P<element_string>(?:[^"]|\\")*)" admin switch "(?P<state_string>on|off)"$/
-     * @param string $element Element we look for
-     * @param string $state The state of the switch
-     * @throws ElementNotFoundException Thrown by behat_base::find
-     */
-    public function i_toggle_admin_switch($element, $state) {
-        // First check we are running Javascript, otherwise explode.
-        if (!$this->running_javascript()) {
-            throw new \Behat\Mink\Exception\DriverException('Switches are only available with JavaScript enabled');
-        }
-
-        // Next check that the node is available.
-        $node = $this->get_selected_node('checkbox', $element);
-        $this->ensure_node_is_visible($node);
-
-        // Update the state of the switch.
-        $field = $node->getAttribute('id');
-        if ($state == "on") {
-            $this->execute('behat_forms::i_set_the_field_to', [$field, 1]);
-        } else if ($state == "off") {
-            $this->execute('behat_forms::i_set_the_field_to', [$field, 0]);
-        } else {
-            throw new \Behat\Mink\Exception\ExpectationException('Invalid state for switch: ' . $state, $this->getSession());
-        }
-
-    }
-
-    /**
-     * Update a stored progress bar.
-     *
-     * @Given I set the stored progress bar :idnumber to :percent
-     * @param string $idnumber The unique idnumber of the stored progress bar.
-     * @param float $percent The value to update the progress bar to.
-     */
-    public function i_set_the_stored_progress_bar_to(string $idnumber, float $percent): void {
-        $progress = \core\output\stored_progress_bar::get_by_idnumber($idnumber);
-        if (!$progress) {
-            throw new invalid_parameter_exception('No progress bar with idnumber ' . $idnumber . 'found.');
-        }
-        $progress->auto_update(false);
-        $progress->update_full($percent, '');
-    }
-
-    /**
-     * Helper that returns the dropdown node element within a particular search combo box.
-     *
-     * @param string $comboboxname The name (label) of the search combo box element. (e.g. "Search users", "Search groups").
-     * @param string $itemname The name of the combo box item we are searching for. This is only used if $fieldset is set
-     *                         to true.
-     * @param bool $fieldset Whether to set the search field of the combo box at the same time
-     * @return NodeElement
-     * @throws coding_exception
-     */
-    private function get_combobox_dropdown_node(string $comboboxname, string $itemname, bool $fieldset = true): NodeElement {
-        $this->execute("behat_general::wait_until_the_page_is_ready");
-
-        $comboboxxpath = "//div[contains(@class, 'comboboxsearch') and .//span[text()='{$comboboxname}']]";
-        $dropdowntriggerxpath = $comboboxxpath . "/descendant::div[contains(@class,'dropdown-toggle')]";
-        $dropdownxpath = $comboboxxpath . "/descendant::div[contains(@class,'dropdown-menu')]";
-        $dropdown = $this->find("xpath_element", $dropdownxpath);
-
-        // If the dropdown is not visible, open it. Also, ensure that a dropdown trigger element exists.
-        if ($this->getSession()->getPage()->find('xpath', $dropdowntriggerxpath) && !$dropdown->isVisible()) {
-            $this->execute("behat_general::i_click_on", [$dropdowntriggerxpath, "xpath_element"]);
-        }
-
-        if ($fieldset) {
-            $this->execute("behat_forms::set_field_value", [$comboboxname, $itemname]);
-            $this->execute("behat_general::wait_until_exists", [$itemname, "list_item"]);
-        }
-
-        return $dropdown;
-    }
-
-    /**
-     * Confirm if a value exists within the search combo box.
-     *
-     * Examples:
-     * - I confirm "User" exists in the "Search users" search combo box
-     * - I confirm "Group" exists in the "Search groups" search combo box
-     * - I confirm "Grade item" exists in the "Search grade items" search combo box
-     *
-     * @Given /^I confirm "(?P<itemname>(?:[^"]|\\")*)" exists in the "(?P<comboboxname>(?:[^"]|\\")*)" search combo box$/
-     * @param string $itemname The name of the combo box item we are searching for. This is only used if $fieldset is set
-     *                         to true.
-     * @param string $comboboxname The name (label) of the search combo box element. (e.g. "Search users", "Search groups").
-     */
-    public function i_confirm_in_search_combobox_exists(string $itemname, string $comboboxname): void {
-        $this->execute("behat_general::assert_element_contains_text",
-            [$itemname, $this->get_combobox_dropdown_node($comboboxname, $itemname, false), "NodeElement"]);
-    }
-
-    /**
-     * Confirm if a value does not exist within the search combo box.
-     *
-     * Examples:
-     * - I confirm "User" does not exist in the "Search users" search combo box
-     * - I confirm "Group" does not exist in the "Search groups" search combo box
-     * - I confirm "Grade item" does not exist in the "Search grade items" search combo box
-     *
-     * @Given /^I confirm "(?P<itemname>(?:[^"]|\\")*)" does not exist in the "(?P<comboboxname>(?:[^"]|\\")*)" search combo box$/
-     * @param string $itemname The name of the combo box item we are searching for. This is only used if $fieldset is set
-     *                         to true.
-     * @param string $comboboxname The name (label) of the search combo box element. (e.g. "Search users", "Search groups").
-     */
-    public function i_confirm_in_search_combobox_does_not_exist(string $itemname, string $comboboxname): void {
-        $this->execute("behat_general::assert_element_not_contains_text",
-            [$itemname, $this->get_combobox_dropdown_node($comboboxname, $itemname, false), "NodeElement"]);
-    }
-
-    /**
-     * Clicks on an option from the specified search widget.
-     *
-     * Examples:
-     * - I click on "Student" in the "Search users" search combo box
-     * - I click on "Group" in the "Search groups" search combo box
-     * - I click on "Grade item" in the "Search grade items" search combo box
-     *
-     * @Given /^I click on "(?P<itemname>(?:[^"]|\\")*)" in the "(?P<comboboxname>(?:[^"]|\\")*)" search combo box$/
-     * @param string $itemname The name of the combo box item we are searching for. This is only used if $fieldset is set
-     *                         to true.
-     * @param string $comboboxname The name (label) of the search combo box element. (e.g. "Search users", "Search groups").
-     */
-    public function i_click_on_in_search_combobox(string $itemname, string $comboboxname): void {
-        $node = $this->get_combobox_dropdown_node($comboboxname, $itemname);
-        $this->execute('behat_general::i_click_on_in_the', [
-            $itemname, "list_item",
-            $node, "NodeElement",
-        ]);
-        $this->execute("behat_general::i_wait_to_be_redirected");
-    }
-
-    /**
-     * Clicks on a specific link within a table row.
-     * Good for clicking links on tables where links have repeated text in diiferent rows.
-     *
-     * Example:
-     * - I click on the "Settings" link in the row containing "Text editor placement"
-     *
-     * @Given /^I click on the "(?P<linktext>(?:[^"]|\\")*)" link in the table row containing "(?P<rowtext>(?:[^"]|\\")*)"$/
-     * @param string $linktext
-     * @param string $rowtext
-     */
-    public function i_click_on_the_link_in_the_table_row_containing(string $linktext, string $rowtext): void {
-        $row = $this->getSession()->getPage()->find('xpath', "//tr[contains(., '{$rowtext}')]");
-        if (!$row) {
-            throw new Exception("Row containing '{$rowtext}' not found");
-        }
-        $link = $row->findLink($linktext);
-        if (!$link) {
-            throw new Exception("Link '{$linktext}' not found in the row containing '{$rowtext}'");
-        }
-        $link->click();
-    }
-
-    /**
-     * Checks if a specific text is present in a table row.
-     * Good for checking text in tables where text is repeated in different rows.
-     *
-     * Example:
-     * - I should see "This action is unavailable." in the table row containing "Generate text"
-     *
-     * @Then /^I should see "(?P<text>(?:[^"]|\\")*)" in the table row containing "(?P<rowtext>(?:[^"]|\\")*)"$/
-     * @param string $text
-     * @param string $rowtext
-     */
-    public function i_should_see_in_the_table_row_containing(string $text, string $rowtext): void {
-        $row = $this->getSession()->getPage()->find('xpath', "//tr[contains(., '{$rowtext}')]");
-        if (!$row) {
-            throw new Exception("Row containing '{$rowtext}' not found");
-        }
-        if (strpos($row->getText(), $text) === false) {
-            throw new Exception("Text '{$text}' not found in the row containing '{$rowtext}'");
-        }
-    }
-
-    /**
-     * Checks if a specific text is not present in a table row.
-     * Good for checking text in tables where text is repeated in different rows.
-     *
-     * Example:
-     * - I should not see "This action is unavailable." in the table row containing "Generate text"
-     *
-     * @Then /^I should not see "(?P<text>(?:[^"]|\\")*)" in the table row containing "(?P<rowtext>(?:[^"]|\\")*)"$/
-     * @param string $text
-     * @param string $rowtext
-     */
-    public function i_should_not_see_in_the_table_row_containing(string $text, string $rowtext): void {
-        $row = $this->getSession()->getPage()->find('xpath', "//tr[contains(., '{$rowtext}')]");
-        if (!$row) {
-            throw new Exception("Row containing '{$rowtext}' not found");
-        }
-        if (strpos($row->getText(), $text) !== false) {
-            throw new Exception("Text '{$text}' found in the row containing '{$rowtext}'");
-        }
-    }
-
-    /**
-     * Sets the current time for the remainder of this Behat test.
-     *
-     * This is not supported everywhere in Moodle: if code uses \core\clock through DI then
-     * it will work, but if it just calls time() it will still get the real time.
-     *
-     * @Given the time is frozen at :datetime
-     * @param string $datetime Date and time in a format that strtotime understands
-     */
-    public function the_time_is_frozen_at(string $datetime): void {
-        global $CFG;
-        require_once($CFG->libdir . '/testing/classes/frozen_clock.php');
-
-        $timestamp = strtotime($datetime);
-        // The config variable is used to set up a frozen clock in each Behat web request.
-        set_config('behat_frozen_clock', $timestamp);
-        // Simply setting a frozen clock in DI should work for future steps in Behat CLI process.
-        \core\di::set(\core\clock::class, new \frozen_clock($timestamp));
-    }
-
-    /**
-     * Stops freezing time so that it goes back to real time.
-     *
-     * @Given the time is no longer frozen
-     */
-    public function the_time_is_no_longer_frozen(): void {
-        unset_config('behat_frozen_clock');
-        \core\di::set(\core\clock::class, new \core\system_clock());
     }
 }

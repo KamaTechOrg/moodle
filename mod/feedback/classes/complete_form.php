@@ -243,15 +243,6 @@ class mod_feedback_complete_form extends moodleform {
     }
 
     /**
-     * Returns whether the form is considered read-only (e.g. when previewing it)
-     *
-     * @return bool
-     */
-    private function is_readonly(): bool {
-        return $this->mode === self::MODE_PRINT;
-    }
-
-    /**
      * Returns the current course module
      * @return cm_info
      */
@@ -336,14 +327,9 @@ class mod_feedback_complete_form extends moodleform {
             $element->freeze();
         }
 
-        // For read-only forms, just disable each added element.
-        if ($this->is_readonly()) {
-            $this->_form->disabledIf($element->getName(), 'id');
-        }
-
         // Add red asterisks on required fields.
         if ($item->required) {
-            $required = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'), 'moodle', ['class' => 'ms-2']);
+            $required = $OUTPUT->pix_icon('req', get_string('requiredelement', 'form'));
             $element->setLabel($element->getLabel() . $required);
             $this->hasrequired = true;
         }
@@ -459,7 +445,7 @@ class mod_feedback_complete_form extends moodleform {
         global $OUTPUT;
         $menu = new action_menu();
         $menu->set_owner_selector('#' . $this->guess_element_id($item, $element));
-        $menu->set_kebab_trigger(get_string('edit'));
+        $menu->set_menu_trigger(get_string('edit'));
         $menu->prioritise = true;
 
         $itemobj = feedback_get_item_class($item->typ);
@@ -474,7 +460,7 @@ class mod_feedback_complete_form extends moodleform {
         $name = html_writer::span('', 'itemdd', array('id' => 'feedback_item_box_' . $item->id)) .
                 html_writer::span($name, 'itemname') .
                 html_writer::span($editmenu, 'itemactions');
-        $element->setLabel(html_writer::span($name, 'itemtitle', ['class' => 'mx-5']));
+        $element->setLabel(html_writer::span($name, 'itemtitle'));
     }
 
     /**

@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
 /**
  * Core file storage class definition.
  *
@@ -23,8 +24,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
-use core_files\hook\before_file_created;
 
 require_once("$CFG->libdir/filestorage/stored_file.php");
 
@@ -916,7 +915,7 @@ class file_storage {
      * @param array $params any query params used by $itemidstest.
      */
     public function delete_area_files_select($contextid, $component,
-            $filearea, $itemidstest, ?array $params = null) {
+            $filearea, $itemidstest, array $params = null) {
         global $DB;
 
         $where = "contextid = :contextid
@@ -1076,16 +1075,14 @@ class file_storage {
         $newrecord->id = $DB->insert_record('files', $newrecord);
 
         if ($newrecord->filename !== '.') {
-            if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
-                return;
+            // Callback for file created.
+            if ($pluginsfunction = get_plugins_with_function('after_file_created')) {
+                foreach ($pluginsfunction as $plugintype => $plugins) {
+                    foreach ($plugins as $pluginfunction) {
+                        $pluginfunction($newrecord);
+                    }
+                }
             }
-
-            // The $fileinstance is needed for the legacy callback.
-            $fileinstance = $this->get_file_instance($newrecord);
-            // Dispatch the new Hook implementation immediately after the legacy callback.
-            $hook = new \core_files\hook\after_file_created($fileinstance, $newrecord);
-            $hook->process_legacy_callbacks();
-            \core\di::get(\core\hook\manager::class)->dispatch($hook);
         }
     }
 
@@ -1224,7 +1221,7 @@ class file_storage {
      * @param bool $usetempfile use temporary file for download, may prevent out of memory problems
      * @return stored_file
      */
-    public function create_file_from_url($filerecord, $url, ?array $options = null, $usetempfile = false) {
+    public function create_file_from_url($filerecord, $url, array $options = null, $usetempfile = false) {
 
         $filerecord = (array)$filerecord;  // Do not modify the submitted record, this cast unlinks objects.
         $filerecord = (object)$filerecord; // We support arrays too.
@@ -1488,10 +1485,6 @@ class file_storage {
         }
 
         $newrecord->pathnamehash = $this->get_pathname_hash($newrecord->contextid, $newrecord->component, $newrecord->filearea, $newrecord->itemid, $newrecord->filepath, $newrecord->filename);
-
-        if (!empty($filerecord->repositoryid)) {
-            $newrecord->referencefileid = $this->get_or_create_referencefileid($filerecord->repositoryid, $filerecord->reference);
-        }
 
         try {
             $this->create_file($newrecord);
@@ -1840,19 +1833,7 @@ class file_storage {
      * @return array (contenthash, filesize, newfile)
      */
     public function add_file_to_pool($pathname, $contenthash = null, $newrecord = null) {
-        $hook = new before_file_created(
-            filerecord: $newrecord,
-            filepath: $pathname,
-        );
-
-        $hook->process_legacy_callbacks();
-        \core\di::get(\core\hook\manager::class)->dispatch($hook);
-
-        if ($hook->has_changed()) {
-            $contenthash = null;
-            $pathname = $hook->get_filepath();
-        }
-
+        $this->call_before_file_created_plugin_functions($newrecord, $pathname);
         return $this->filesystem->add_file_from_path($pathname, $contenthash);
     }
 
@@ -1863,22 +1844,24 @@ class file_storage {
      * @return array (contenthash, filesize, newfile)
      */
     public function add_string_to_pool($content, $newrecord = null) {
-        if ($content !== null) {
-            // This is a directory and there is no record information.
-            $hook = new before_file_created(
-                filerecord: $newrecord,
-                filecontent: $content,
-            );
+        $this->call_before_file_created_plugin_functions($newrecord, null, $content);
+        return $this->filesystem->add_file_from_string($content);
+    }
 
-            $hook->process_legacy_callbacks();
-            \core\di::get(\core\hook\manager::class)->dispatch($hook);
-
-            if ($hook->has_changed()) {
-                $content = $hook->get_filecontent();
+    /**
+     * before_file_created hook.
+     *
+     * @param stdClass|null $newrecord New file record.
+     * @param string|null $pathname Path to file.
+     * @param string|null $content File content.
+     */
+    protected function call_before_file_created_plugin_functions($newrecord, $pathname = null, $content = null) {
+        $pluginsfunction = get_plugins_with_function('before_file_created');
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $pluginfunction($newrecord, ['pathname' => $pathname, 'content' => $content]);
             }
         }
-
-        return $this->filesystem->add_file_from_string($content);
     }
 
     /**
@@ -1946,7 +1929,7 @@ class file_storage {
     /**
      * When user referring to a moodle file, we build the reference field
      *
-     * @param array|stdClass $params
+     * @param array $params
      * @return string
      */
     public static function pack_reference($params) {

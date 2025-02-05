@@ -32,6 +32,7 @@ namespace core\output;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mustache_quote_helper {
+
     /**
      * Wrap content in quotes, and escape all special JSON characters used.
      *

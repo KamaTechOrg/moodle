@@ -50,7 +50,6 @@ class lib_test extends \advanced_testcase {
     private $tree;
 
     public function setUp(): void {
-        parent::setUp();
         $this->user = $this->getDataGenerator()->create_user();
         $this->course = $this->getDataGenerator()->create_course();
         $this->tree = new \core_user\output\myprofile\tree();
@@ -60,7 +59,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test report_log_supports_logstore.
      */
-    public function test_report_participation_supports_logstore(): void {
+    public function test_report_participation_supports_logstore() {
         $logmanager = get_log_manager();
         $allstores = \core_component::get_plugin_list_with_class('logstore', 'log\store');
 
@@ -80,7 +79,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Tests the report_stats_myprofile_navigation() function.
      */
-    public function test_report_stats_myprofile_navigation(): void {
+    public function test_report_stats_myprofile_navigation() {
         $this->setAdminUser();
         $iscurrentuser = false;
 
@@ -90,13 +89,14 @@ class lib_test extends \advanced_testcase {
         report_stats_myprofile_navigation($this->tree, $this->user, $iscurrentuser, $this->course);
         $reflector = new \ReflectionObject($this->tree);
         $nodes = $reflector->getProperty('nodes');
+        $nodes->setAccessible(true);
         $this->assertArrayHasKey('stats', $nodes->getValue($this->tree));
     }
 
     /**
      * Tests the report_stats_myprofile_navigation() function when stats are disabled.
      */
-    public function test_report_stats_myprofile_navigation_stats_disabled(): void {
+    public function test_report_stats_myprofile_navigation_stats_disabled() {
         $this->setAdminUser();
         $iscurrentuser = false;
 
@@ -106,13 +106,14 @@ class lib_test extends \advanced_testcase {
         report_stats_myprofile_navigation($this->tree, $this->user, $iscurrentuser, $this->course);
         $reflector = new \ReflectionObject($this->tree);
         $nodes = $reflector->getProperty('nodes');
+        $nodes->setAccessible(true);
         $this->assertArrayNotHasKey('stats', $nodes->getValue($this->tree));
     }
 
     /**
      * Tests the report_stats_myprofile_navigation() function without permission.
      */
-    public function test_report_stats_myprofile_navigation_without_permission(): void {
+    public function test_report_stats_myprofile_navigation_without_permission() {
         // Try to see as a user without permission.
         $this->setUser($this->user);
         $iscurrentuser = true;
@@ -123,6 +124,7 @@ class lib_test extends \advanced_testcase {
         report_stats_myprofile_navigation($this->tree, $this->user, $iscurrentuser, $this->course);
         $reflector = new \ReflectionObject($this->tree);
         $nodes = $reflector->getProperty('nodes');
+        $nodes->setAccessible(true);
         $this->assertArrayNotHasKey('stats', $nodes->getValue($this->tree));
     }
 }

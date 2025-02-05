@@ -40,14 +40,14 @@ use core_reportbuilder\local\report\{column, filter};
 class instance extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
+    protected function get_default_table_aliases(): array {
         return [
-            'tag_instance',
-            'context',
+            'tag_instance' => 'ti',
+            'context' => 'tictx',
         ];
     }
 
@@ -184,8 +184,10 @@ class instance extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
             ->add_fields("{$instancealias}.itemid")
-            ->set_is_sortable(true);
+            ->set_is_sortable(true)
+            ->set_disabled_aggregation_all();
 
         // Time created.
         $columns[] = (new column(

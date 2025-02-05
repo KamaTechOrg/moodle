@@ -24,7 +24,6 @@ use core_plugin_manager;
 use stdClass;
 use core_reportbuilder\local\models\report;
 use core_reportbuilder\local\report\base;
-use core_reportbuilder\exception\{source_invalid_exception, source_unavailable_exception};
 
 /**
  * Report management class

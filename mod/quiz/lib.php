@@ -38,7 +38,6 @@ use mod_quiz\question\display_options;
 use mod_quiz\question\qubaids_for_quiz;
 use mod_quiz\question\qubaids_for_users_attempts;
 use core_question\statistics\questions\all_calculated_for_qubaid_condition;
-use mod_quiz\local\override_cache;
 use mod_quiz\quiz_attempt;
 use mod_quiz\quiz_settings;
 
@@ -98,20 +97,21 @@ require_once(__DIR__ . '/deprecatedlib.php');
 function quiz_add_instance($quiz) {
     global $DB;
     $cmid = $quiz->coursemodule;
-
+    
     // Process the options from the form.
     $quiz->timecreated = time();
     $result = quiz_process_options($quiz);
     if ($result && is_string($result)) {
         return $result;
     }
-
+    
     // Try to store it in the database.
     $quiz->id = $DB->insert_record('quiz', $quiz);
-
+    
     // Create the first section for this quiz.
     $DB->insert_record('quiz_sections', ['quizid' => $quiz->id,
             'firstslot' => 1, 'heading' => '', 'shufflequestions' => 0]);
+    
 
     // Do the processing required after an add or an update.
     quiz_after_add_or_update($quiz);
@@ -191,11 +191,7 @@ function quiz_delete_instance($id) {
     $quiz = $DB->get_record('quiz', ['id' => $id], '*', MUST_EXIST);
 
     quiz_delete_all_attempts($quiz);
-
-    // Delete all overrides, and for performance do not log or check permissions.
-    $quizobj = quiz_settings::create($quiz->id);
-    $quizobj->get_override_manager()->delete_all_overrides(shouldlog: false);
-
+    quiz_delete_all_overrides($quiz);
     quiz_delete_references($quiz->id);
 
     // We need to do the following deletes before we try and delete randoms, otherwise they would still be 'in use'.
@@ -217,6 +213,86 @@ function quiz_delete_instance($id) {
     $DB->delete_records('quiz', ['id' => $quiz->id]);
 
     return true;
+}
+
+/**
+ * Deletes a quiz override from the database and clears any corresponding calendar events
+ *
+ * @param stdClass $quiz The quiz object.
+ * @param int $overrideid The id of the override being deleted
+ * @param bool $log Whether to trigger logs.
+ * @return bool true on success
+ */
+function quiz_delete_override($quiz, $overrideid, $log = true) {
+    global $DB;
+
+    if (!isset($quiz->cmid)) {
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course);
+        $quiz->cmid = $cm->id;
+    }
+
+    $override = $DB->get_record('quiz_overrides', ['id' => $overrideid], '*', MUST_EXIST);
+
+    // Delete the events.
+    if (isset($override->groupid)) {
+        // Create the search array for a group override.
+        $eventsearcharray = ['modulename' => 'quiz',
+            'instance' => $quiz->id, 'groupid' => (int)$override->groupid];
+        $cachekey = "{$quiz->id}_g_{$override->groupid}";
+    } else {
+        // Create the search array for a user override.
+        $eventsearcharray = ['modulename' => 'quiz',
+            'instance' => $quiz->id, 'userid' => (int)$override->userid];
+        $cachekey = "{$quiz->id}_u_{$override->userid}";
+    }
+    $events = $DB->get_records('event', $eventsearcharray);
+    foreach ($events as $event) {
+        $eventold = calendar_event::load($event);
+        $eventold->delete();
+    }
+
+    $DB->delete_records('quiz_overrides', ['id' => $overrideid]);
+    cache::make('mod_quiz', 'overrides')->delete($cachekey);
+
+    if ($log) {
+        // Set the common parameters for one of the events we will be triggering.
+        $params = [
+            'objectid' => $override->id,
+            'context' => context_module::instance($quiz->cmid),
+            'other' => [
+                'quizid' => $override->quiz
+            ]
+        ];
+        // Determine which override deleted event to fire.
+        if (!empty($override->userid)) {
+            $params['relateduserid'] = $override->userid;
+            $event = \mod_quiz\event\user_override_deleted::create($params);
+        } else {
+            $params['other']['groupid'] = $override->groupid;
+            $event = \mod_quiz\event\group_override_deleted::create($params);
+        }
+
+        // Trigger the override deleted event.
+        $event->add_record_snapshot('quiz_overrides', $override);
+        $event->trigger();
+    }
+
+    return true;
+}
+
+/**
+ * Deletes all quiz overrides from the database and clears any corresponding calendar events
+ *
+ * @param stdClass $quiz The quiz object.
+ * @param bool $log Whether to trigger logs.
+ */
+function quiz_delete_all_overrides($quiz, $log = true) {
+    global $DB;
+
+    $overrides = $DB->get_records('quiz_overrides', ['quiz' => $quiz->id], 'id');
+    foreach ($overrides as $override) {
+        quiz_delete_override($quiz, $override->id, $log);
+    }
 }
 
 /**
@@ -589,7 +665,7 @@ function quiz_get_user_grades($quiz, $userid = 0) {
  * Round a grade to the correct number of decimal places, and format it for display.
  *
  * @param stdClass $quiz The quiz table row, only $quiz->decimalpoints is used.
- * @param float|null $grade The grade to round and display (or null meaning no grade).
+ * @param float $grade The grade to round.
  * @return string
  */
 function quiz_format_grade($quiz, $grade) {
@@ -1132,7 +1208,6 @@ function mod_quiz_inplace_editable(string $itemtype, int $itemid, string $newval
 function quiz_after_add_or_update($quiz) {
     global $DB;
     $cmid = $quiz->coursemodule;
-
     // We need to use context now, so we need to make sure all needed info is already in db.
     $DB->set_field('course_modules', 'instance', $quiz->id, ['id' => $cmid]);
     $context = context_module::instance($cmid);
@@ -1155,15 +1230,16 @@ function quiz_after_add_or_update($quiz) {
         $DB->set_field('quiz_feedback', 'feedbacktext', $feedbacktext,
                 ['id' => $feedback->id]);
     }
-
+    
     // Store any settings belonging to the access rules.
     access_manager::save_settings($quiz);
-
+    
     // Update the events relating to this quiz.
     quiz_update_events($quiz);
+    
     $completionexpected = (!empty($quiz->completionexpected)) ? $quiz->completionexpected : null;
     \core_completion\api::update_completion_date_event($quiz->coursemodule, 'quiz', $quiz->id, $completionexpected);
-
+    
     // Update related grade item.
     quiz_grade_item_update($quiz);
 }
@@ -1178,7 +1254,7 @@ function quiz_after_add_or_update($quiz) {
  */
 function quiz_update_events($quiz, $override = null) {
     global $DB;
-
+    
     // Load the old events relating to this quiz.
     $conds = ['modulename' => 'quiz',
                    'instance' => $quiz->id];
@@ -1415,7 +1491,6 @@ function quiz_questions_in_use($questionids) {
  */
 function quiz_reset_course_form_definition($mform) {
     $mform->addElement('header', 'quizheader', get_string('modulenameplural', 'quiz'));
-    $mform->addElement('static', 'quizdelete', get_string('delete'));
     $mform->addElement('advcheckbox', 'reset_quiz_attempts',
             get_string('removeallquizattempts', 'quiz'));
     $mform->addElement('advcheckbox', 'reset_quiz_user_overrides',
@@ -1483,7 +1558,7 @@ function quiz_reset_userdata($data) {
                 'quiz IN (SELECT id FROM {quiz} WHERE course = ?)', [$data->courseid]);
         $status[] = [
             'component' => $componentstr,
-            'item' => get_string('removeallquizattempts', 'quiz'),
+            'item' => get_string('attemptsdeleted', 'quiz'),
             'error' => false];
 
         // Remove all grades from gradebook.
@@ -1494,7 +1569,7 @@ function quiz_reset_userdata($data) {
         }
         $status[] = [
             'component' => $componentstr,
-            'item' => get_string('grades'),
+            'item' => get_string('gradesdeleted', 'quiz'),
             'error' => false];
     }
 
@@ -1506,7 +1581,7 @@ function quiz_reset_userdata($data) {
                 'quiz IN (SELECT id FROM {quiz} WHERE course = ?) AND userid IS NOT NULL', [$data->courseid]);
         $status[] = [
             'component' => $componentstr,
-            'item' => get_string('useroverrides', 'quiz'),
+            'item' => get_string('useroverridesdeleted', 'quiz'),
             'error' => false];
         $purgeoverrides = true;
     }
@@ -1516,7 +1591,7 @@ function quiz_reset_userdata($data) {
                 'quiz IN (SELECT id FROM {quiz} WHERE course = ?) AND groupid IS NOT NULL', [$data->courseid]);
         $status[] = [
             'component' => $componentstr,
-            'item' => get_string('groupoverrides', 'quiz'),
+            'item' => get_string('groupoverridesdeleted', 'quiz'),
             'error' => false];
         $purgeoverrides = true;
     }
@@ -1546,7 +1621,7 @@ function quiz_reset_userdata($data) {
     }
 
     if ($purgeoverrides) {
-        \cache_helper::purge_by_event(\mod_quiz\local\override_cache::INVALIDATION_USERDATARESET);
+        cache::make('mod_quiz', 'overrides')->purge();
     }
 
     return $status;
@@ -2084,8 +2159,8 @@ function quiz_get_coursemodule_info($coursemodule) {
 function mod_quiz_cm_info_dynamic(cm_info $cm) {
     global $USER;
 
-    $cache = new override_cache($cm->instance);
-    $override = $cache->get_cached_user_override($USER->id);
+    $cache = cache::make('mod_quiz', 'overrides');
+    $override = $cache->get("{$cm->instance}_u_{$USER->id}");
 
     if (!$override) {
         $override = (object) [
@@ -2100,7 +2175,7 @@ function mod_quiz_cm_info_dynamic(cm_info $cm) {
         $closes = [];
         $groupings = groups_get_user_groups($cm->course, $USER->id);
         foreach ($groupings[0] as $groupid) {
-            $groupoverride = $cache->get_cached_group_override($groupid);
+            $groupoverride = $cache->get("{$cm->instance}_g_{$groupid}");
             if (isset($groupoverride->timeopen)) {
                 $opens[] = $groupoverride->timeopen;
             }

@@ -61,7 +61,7 @@ class block_site_main_menu extends block_list {
         $controlmenuclass = $format->get_output_classname('content\\cm\\controlmenu');
 
         $badgeattributes = [
-            'class' => 'badge rounded-pill bg-warning text-dark mt-2',
+            'class' => 'badge badge-pill badge-warning mt-2',
             'data-region' => 'visibility'
         ];
 
@@ -168,7 +168,7 @@ class block_site_main_menu extends block_list {
                     $editbuttons = html_writer::tag(
                         'div',
                         $courserenderer->render($controlmenu),
-                        ['class' => 'buttons activity-actions ms-auto']
+                        ['class' => 'buttons activity-actions ml-auto']
                     );
                 } else {
                     $editbuttons = '';

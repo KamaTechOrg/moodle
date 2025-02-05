@@ -85,7 +85,7 @@ class qbank_helper {
      * @return array indexed by slot, with information about the content of each slot.
      */
     public static function get_question_structure(int $quizid, context_module $quizcontext,
-            ?int $slotid = null): array {
+            int $slotid = null): array {
         global $DB;
 
         $params = [
@@ -110,10 +110,9 @@ class qbank_helper {
                 SELECT slot.slot,
                        slot.id AS slotid,
                        slot.page,
+                       slot.maxmark,
                        slot.displaynumber,
                        slot.requireprevious,
-                       slot.maxmark,
-                       slot.quizgradeitemid,
                        qsr.filtercondition,
                        qsr.usingcontextid,
                        qv.status,

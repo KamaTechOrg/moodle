@@ -43,11 +43,9 @@ class encryption_test extends advanced_testcase {
         }
         remove_dir($CFG->dataroot . '/secret');
         unset($CFG->nokeygeneration);
-        parent::tearDown();
     }
 
     protected function setUp(): void {
-        parent::setUp();
         $this->tearDown();
 
         require_once(__DIR__ . '/fixtures/testable_encryption.php');
@@ -58,7 +56,7 @@ class encryption_test extends advanced_testcase {
      *
      * @return array[] Array of method options for test
      */
-    public static function encryption_method_provider(): array {
+    public function encryption_method_provider(): array {
         return [
             'Sodium' => [encryption::METHOD_SODIUM],
         ];

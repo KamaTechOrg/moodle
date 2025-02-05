@@ -23,7 +23,6 @@ namespace core_completion;
  * @category test
  * @copyright 2017 Mark Nelson <markn@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \core_completion\api
  */
 class api_test extends \advanced_testcase {
 
@@ -31,11 +30,10 @@ class api_test extends \advanced_testcase {
      * Test setup.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_update_completion_date_event(): void {
+    public function test_update_completion_date_event() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -74,7 +72,7 @@ class api_test extends \advanced_testcase {
         \core_completion\api::update_completion_date_event($assign->cmid, 'assign', null, $time);
     }
 
-    public function test_update_completion_date_event_update(): void {
+    public function test_update_completion_date_event_update() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -109,7 +107,7 @@ class api_test extends \advanced_testcase {
         $this->assertEquals($time + DAYSECS, $event->timesort);
     }
 
-    public function test_update_completion_date_event_delete(): void {
+    public function test_update_completion_date_event_delete() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -132,7 +130,7 @@ class api_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('event'));
     }
 
-    public function test_update_completion_date_event_completion_disabled(): void {
+    public function test_update_completion_date_event_completion_disabled() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -152,7 +150,7 @@ class api_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('event'));
     }
 
-    public function test_update_completion_date_event_update_completion_disabled(): void {
+    public function test_update_completion_date_event_update_completion_disabled() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -190,7 +188,7 @@ class api_test extends \advanced_testcase {
         $this->assertEquals($time, $event->timesort);
     }
 
-    public function test_update_completion_date_event_delete_completion_disabled(): void {
+    public function test_update_completion_date_event_delete_completion_disabled() {
         global $CFG, $DB;
 
         $this->setAdminUser();
@@ -219,7 +217,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test for mark_course_completions_activity_criteria().
      */
-    public function test_mark_course_completions_activity_criteria(): void {
+    public function test_mark_course_completions_activity_criteria() {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/completion/criteria/completion_criteria_activity.php');
         $this->resetAfterTest(true);
@@ -293,8 +291,9 @@ class api_test extends \advanced_testcase {
 
     /**
      * Test for mark_course_completions_activity_criteria() with different completionpassgrade settings.
+     * @covers ::mark_course_completions_activity_criteria
      */
-    public function test_mark_course_completions_activity_criteria_completion_states(): void {
+    public function test_mark_course_completions_activity_criteria_completion_states() {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/completion/criteria/completion_criteria_activity.php');
         $this->resetAfterTest(true);

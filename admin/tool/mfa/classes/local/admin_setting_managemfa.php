@@ -125,12 +125,7 @@ class admin_setting_managemfa extends \admin_setting {
         foreach ($factors as $factor) {
             $settingsparams = ['section' => 'factor_'.$factor->name];
             $settingsurl = new \moodle_url('settings.php', $settingsparams);
-            $settingslinkattrtext = get_string('editfactor', 'tool_mfa', $factor->get_display_name());
-            $settingslinkattr = [
-                'title' => $settingslinkattrtext,
-                'aria-label' => $settingslinkattrtext,
-            ];
-            $settingslink = \html_writer::link($settingsurl, $txt->settings, $settingslinkattr);
+            $settingslink = \html_writer::link($settingsurl, $txt->settings);
 
             if ($factor->is_enabled()) {
                 $hideshowparams = ['action' => 'disable', 'factor' => $factor->name, 'sesskey' => $sesskey];

@@ -747,7 +747,7 @@ abstract class repository implements cacheable_object {
      * @return bool true when the user can, otherwise throws an exception.
      * @throws repository_exception when the user does not meet the requirements.
      */
-    final public function check_capability() {
+    public final function check_capability() {
         global $USER;
 
         // The context we are on.
@@ -1221,7 +1221,7 @@ abstract class repository implements cacheable_object {
      * @param bool $forcedownload If true (default false), forces download of file rather than view in browser/plugin
      * @param array $options additional options affecting the file serving
      */
-    public function send_file($storedfile, $lifetime=null , $filter=0, $forcedownload=false, ?array $options = null) {
+    public function send_file($storedfile, $lifetime=null , $filter=0, $forcedownload=false, array $options = null) {
         if ($this->has_moodle_files()) {
             $fs = get_file_storage();
             $params = file_storage::unpack_reference($storedfile->get_reference(), true);
@@ -1843,7 +1843,7 @@ abstract class repository implements cacheable_object {
      * @return bool true if the user can edit the instance.
      * @since Moodle 2.5
      */
-    final public function can_be_edited_by_user() {
+    public final function can_be_edited_by_user() {
         global $USER;
 
         // We need to be able to explore the repository.
@@ -2859,7 +2859,7 @@ abstract class repository implements cacheable_object {
      *
      * @return string repository secret key.
      */
-    final public static function get_secret_key() {
+    final static public function get_secret_key() {
         global $CFG;
 
         if (!isset($CFG->reposecretkey)) {

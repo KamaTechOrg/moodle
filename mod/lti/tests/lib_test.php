@@ -45,14 +45,13 @@ class lib_test extends \advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->dirroot . '/mod/lti/lib.php');
-        parent::setUpBeforeClass();
     }
 
     /**
      * Test lti_view
      * @return void
      */
-    public function test_lti_view(): void {
+    public function test_lti_view() {
         global $CFG;
 
         $CFG->enablecompletion = 1;
@@ -94,7 +93,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test deleting LTI instance.
      */
-    public function test_lti_delete_instance(): void {
+    public function test_lti_delete_instance() {
         $this->resetAfterTest();
 
         $this->setAdminUser();
@@ -106,7 +105,7 @@ class lib_test extends \advanced_testcase {
         course_delete_module($cm->id);
     }
 
-    public function test_lti_core_calendar_provide_event_action(): void {
+    public function test_lti_core_calendar_provide_event_action() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -132,7 +131,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_lti_core_calendar_provide_event_action_as_non_user(): void {
+    public function test_lti_core_calendar_provide_event_action_as_non_user() {
         global $CFG;
 
         $this->resetAfterTest();
@@ -160,7 +159,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_lti_core_calendar_provide_event_action_for_user(): void {
+    public function test_lti_core_calendar_provide_event_action_for_user() {
         global $CFG;
 
         $this->resetAfterTest();
@@ -195,7 +194,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_lti_core_calendar_provide_event_action_already_completed(): void {
+    public function test_lti_core_calendar_provide_event_action_already_completed() {
         global $CFG;
 
         $this->resetAfterTest();
@@ -229,7 +228,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_lti_core_calendar_provide_event_action_already_completed_as_non_user(): void {
+    public function test_lti_core_calendar_provide_event_action_already_completed_as_non_user() {
         global $CFG;
 
         $this->resetAfterTest();
@@ -267,7 +266,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_lti_core_calendar_provide_event_action_already_completed_for_user(): void {
+    public function test_lti_core_calendar_provide_event_action_already_completed_for_user() {
         global $CFG;
 
         $this->resetAfterTest();
@@ -332,7 +331,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test verifying the output of the lti_get_course_content_items and lti_get_all_content_items callbacks.
      */
-    public function test_content_item_callbacks(): void {
+    public function test_content_item_callbacks() {
         $this->resetAfterTest();
         global $DB, $CFG;
         require_once($CFG->dirroot . '/mod/lti/locallib.php');

@@ -44,14 +44,14 @@ require_once("{$CFG->libdir}/grouplib.php");
 class group extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
+    protected function get_default_table_aliases(): array {
         return [
-            'context',
-            'groups',
+            'context' => 'gctx',
+            'groups' => 'g',
         ];
     }
 
@@ -192,9 +192,12 @@ class group extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
             ->add_fields("{$groupsalias}.visibility")
             ->set_is_sortable(true)
-            ->set_callback(static function(?string $visibility): string {
+            // It doesn't make sense to offer integer aggregation methods for this column.
+            ->set_disabled_aggregation(['avg', 'max', 'min', 'sum'])
+            ->set_callback(static function(?int $visibility): string {
                 if ($visibility === null) {
                     return '';
                 }
@@ -206,7 +209,7 @@ class group extends base {
                     GROUPS_VISIBILITY_NONE => new lang_string('visibilitynone', 'core_group'),
                 ];
 
-                return (string) ($options[(int) $visibility] ?? $visibility);
+                return (string) ($options[$visibility] ?? $visibility);
             });
 
         // Participation column.
@@ -228,9 +231,12 @@ class group extends base {
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
             ->add_fields("{$groupsalias}.picture, {$groupsalias}.id, {$contextalias}.id AS contextid")
             ->set_is_sortable(false)
-            ->set_callback(static function($value, stdClass $group): string {
+            // It doesn't make sense to offer integer aggregation methods for this column.
+            ->set_disabled_aggregation(['avg', 'max', 'min', 'sum'])
+            ->set_callback(static function ($picture, stdClass $group): string {
                 if (empty($group->picture)) {
                     return '';
                 }

@@ -41,7 +41,6 @@ class system_report_exporter_test extends advanced_testcase {
         global $CFG;
 
         require_once("{$CFG->dirroot}/reportbuilder/tests/fixtures/system_report_available.php");
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -49,7 +48,7 @@ class system_report_exporter_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public static function export_provider(): array {
+    public function export_provider(): array {
         return [
             ['With filters' => true],
             ['Without filters' => false],

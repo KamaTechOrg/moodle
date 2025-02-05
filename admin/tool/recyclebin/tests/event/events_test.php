@@ -41,7 +41,6 @@ class events_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
 
         // We want the category and course bin to be enabled.
@@ -52,7 +51,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the category bin item created event.
      */
-    public function test_category_bin_item_created(): void {
+    public function test_category_bin_item_created() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -79,7 +78,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the category bin item deleted event.
      */
-    public function test_category_bin_item_deleted(): void {
+    public function test_category_bin_item_deleted() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -108,7 +107,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the category bin item restored event.
      */
-    public function test_category_bin_item_restored(): void {
+    public function test_category_bin_item_restored() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -136,7 +135,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the course bin item created event.
      */
-    public function test_course_bin_item_created(): void {
+    public function test_course_bin_item_created() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -165,7 +164,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the course bin item deleted event.
      */
-    public function test_course_bin_item_deleted(): void {
+    public function test_course_bin_item_deleted() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 
@@ -198,7 +197,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the course bin item restored event.
      */
-    public function test_course_bin_item_restored(): void {
+    public function test_course_bin_item_restored() {
         // Create a course.
         $course = $this->getDataGenerator()->create_course();
 

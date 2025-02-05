@@ -14,10 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Cache data source for the time of the last message between users.
+ *
+ * @package    core_message
+ * @category   cache
+ * @copyright  2016 Ryan Wyllie <ryan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core_message;
 
-use core_cache\data_source_interface;
-use core_cache\definition;
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Cache data source for the time of the last message in a conversation.
@@ -27,19 +35,19 @@ use core_cache\definition;
  * @copyright  2016 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class time_last_message_between_users implements data_source_interface {
+class time_last_message_between_users implements \cache_data_source {
 
     /** @var time_last_message_between_users the singleton instance of this class. */
     protected static $instance = null;
 
     /**
      * Returns an instance of the data source class that the cache can use for loading data using the other methods
-     * specified by the data_source_interface interface.
+     * specified by the cache_data_source interface.
      *
-     * @param definition $definition
+     * @param \cache_definition $definition
      * @return object
      */
-    public static function get_instance_for_cache(definition $definition) {
+    public static function get_instance_for_cache(\cache_definition $definition) {
         if (is_null(self::$instance)) {
             self::$instance = new time_last_message_between_users();
         }

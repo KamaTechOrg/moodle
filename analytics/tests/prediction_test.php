@@ -63,7 +63,6 @@ class prediction_test extends \advanced_testcase {
         foreach ($models as $model) {
             $model->delete();
         }
-        parent::tearDown();
     }
 
     /**
@@ -71,7 +70,7 @@ class prediction_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_static_prediction(): void {
+    public function test_static_prediction() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -124,7 +123,7 @@ class prediction_test extends \advanced_testcase {
     /**
      * test_model_contexts
      */
-    public function test_model_contexts(): void {
+    public function test_model_contexts() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -184,7 +183,7 @@ class prediction_test extends \advanced_testcase {
      * @return void
      */
     public function test_ml_training_and_prediction($timesplittingid, $predictedrangeindex, $nranges, $predictionsprocessorclass,
-            $forcedconfig): void {
+            $forcedconfig) {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -342,14 +341,14 @@ class prediction_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_ml_training_and_prediction(): array {
+    public function provider_ml_training_and_prediction() {
         $cases = array(
             'no_splitting' => array('\core\analytics\time_splitting\no_splitting', 0, 1),
             'quarters' => array('\core\analytics\time_splitting\quarters', 3, 4)
         );
 
         // We need to test all system prediction processors.
-        return static::add_prediction_processors($cases);
+        return $this->add_prediction_processors($cases);
     }
 
     /**
@@ -359,7 +358,7 @@ class prediction_test extends \advanced_testcase {
      * @param array $forcedconfig
      * @dataProvider provider_ml_processors
      */
-    public function test_ml_export_import($predictionsprocessorclass, $forcedconfig): void {
+    public function test_ml_export_import($predictionsprocessorclass, $forcedconfig) {
         $this->resetAfterTest(true);
 
         $this->set_forced_config($forcedconfig);
@@ -418,13 +417,13 @@ class prediction_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_ml_processors(): array {
+    public function provider_ml_processors() {
         $cases = [
             'case' => [],
         ];
 
         // We need to test all system prediction processors.
-        return static::add_prediction_processors($cases);
+        return $this->add_prediction_processors($cases);
     }
     /**
      * Test the system classifiers returns.
@@ -440,7 +439,7 @@ class prediction_test extends \advanced_testcase {
      * @param array $forcedconfig
      * @return void
      */
-    public function test_ml_classifiers_return($success, $nsamples, $classes, $predictionsprocessorclass, $forcedconfig): void {
+    public function test_ml_classifiers_return($success, $nsamples, $classes, $predictionsprocessorclass, $forcedconfig) {
         $this->resetAfterTest();
 
         $this->set_forced_config($forcedconfig);
@@ -508,7 +507,7 @@ class prediction_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_ml_classifiers_return(): array {
+    public function provider_ml_classifiers_return() {
         // Using verbose options as the first argument for readability.
         $cases = array(
             '1-samples' => array('maybe', 1, [0]),
@@ -518,7 +517,7 @@ class prediction_test extends \advanced_testcase {
         );
 
         // We need to test all system prediction processors.
-        return static::add_prediction_processors($cases);
+        return $this->add_prediction_processors($cases);
     }
 
     /**
@@ -531,7 +530,7 @@ class prediction_test extends \advanced_testcase {
      * @throws coding_exception
      * @throws moodle_exception
      */
-    public function test_ml_multi_classifier($timesplittingid, $predictionsprocessorclass, $forcedconfig): void {
+    public function test_ml_multi_classifier($timesplittingid, $predictionsprocessorclass, $forcedconfig) {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -582,13 +581,13 @@ class prediction_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_test_multi_classifier(): array {
+    public function provider_test_multi_classifier() {
         $cases = array(
             'notimesplitting' => array('\core\analytics\time_splitting\no_splitting'),
         );
 
         // Add all system prediction processors.
-        return static::add_prediction_processors($cases);
+        return $this->add_prediction_processors($cases);
     }
 
     /**
@@ -604,7 +603,7 @@ class prediction_test extends \advanced_testcase {
      * @return void
      */
     public function test_ml_evaluation_configuration($modelquality, $ncourses, $expected, $predictionsprocessorclass,
-            $forcedconfig): void {
+            $forcedconfig) {
         $this->resetAfterTest(true);
 
         $this->set_forced_config($forcedconfig);
@@ -658,7 +657,7 @@ class prediction_test extends \advanced_testcase {
      * @param array $forcedconfig
      * @return null
      */
-    public function test_ml_evaluation_trained_model($predictionsprocessorclass, $forcedconfig): void {
+    public function test_ml_evaluation_trained_model($predictionsprocessorclass, $forcedconfig) {
         $this->resetAfterTest(true);
 
         $this->set_forced_config($forcedconfig);
@@ -692,7 +691,7 @@ class prediction_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_read_indicator_calculations(): void {
+    public function test_read_indicator_calculations() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -712,7 +711,7 @@ class prediction_test extends \advanced_testcase {
     /**
      * test_not_null_samples
      */
-    public function test_not_null_samples(): void {
+    public function test_not_null_samples() {
         $this->resetAfterTest(true);
 
         $timesplitting = \core_analytics\manager::get_time_splitting('\core\analytics\time_splitting\quarters');
@@ -778,7 +777,8 @@ class prediction_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_ml_test_evaluation_configuration(): array {
+    public function provider_ml_test_evaluation_configuration() {
+
         $cases = array(
             'bad' => array(
                 'modelquality' => 'random',
@@ -797,7 +797,7 @@ class prediction_test extends \advanced_testcase {
                 )
             )
         );
-        return static::add_prediction_processors($cases);
+        return $this->add_prediction_processors($cases);
     }
 
     /**
@@ -955,7 +955,8 @@ class prediction_test extends \advanced_testcase {
      * @param array $cases
      * @return array
      */
-    protected static function add_prediction_processors($cases): array {
+    protected function add_prediction_processors($cases) {
+
         $return = array();
 
         if (defined('TEST_MLBACKEND_PYTHON_HOST') && defined('TEST_MLBACKEND_PYTHON_PORT')

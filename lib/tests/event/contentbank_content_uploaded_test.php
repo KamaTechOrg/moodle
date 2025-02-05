@@ -46,7 +46,6 @@ class contentbank_content_uploaded_test extends \advanced_testcase {
 
         require_once($CFG->dirroot . '/contentbank/tests/fixtures/testable_contenttype.php');
         require_once($CFG->dirroot . '/contentbank/tests/fixtures/testable_content.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -54,7 +53,7 @@ class contentbank_content_uploaded_test extends \advanced_testcase {
      *
      * @covers ::create_from_record
      */
-    public function test_content_created(): void {
+    public function test_content_created() {
         global $USER, $CFG;
 
         $this->resetAfterTest();

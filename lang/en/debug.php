@@ -23,6 +23,7 @@
  */
 
 $string['authpluginnotfound'] = 'Authentication plugin {$a} not found.';
+$string['blocknotexist'] = '{$a} block doesn\'t exist';
 $string['cannotbenull'] = '{$a} cannot be null!';
 $string['cannotdowngrade'] = 'Cannot downgrade {$a->plugin} from {$a->oldversion} to {$a->newversion}.';
 $string['cannotfindadmin'] = 'Could not find an admin user!';
@@ -38,6 +39,7 @@ $string['invalidparameter'] = 'Invalid parameter value detected';
 $string['invalidresponse'] = 'Invalid response value detected';
 $string['line'] = 'Line';
 $string['missingconfigversion'] = 'Config table does not contain the version. You cannot continue.';
+$string['modulenotexist'] = '{$a} module doesn\'t exist';
 $string['morethanonerecordinfetch'] = 'Found more than one record in fetch() !';
 $string['mustbeoveride'] = 'Abstract {$a} method must be overridden.';
 $string['noadminrole'] = 'No admin role could be found';
@@ -66,7 +68,3 @@ $string['sqlrelyonobsoletetable'] = 'This SQL relies on obsolete table(s): {$a}!
 $string['stacktrace'] = 'Stack trace';
 $string['withoutversion'] = 'Main version.php file is missing, not readable or broken.';
 $string['xmlizeunavailable'] = 'xmlize functions are not available';
-
-// Deprecated since Moodle 4.5.
-$string['blocknotexist'] = '{$a} block doesn\'t exist';
-$string['modulenotexist'] = '{$a} module doesn\'t exist';

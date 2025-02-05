@@ -223,14 +223,14 @@ abstract class feedback_item_base {
      * @return action_menu_link[]
      */
     public function edit_actions($item, $feedback, $cm) {
-        $actions = [];
+        $actions = array();
 
         $strupdate = get_string('edit_item', 'feedback');
         $actions['update'] = new action_menu_link_secondary(
-            new moodle_url('/mod/feedback/edit_item.php', ['id' => $item->id]),
-            new pix_icon('t/edit', $strupdate, 'moodle', ['class' => 'iconsmall', 'title' => '']),
+            new moodle_url('/mod/feedback/edit_item.php', array('id' => $item->id)),
+            new pix_icon('t/edit', $strupdate, 'moodle', array('class' => 'iconsmall', 'title' => '')),
             $strupdate,
-            ['class' => 'editing_update', 'data-action' => 'update']
+            array('class' => 'editing_update', 'data-action' => 'update')
         );
 
         if ($this->can_switch_require()) {
@@ -242,25 +242,20 @@ abstract class feedback_item_base {
                 $buttonimg = 'notrequired';
             }
             $actions['required'] = new action_menu_link_secondary(
-                new moodle_url(
-                    '/mod/feedback/edit.php',
-                    ['id' => $cm->id, 'switchitemrequired' => $item->id, 'sesskey' => sesskey()]
-                ),
+                new moodle_url('/mod/feedback/edit.php', array('id' => $cm->id,
+                    'switchitemrequired' => $item->id, 'sesskey' => sesskey())),
                 new pix_icon($buttonimg, $buttontitle, 'feedback', array('class' => 'iconsmall', 'title' => '')),
                 $buttontitle,
-                ['class' => 'editing_togglerequired', 'data-action' => 'togglerequired']
+                array('class' => 'editing_togglerequired', 'data-action' => 'togglerequired')
             );
         }
 
         $strdelete = get_string('delete_item', 'feedback');
         $actions['delete'] = new action_menu_link_secondary(
-            new moodle_url(
-                '/mod/feedback/edit.php',
-                ['id' => $cm->id, 'deleteitem' => $item->id, 'sesskey' => sesskey()]
-            ),
+            new moodle_url('/mod/feedback/edit.php', array('id' => $cm->id, 'deleteitem' => $item->id, 'sesskey' => sesskey())),
             new pix_icon('t/delete', $strdelete, 'moodle', array('class' => 'iconsmall', 'title' => '')),
             $strdelete,
-            ['class' => 'editing_delete text-danger', 'data-action' => 'delete']
+            array('class' => 'editing_delete', 'data-action' => 'delete')
         );
 
         return $actions;
@@ -339,7 +334,7 @@ class feedback_item_pagebreak extends feedback_item_base {
         $form->add_form_element($item,
             ['static',
                 $item->typ.'_'.$item->id,
-                get_string('pagebreak', 'feedback'),
+                '',
                 html_writer::empty_tag('hr', ['class' => 'feedback_pagebreak', 'id' => 'feedback_item_' . $item->id])
             ]);
     }
@@ -359,7 +354,7 @@ class feedback_item_pagebreak extends feedback_item_base {
             new moodle_url('/mod/feedback/edit.php', array('id' => $cm->id, 'deleteitem' => $item->id, 'sesskey' => sesskey())),
             new pix_icon('t/delete', $strdelete, 'moodle', array('class' => 'iconsmall', 'title' => '')),
             $strdelete,
-            ['class' => 'editing_delete text-danger', 'data-action' => 'delete']
+            array('class' => 'editing_delete', 'data-action' => 'delete')
         );
         return $actions;
     }

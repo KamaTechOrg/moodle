@@ -25,7 +25,6 @@ use core_user\reportbuilder\datasource\users;
 use stdClass;
 use core_reportbuilder\local\models\report;
 use core_reportbuilder\local\report\base;
-use core_reportbuilder\exception\{source_invalid_exception, source_unavailable_exception};
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -181,7 +180,7 @@ class manager_test extends core_reportbuilder_testcase {
      *
      * @return array
      */
-    public static function report_limit_reached_provider(): array {
+    public function report_limit_reached_provider(): array {
         return [
             [0, 1, false],
             [1, 1, true],

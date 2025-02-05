@@ -31,7 +31,6 @@ class generator_test extends \advanced_testcase {
      * Set up method.
      */
     public function setUp(): void {
-        parent::setUp();
         // Enable monitor.
         set_config('enablemonitor', 1, 'tool_monitor');
     }
@@ -39,7 +38,7 @@ class generator_test extends \advanced_testcase {
     /**
      * Test create_rule data generator.
      */
-    public function test_create_rule(): void {
+    public function test_create_rule() {
         $this->setAdminUser();
         $this->resetAfterTest(true);
         $course = $this->getDataGenerator()->create_course();
@@ -60,7 +59,7 @@ class generator_test extends \advanced_testcase {
     /**
      * Test create_subscription data generator.
      */
-    public function test_create_subscription(): void {
+    public function test_create_subscription() {
         $this->setAdminUser();
         $this->resetAfterTest(true);
 
@@ -89,7 +88,7 @@ class generator_test extends \advanced_testcase {
     /**
      * Test create_event data generator.
      */
-    public function test_create_event_entries(): void {
+    public function test_create_event_entries() {
         $this->setAdminUser();
         $this->resetAfterTest(true);
         $context = \context_system::instance();
@@ -107,7 +106,7 @@ class generator_test extends \advanced_testcase {
     /**
      * Test create_history data generator.
      */
-    public function test_create_history(): void {
+    public function test_create_history() {
         $this->setAdminUser();
         $this->resetAfterTest(true);
         $user = $this->getDataGenerator()->create_user();

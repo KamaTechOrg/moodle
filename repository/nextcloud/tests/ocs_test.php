@@ -35,7 +35,6 @@ class ocs_test extends \advanced_testcase {
      * SetUp to create issuer and endpoints for OCS testing.
      */
     protected function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest(true);
 
         // Admin is neccessary to create issuer object.
@@ -49,7 +48,7 @@ class ocs_test extends \advanced_testcase {
     /**
      * Test whether required REST API functions are declared.
      */
-    public function test_api_functions(): void {
+    public function test_api_functions() {
         $mock = $this->createMock(\core\oauth2\client::class);
         $mock->expects($this->once())->method('get_issuer')->willReturn($this->issuer);
 

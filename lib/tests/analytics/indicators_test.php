@@ -40,7 +40,7 @@ class indicators_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_core_indicators(): void {
+    public function test_core_indicators() {
         global $DB;
 
         $this->preventResetByRollback();
@@ -86,8 +86,8 @@ class indicators_test extends \advanced_testcase {
 
         // Test any access before start.
         $params = array(
-            'startdate' => SQL_INT_MAX - 1,
-            'enddate' => SQL_INT_MAX,
+            'startdate' => 9999999998,
+            'enddate' => 9999999999
         );
         // Resetting $course var.
         $course = $this->getDataGenerator()->create_course($params);

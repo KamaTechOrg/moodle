@@ -52,7 +52,6 @@ class comment_created_deleted_test extends advanced_testcase {
     public function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot . '/comment/lib.php');
-        parent::setUp();
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -92,7 +91,7 @@ class comment_created_deleted_test extends advanced_testcase {
     /**
      * Test comment_created event.
      */
-    public function test_comment_created(): void {
+    public function test_comment_created() {
         // Triggering and capturing the event.
         $sink = $this->redirectEvents();
         $this->comment->add('New comment');
@@ -110,7 +109,7 @@ class comment_created_deleted_test extends advanced_testcase {
     /**
      * Test comment_created event.
      */
-    public function test_comment_deleted(): void {
+    public function test_comment_deleted() {
         // Triggering and capturing the event.
         $newcomment = $this->comment->add('New comment to delete');
         $sink = $this->redirectEvents();

@@ -60,7 +60,6 @@ class calendartype_test extends \advanced_testcase {
      * Test set up.
      */
     protected function setUp(): void {
-        parent::setUp();
         // The user we are going to test this on.
         $this->user = self::getDataGenerator()->create_user();
         self::setUser($this->user);
@@ -73,7 +72,7 @@ class calendartype_test extends \advanced_testcase {
     /**
      * Test that setting the calendar type works.
      */
-    public function test_calendar_type_set(): void {
+    public function test_calendar_type_set() {
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -90,7 +89,7 @@ class calendartype_test extends \advanced_testcase {
      * Test that calling core Moodle functions responsible for displaying the date
      * have the same results as directly calling the same function in the calendar type.
      */
-    public function test_calendar_type_core_functions(): void {
+    public function test_calendar_type_core_functions() {
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -106,7 +105,7 @@ class calendartype_test extends \advanced_testcase {
      * unixtime is being converted back to a valid date to display in the date selector elements for
      * different calendar types.
      */
-    public function test_calendar_type_dateselector_elements(): void {
+    public function test_calendar_type_dateselector_elements() {
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -162,7 +161,7 @@ class calendartype_test extends \advanced_testcase {
      * Test that the user profile field datetime minimum and maximum year settings are saved as the
      * equivalent Gregorian years.
      */
-    public function test_calendar_type_datetime_field_submission(): void {
+    public function test_calendar_type_datetime_field_submission() {
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -195,12 +194,6 @@ class calendartype_test extends \advanced_testcase {
         // Test the userdate function.
         $this->assertEquals($calendar->timestamp_to_date_string($this->user->timecreated, '', 99, true, true),
             userdate($this->user->timecreated));
-
-        // Test the userdate function with a timezone.
-        $this->assertEquals(
-            $calendar->timestamp_to_date_string($this->user->timecreated, '', 'Australia/Sydney', true, true),
-            userdate($this->user->timecreated, timezone: 'Australia/Sydney'),
-        );
 
         // Test the calendar/lib.php functions.
         $this->assertEquals($calendar->get_weekdays(), calendar_get_days());

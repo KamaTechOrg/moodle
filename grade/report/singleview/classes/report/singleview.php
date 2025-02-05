@@ -131,9 +131,7 @@ class singleview extends grade_report {
 
     protected function setup_groups() {
         parent::setup_groups();
-        if ($this->groupmode) {
-            $this->group_selector = static::groups_course_menu($this->course);
-        }
+        $this->group_selector = static::groups_course_menu($this->course, $this->pbarurl);
     }
 
     /**
@@ -141,12 +139,19 @@ class singleview extends grade_report {
      * so all reports would automatically use it.
      *
      * @param stdClass $course
+     * @param moodle_url $urlroot
      * @return string
      */
-    protected static function groups_course_menu(stdClass $course) {
+    protected static function groups_course_menu(stdClass $course, moodle_url $urlroot) {
         global $PAGE;
 
-        return $PAGE->get_renderer('core', 'course')->render(new \core_course\output\actionbar\group_selector($PAGE->context));
+        $renderer = $PAGE->get_renderer('core_grades');
+        $params = $urlroot->params();
+        if ($params['item'] == 'user') {
+            $params['item'] = 'user_select';
+            $urlroot->params($params);
+        }
+        return $renderer->group_selector($course, $urlroot->out());
     }
 
     /**
@@ -173,7 +178,7 @@ class singleview extends grade_report {
      * @param renderer_base $output
      * @return string HTML to display
      */
-    public function bulk_actions_menu(renderer_base $output): string {
+    public function bulk_actions_menu(renderer_base $output) : string {
         $options = [
             'overrideallgrades' => get_string('overrideallgrades', 'gradereport_singleview'),
             'overridenonegrades' => get_string('overridenonegrades', 'gradereport_singleview'),
@@ -190,7 +195,7 @@ class singleview extends grade_report {
                 ['data-action' => $type, 'data-role' => 'bulkaction']);
             $menu->add($action);
         }
-        $menu->attributes['class'] .= ' float-start my-auto';
+        $menu->attributes['class'] .= ' float-left my-auto';
 
         return $output->render($menu);
     }

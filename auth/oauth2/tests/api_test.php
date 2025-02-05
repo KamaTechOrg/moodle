@@ -22,15 +22,13 @@ namespace auth_oauth2;
  * @package     auth_oauth2
  * @copyright   2017 Damyon Wiese
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @covers \auth_oauth2\api
  */
 class api_test extends \advanced_testcase {
 
     /**
      * Test the cleaning of orphaned linked logins for all issuers.
      */
-    public function test_clean_orphaned_linked_logins(): void {
+    public function test_clean_orphaned_linked_logins() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -60,7 +58,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test the cleaning of orphaned linked logins for a specific issuer.
      */
-    public function test_clean_orphaned_linked_logins_with_issuer_id(): void {
+    public function test_clean_orphaned_linked_logins_with_issuer_id() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -96,7 +94,7 @@ class api_test extends \advanced_testcase {
      *
      * @covers \auth_oauth2\api::create_new_confirmed_account
      */
-    public function test_create_new_confirmed_account(): void {
+    public function test_create_new_confirmed_account() {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -132,7 +130,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test auto-confirming linked logins.
      */
-    public function test_linked_logins(): void {
+    public function test_linked_logins() {
         $this->resetAfterTest();
 
         $this->setAdminUser();
@@ -199,7 +197,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that is_enabled correctly identifies when the plugin is enabled.
      */
-    public function test_is_enabled(): void {
+    public function test_is_enabled() {
         $this->resetAfterTest();
 
         set_config('auth', 'manual,oauth2');
@@ -209,7 +207,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that is_enabled correctly identifies when the plugin is disabled.
      */
-    public function test_is_enabled_disabled(): void {
+    public function test_is_enabled_disabled() {
         $this->resetAfterTest();
 
         set_config('auth', 'manual');
@@ -222,7 +220,7 @@ class api_test extends \advanced_testcase {
      *
      * @covers \auth_oauth2\api::send_confirm_account_email
      */
-    public function test_send_confirm_account_email(): void {
+    public function test_send_confirm_account_email() {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -253,40 +251,5 @@ class api_test extends \advanced_testcase {
 
         // Explicitly test the user is not yet confirmed.
         $this->assertEquals(0, $userdata->confirmed);
-    }
-
-    /**
-     * Test case for checking the email greetings in OAuth2 confirmation emails.
-     */
-    public function test_email_greetings(): void {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
-        $issuer = \core\oauth2\api::create_standard_issuer('microsoft');
-
-        $userinfo = [];
-        $userinfo['username'] = 'apple';
-        $userinfo['email'] = 'apple@example.com';
-        $userinfo['firstname'] = 'Apple';
-        $userinfo['lastname'] = 'Fruit';
-        $sink = $this->redirectEmails(); // Make sure we are redirecting emails.
-        \auth_oauth2\api::send_confirm_account_email($userinfo, $issuer);
-        $result = $sink->get_messages();
-        $sink->close();
-        // Test greetings.
-        $this->assertStringContainsString('Hi ' . $userinfo['firstname'], quoted_printable_decode($result[0]->body));
-
-        $userinfo = [];
-        $userinfo['username'] = 'banana';
-        $userinfo['email'] = 'banana@example.com';
-        $userinfo['firstname'] = 'Banana';
-        $userinfo['lastname'] = 'Fruit';
-        $user = $this->getDataGenerator()->create_user();
-        $sink = $this->redirectEmails(); // Make sure we are redirecting emails.
-        \auth_oauth2\api::send_confirm_link_login_email($userinfo, $issuer, $user->id);
-        $result = $sink->get_messages();
-        $sink->close();
-        // Test greetings.
-        $this->assertStringContainsString('Hi ' . $user->firstname, quoted_printable_decode($result[0]->body));
     }
 }

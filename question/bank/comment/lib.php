@@ -123,6 +123,7 @@ function qbank_comment_output_fragment_question_comment($args): string {
         $slot = $quba->add_question($question, $options->maxmark);
         $quba->start_question($slot, $options->variant);
         $transaction = $DB->start_delegated_transaction();
+        
         question_engine::save_questions_usage_by_activity($quba);
         $transaction->allow_commit();
         $displaydata['question'] = $quba->render_question($slot, $options, '1');

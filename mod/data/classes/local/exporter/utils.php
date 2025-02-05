@@ -47,7 +47,7 @@ class utils {
      * @return void
      */
     public static function data_exportdata(int $dataid, array $fields, array $selectedfields, entries_exporter $exporter,
-        int $currentgroup = 0, ?context $context = null, bool $userdetails = false, bool $time = false, bool $approval = false,
+        int $currentgroup = 0, context $context = null, bool $userdetails = false, bool $time = false, bool $approval = false,
         bool $tags = false, bool $includefiles = true): void {
         global $DB;
 
@@ -123,10 +123,9 @@ class utils {
                 }
                 if ($userdetails) { // Add user details to the export data.
                     $userdata = get_complete_user_data('id', $record->userid);
-                    // In case of an already deleted user, we do not receive any userdata and export an empty string instead.
-                    $exporter->add_to_current_row($userdata ? fullname($userdata) : '');
-                    $exporter->add_to_current_row($userdata ? $userdata->username : '');
-                    $exporter->add_to_current_row($userdata ? $userdata->email : '');
+                    $exporter->add_to_current_row(fullname($userdata));
+                    $exporter->add_to_current_row($userdata->username);
+                    $exporter->add_to_current_row($userdata->email);
                 }
                 if ($time) { // Add time added / modified.
                     $exporter->add_to_current_row(userdate($record->timecreated));

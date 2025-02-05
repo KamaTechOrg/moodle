@@ -33,7 +33,7 @@ use core_question\local\bank\column_base;
 function xmldb_qbank_columnsortorder_upgrade(int $oldversion): bool {
     global $DB;
 
-    if ($oldversion < 2024042201) {
+    if ($oldversion < 2023100901) {
         // Before Moodle 4.3, config_plugins settings for qbank_columnsortorder (disabledcol, enabledcol) had a value like
         // qbank_statistics\columns\facility_index,qbank_statistics\columns\discriminative_efficiency, ...
         // In Moodle 4.3, the values are stored as qbank_statistics\columns\discriminative_efficiency-discriminative_efficiency.
@@ -42,7 +42,7 @@ function xmldb_qbank_columnsortorder_upgrade(int $oldversion): bool {
         $pluginconfigs = $DB->get_records('config_plugins', ['plugin' => 'qbank_columnsortorder'], 'name');
 
         foreach ($pluginconfigs as $config) {
-            if (!in_array($config->name, ['hiddencols', 'enabledcol', 'disabledcol'])) {
+            if ($config->name == 'version') {
                 continue;
             }
             $fields = explode(',', $config->value);
@@ -68,28 +68,13 @@ function xmldb_qbank_columnsortorder_upgrade(int $oldversion): bool {
         }
 
         // Custom sort order savepoint reached.
-        upgrade_plugin_savepoint(true, 2024042201, 'qbank', 'columnsortorder');
+        upgrade_plugin_savepoint(true, 2023100901, 'qbank', 'columnsortorder');
     }
 
-    if ($oldversion < 2024051000) {
-        // Remove plugin entry created by previously incorrect 2024042201 savepoint.
+    if ($oldversion < 2023100902) {
+        // Remove plugin entry created by previously incorrect 2023100901 savepoint.
         $DB->delete_records('config_plugins', ['plugin' => 'qbank_qbank_columnsortorder']);
-        upgrade_plugin_savepoint(true, 2024051000, 'qbank', 'columnsortorder');
-    }
-
-    // Automatically generated Moodle v4.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2024100701) {
-        // When upgrading to version 2024042201, if there were any values for colsize in qbank_columnsortorder plugin,
-        // they were getting incorrectly updated, resulting in corrupted colsize value,
-        // e.g., '"width":"30"}-"width":"30"},"width":"180"}-"width":"180"}' and thus breaking the question bank page.
-        $pluginconfig = $DB->get_record('config_plugins', ['plugin' => 'qbank_columnsortorder', 'name' => 'colsize']);
-        $pattern = '/"width":"[^"]*"}-"width":"[^"]*"}/';
-        if ($pluginconfig && preg_match($pattern, $pluginconfig->value)) {
-            $DB->delete_records('config_plugins', ['plugin' => 'qbank_columnsortorder', 'name' => 'colsize']);
-        }
-        upgrade_plugin_savepoint(true, 2024100701, 'qbank', 'columnsortorder');
+        upgrade_plugin_savepoint(true, 2023100902, 'qbank', 'columnsortorder');
     }
 
     return true;

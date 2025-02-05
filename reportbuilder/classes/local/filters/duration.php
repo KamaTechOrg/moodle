@@ -25,7 +25,7 @@ use core_reportbuilder\local\helpers\database;
 /**
  * Duration report filter
  *
- * This filter accepts a number of seconds to perform filtering on (note that the value will be cast to float prior to comparison)
+ * This filter accepts a number of seconds to perform filtering on
  *
  * @package     core_reportbuilder
  * @copyright   2021 Paul Holden <paulh@moodle.com>
@@ -77,12 +77,12 @@ class duration extends base {
         $valuelabel = get_string('filterfieldvalue', 'core_reportbuilder', $this->get_header());
 
         $elements[] = $mform->createElement('text', "{$this->name}_value", $valuelabel, ['size' => 3]);
-        $mform->setType("{$this->name}_value", PARAM_LOCALISEDFLOAT);
+        $mform->setType("{$this->name}_value", PARAM_FLOAT);
         $mform->setDefault("{$this->name}_value", 0);
         $mform->hideIf("{$this->name}_value", "{$this->name}_operator", 'eq', self::DURATION_ANY);
 
         // Unit.
-        $unitlabel = get_string('filterfieldunit', 'core_reportbuilder', $this->get_header());
+        $unitlabel = get_string('filterdurationunit', 'core_reportbuilder', $this->get_header());
         $units = [
             1 => get_string('filterdateseconds', 'core_reportbuilder'),
             MINSECS => get_string('filterdateminutes', 'core_reportbuilder'),
@@ -107,25 +107,27 @@ class duration extends base {
      * @return array
      */
     public function get_sql_filter(array $values): array {
-        global $DB;
-
         $fieldsql = $this->filter->get_field_sql();
         $params = $this->filter->get_field_params();
-
-        $operator = (int) ($values["{$this->name}_operator"] ?? self::DURATION_ANY);
 
         $durationvalue = unformat_float($values["{$this->name}_value"] ?? 0);
         $durationunit = (int) ($values["{$this->name}_unit"] ?? 0);
 
-        $paramduration = database::generate_param_name();
-        $params[$paramduration] = $durationvalue * $durationunit;
-
+        $operator = $values["{$this->name}_operator"] ?? self::DURATION_ANY;
         switch ($operator) {
             case self::DURATION_MAXIMUM:
-                $sql = $DB->sql_cast_char2real("({$fieldsql})") . " <= :{$paramduration}";
+                $paramduration = database::generate_param_name();
+
+                $sql = "{$fieldsql} <= :{$paramduration}";
+                $params[$paramduration] = $durationvalue * $durationunit;
+
                 break;
             case self::DURATION_MINIMUM:
-                $sql = $DB->sql_cast_char2real("({$fieldsql})") . " >= :{$paramduration}";
+                $paramduration = database::generate_param_name();
+
+                $sql = "{$fieldsql} >= :{$paramduration}";
+                $params[$paramduration] = $durationvalue * $durationunit;
+
                 break;
             default:
                 // Invalid or inactive filter.

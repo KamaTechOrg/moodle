@@ -14,18 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Load template source strings.
+ *
+ * @package    core
+ * @category   output
+ * @copyright  2018 Ryan Wyllie <ryan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core\output;
 
-use Mustache_Tokenizer;
+defined('MOODLE_INTERNAL') || die();
+
+use \Mustache_Tokenizer;
 
 /**
  * Load template source strings.
  *
  * @copyright  2018 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @package core
  */
 class mustache_template_source_loader {
+
     /** @var $gettemplatesource Callback function to load the template source from full name */
     private $gettemplatesource = null;
 
@@ -37,14 +48,14 @@ class mustache_template_source_loader {
      *
      * @param callable|null $gettemplatesource Callback to load template source by template name
      */
-    public function __construct(?callable $gettemplatesource = null) {
+    public function __construct(callable $gettemplatesource = null) {
         if ($gettemplatesource) {
             // The calling code has specified a function for retrieving the template source
             // code by name and theme.
             $this->gettemplatesource = $gettemplatesource;
         } else {
             // By default we will pull the template from disk.
-            $this->gettemplatesource = function ($component, $name, $themename) {
+            $this->gettemplatesource = function($component, $name, $themename) {
                 $fulltemplatename = $component . '/' . $name;
                 $filename = mustache_template_finder::get_template_filepath($fulltemplatename, $themename);
                 return file_get_contents($filename);
@@ -58,7 +69,7 @@ class mustache_template_source_loader {
      * @param string $templatestr
      * @return string
      */
-    protected function strip_template_comments($templatestr): string {
+    protected function strip_template_comments($templatestr) : string {
         return preg_replace('/(?={{!)(.*)(}})/sU', '', $templatestr);
     }
 
@@ -76,7 +87,7 @@ class mustache_template_source_loader {
         string $name,
         string $themename,
         bool $includecomments = false
-    ): string {
+    ) : string {
         global $CFG;
         // Get the template source from the callback.
         $source = ($this->gettemplatesource)($component, $name, $themename);
@@ -140,8 +151,8 @@ class mustache_template_source_loader {
         bool $includecomments = false,
         array $seentemplates = [],
         array $seenstrings = [],
-        ?string $lang = null
-    ): array {
+        string $lang = null
+    ) : array {
         // Initialise the return values.
         $templates = [];
         $strings = [];
@@ -150,7 +161,7 @@ class mustache_template_source_loader {
         // Get the requested template source.
         $templatesource = $this->load($templatecomponent, $templatename, $themename, $includecomments);
         // This is a helper function to save a value in one of the result arrays (either $templates or $strings).
-        $save = function (array $results, array $seenlist, string $component, string $id, $value) use ($lang) {
+        $save = function(array $results, array $seenlist, string $component, string $id, $value) use ($lang) {
             if (!isset($results[$component])) {
                 // If the results list doesn't already contain this component then initialise it.
                 $results[$component] = [];
@@ -165,7 +176,7 @@ class mustache_template_source_loader {
         };
         // This is a helper function for processing a dependency. Does stuff like ignore duplicate processing,
         // common result formatting etc.
-        $handler = function (array $dependency, array $ignorelist, callable $processcallback) use ($lang) {
+        $handler = function(array $dependency, array $ignorelist, callable $processcallback) use ($lang) {
             foreach ($dependency as $component => $ids) {
                 foreach ($ids as $id) {
                     $dependencyid = "$component/$id";
@@ -182,7 +193,7 @@ class mustache_template_source_loader {
         };
 
         // Save this template as the first result in the $templates result array.
-        [$templates, $seentemplates] = $save($templates, $seentemplates, $templatecomponent, $templatename, $templatesource);
+        list($templates, $seentemplates) = $save($templates, $seentemplates, $templatecomponent, $templatename, $templatesource);
 
         // Check the template for any dependencies that need to be loaded.
         $dependencies = $this->scan_template_source_for_dependencies($templatesource);
@@ -194,10 +205,10 @@ class mustache_template_source_loader {
             $seenstrings,
             // Include $strings and $seenstrings by reference so that their values can be updated
             // outside of this anonymous function.
-            function ($component, $id) use ($save, &$strings, &$seenstrings, $lang) {
+            function($component, $id) use ($save, &$strings, &$seenstrings, $lang) {
                 $string = get_string_manager()->get_string($id, $component, null, $lang);
                 // Save the string in the $strings results array.
-                [$strings, $seenstrings] = $save($strings, $seenstrings, $component, $id, $string);
+                list($strings, $seenstrings) = $save($strings, $seenstrings, $component, $id, $string);
             }
         );
 
@@ -208,10 +219,7 @@ class mustache_template_source_loader {
             $seentemplates,
             // Include $strings, $seenstrings, $templates, and $seentemplates by reference so that their values can be updated
             // outside of this anonymous function.
-            function (
-                $component,
-                $id
-            ) use (
+            function($component, $id) use (
                 $themename,
                 $includecomments,
                 &$seentemplates,
@@ -235,14 +243,14 @@ class mustache_template_source_loader {
                 foreach ($subdependencies['templates'] as $component => $ids) {
                     foreach ($ids as $id => $value) {
                         // Include the child themes in our results.
-                        [$templates, $seentemplates] = $save($templates, $seentemplates, $component, $id, $value);
+                        list($templates, $seentemplates) = $save($templates, $seentemplates, $component, $id, $value);
                     }
                 };
 
                 foreach ($subdependencies['strings'] as $component => $ids) {
                     foreach ($ids as $id => $value) {
                         // Include any strings that the child templates need in our results.
-                        [$strings, $seenstrings] = $save($strings, $seenstrings, $component, $id, $value);
+                        list($strings, $seenstrings) = $save($strings, $seenstrings, $component, $id, $value);
                     }
                 }
             }
@@ -250,7 +258,7 @@ class mustache_template_source_loader {
 
         return [
             'templates' => $templates,
-            'strings' => $strings,
+            'strings' => $strings
         ];
     }
 
@@ -278,12 +286,12 @@ class mustache_template_source_loader {
      * @param string $source The template source
      * @return array
      */
-    protected function scan_template_source_for_dependencies(string $source): array {
+    protected function scan_template_source_for_dependencies(string $source) : array {
         $tokenizer = new Mustache_Tokenizer();
         $tokens = $tokenizer->scan($source);
         $templates = [];
         $strings = [];
-        $addtodependencies = function ($dependencies, $component, $id) {
+        $addtodependencies = function($dependencies, $component, $id) {
             $id = trim($id);
             $component = trim($component);
 
@@ -305,16 +313,16 @@ class mustache_template_source_loader {
             if ($name) {
                 switch ($type) {
                     case Mustache_Tokenizer::T_PARTIAL:
-                        [$component, $id] = explode('/', $name, 2);
+                        list($component, $id) = explode('/', $name, 2);
                         $templates = $addtodependencies($templates, $component, $id);
                         break;
                     case Mustache_Tokenizer::T_PARENT:
-                        [$component, $id] = explode('/', $name, 2);
+                        list($component, $id) = explode('/', $name, 2);
                         $templates = $addtodependencies($templates, $component, $id);
                         break;
                     case Mustache_Tokenizer::T_SECTION:
                         if ($name == 'str') {
-                            [$id, $component] = $this->get_string_identifiers($tokens, $index);
+                            list($id, $component) = $this->get_string_identifiers($tokens, $index);
 
                             if ($id) {
                                 $strings = $addtodependencies($strings, $component, $id);
@@ -327,7 +335,7 @@ class mustache_template_source_loader {
 
         return [
             'templates' => $templates,
-            'strings' => $strings,
+            'strings' => $strings
         ];
     }
 

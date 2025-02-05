@@ -9,6 +9,8 @@
  * @package mod_wiki
  */
 
+require_once($CFG->dirroot . "/lib/outputcomponents.php");
+
 class parser_utils {
 
     public static function h($tag, $text = null, $options = array(), $escape_text = false) {
@@ -93,3 +95,4 @@ class parser_utils {
         return $url;
     }
 }
+

@@ -48,6 +48,39 @@ abstract class datasource extends base {
     private $activeconditions;
 
     /**
+     * Add columns from the given entity name to be available to use in a custom report
+     *
+     * @param string $entityname
+     * @param array $include Include only these columns, if omitted then include all
+     * @param array $exclude Exclude these columns, if omitted then exclude none
+     * @throws coding_exception If both $include and $exclude are non-empty
+     */
+    final protected function add_columns_from_entity(string $entityname, array $include = [], array $exclude = []): void {
+        if (!empty($include) && !empty($exclude)) {
+            throw new coding_exception('Cannot specify columns to include and exclude simultaneously');
+        }
+
+        $entity = $this->get_entity($entityname);
+
+        // Retrieve filtered columns from entity, respecting given $include/$exclude parameters.
+        $columns = array_filter($entity->get_columns(), static function(column $column) use ($include, $exclude): bool {
+            if (!empty($include)) {
+                return in_array($column->get_name(), $include);
+            }
+
+            if (!empty($exclude)) {
+                return !in_array($column->get_name(), $exclude);
+            }
+
+            return true;
+        });
+
+        foreach ($columns as $column) {
+            $this->add_column($column);
+        }
+    }
+
+    /**
      * Add default datasource columns to the report
      *
      * Uses column data returned by the source {@see get_default_columns} and {@see get_default_column_sorting} methods
@@ -146,6 +179,39 @@ abstract class datasource extends base {
     }
 
     /**
+     * Add filters from the given entity name to be available to use in a custom report
+     *
+     * @param string $entityname
+     * @param array $include Include only these filters, if omitted then include all
+     * @param array $exclude Exclude these filters, if omitted then exclude none
+     * @throws coding_exception If both $include and $exclude are non-empty
+     */
+    final protected function add_filters_from_entity(string $entityname, array $include = [], array $exclude = []): void {
+        if (!empty($include) && !empty($exclude)) {
+            throw new coding_exception('Cannot specify filters to include and exclude simultaneously');
+        }
+
+        $entity = $this->get_entity($entityname);
+
+        // Retrieve filtered filters from entity, respecting given $include/$exclude parameters.
+        $filters = array_filter($entity->get_filters(), static function(filter $filter) use ($include, $exclude): bool {
+            if (!empty($include)) {
+                return in_array($filter->get_name(), $include);
+            }
+
+            if (!empty($exclude)) {
+                return !in_array($filter->get_name(), $exclude);
+            }
+
+            return true;
+        });
+
+        foreach ($filters as $filter) {
+            $this->add_filter($filter);
+        }
+    }
+
+    /**
      * Add default datasource filters to the report
      *
      * This method is optional and can be called when the report is created to add the default filters defined in the
@@ -194,7 +260,8 @@ abstract class datasource extends base {
                         " {$instance->get_is_deprecated_message()}", DEBUG_DEVELOPER);
                 }
 
-                $this->activefilters['values'][$instance->get_unique_identifier()] = $instance->set_persistent($filter);
+                $this->activefilters['values'][$instance->get_unique_identifier()] =
+                    $instance->set_persistent($filter);
             }
         }
 
@@ -204,11 +271,9 @@ abstract class datasource extends base {
     /**
      * Add conditions from the given entity name to be available to use in a custom report
      *
-     * Wildcard matching is supported with '*' in both $include and $exclude, e.g. ['customfield*']
-     *
      * @param string $entityname
-     * @param string[] $include Include only these conditions, if omitted then include all
-     * @param string[] $exclude Exclude these conditions, if omitted then exclude none
+     * @param array $include Include only these conditions, if omitted then include all
+     * @param array $exclude Exclude these conditions, if omitted then exclude none
      * @throws coding_exception If both $include and $exclude are non-empty
      */
     final protected function add_conditions_from_entity(string $entityname, array $include = [], array $exclude = []): void {
@@ -219,13 +284,13 @@ abstract class datasource extends base {
         $entity = $this->get_entity($entityname);
 
         // Retrieve filtered conditions from entity, respecting given $include/$exclude parameters.
-        $conditions = array_filter($entity->get_conditions(), function(filter $condition) use ($include, $exclude): bool {
+        $conditions = array_filter($entity->get_conditions(), static function(filter $condition) use ($include, $exclude): bool {
             if (!empty($include)) {
-                return $this->report_element_search($condition->get_name(), $include);
+                return in_array($condition->get_name(), $include);
             }
 
             if (!empty($exclude)) {
-                return !$this->report_element_search($condition->get_name(), $exclude);
+                return !in_array($condition->get_name(), $exclude);
             }
 
             return true;
@@ -276,10 +341,9 @@ abstract class datasource extends base {
      * Override parent method, returning only those conditions specifically added to the custom report (rather than all that are
      * available)
      *
-     * @param bool $checkavailable
      * @return filter[]
      */
-    public function get_active_conditions(bool $checkavailable = true): array {
+    public function get_active_conditions(): array {
         $reportid = $this->get_report_persistent()->get('id');
 
         // Determine whether we already retrieved the conditions since the report was last modified.
@@ -294,14 +358,15 @@ abstract class datasource extends base {
         foreach ($activeconditions as $condition) {
             $instance = $this->get_condition($condition->get('uniqueidentifier'));
 
-            // Ensure the condition is still present and available (if checking available status).
-            if ($instance !== null && (!$checkavailable || $instance->get_is_available())) {
+            // Ensure the condition is still present and available.
+            if ($instance !== null && $instance->get_is_available()) {
                 if ($instance->get_is_deprecated()) {
                     debugging("The condition '{$instance->get_unique_identifier()}' is deprecated, please do not use it any more." .
                         " {$instance->get_is_deprecated_message()}", DEBUG_DEVELOPER);
                 }
 
-                $this->activeconditions['values'][$instance->get_unique_identifier()] = $instance->set_persistent($condition);
+                $this->activeconditions['values'][$instance->get_unique_identifier()] =
+                    $instance->set_persistent($condition);
             }
         }
 
@@ -312,33 +377,19 @@ abstract class datasource extends base {
      * Adds all columns/filters/conditions from the given entity to the report at once
      *
      * @param string $entityname
-     * @param string[] $limitcolumns Include only these columns
-     * @param string[] $limitfilters Include only these filters
-     * @param string[] $limitconditions Include only these conditions
      */
-    final protected function add_all_from_entity(
-        string $entityname,
-        array $limitcolumns = [],
-        array $limitfilters = [],
-        array $limitconditions = [],
-    ): void {
-        $this->add_columns_from_entity($entityname, $limitcolumns);
-        $this->add_filters_from_entity($entityname, $limitfilters);
-        $this->add_conditions_from_entity($entityname, $limitconditions);
+    final protected function add_all_from_entity(string $entityname): void {
+        $this->add_columns_from_entity($entityname);
+        $this->add_filters_from_entity($entityname);
+        $this->add_conditions_from_entity($entityname);
     }
 
     /**
      * Adds all columns/filters/conditions from all the entities added to the report at once
-     *
-     * @param string[] $entitynames If specified, then only these entity elements are added (otherwise all)
      */
-    final protected function add_all_from_entities(array $entitynames = []): void {
+    final protected function add_all_from_entities(): void {
         foreach ($this->get_entities() as $entity) {
-            $entityname = $entity->get_entity_name();
-            if (!empty($entitynames) && array_search($entityname, $entitynames) === false) {
-                continue;
-            }
-            $this->add_all_from_entity($entityname);
+            $this->add_all_from_entity($entity->get_entity_name());
         }
     }
 

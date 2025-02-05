@@ -39,7 +39,6 @@ class provider_test extends provider_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->dirroot.'/lib/xapi/tests/helper.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -101,7 +100,7 @@ class provider_test extends provider_testcase {
     /**
      * Test confirming that user ID's of xapi states can be added to the userlist.
      */
-    public function test_add_userids_for_context(): void {
+    public function test_add_userids_for_context() {
         global $DB;
 
         $this->resetAfterTest();
@@ -141,7 +140,7 @@ class provider_test extends provider_testcase {
     /**
      * Test fetching the xapi state data for a specified user in a specified component and itemid.
      */
-    public function test_get_xapi_states_for_user(): void {
+    public function test_get_xapi_states_for_user() {
         global $DB;
 
         $this->resetAfterTest();
@@ -158,17 +157,16 @@ class provider_test extends provider_testcase {
         $info = (object) reset($result);
         // Ensure the correct data has been returned.
         $this->assertNotEmpty($info->statedata);
-
-        $this->assertNotEmpty($info->timecreated);
-        $this->assertNotEmpty($info->timemodified);
+        $this->assertNotEmpty(transform::datetime($info->timecreated));
+        $this->assertNotEmpty(transform::datetime($info->timemodified));
 
         // Get the states info for user2 in the system context.
         $result = provider::get_xapi_states_for_user($user2->id, 'fake_component', $systemcontext->id);
         $info = (object) reset($result);
         // Ensure the correct data has been returned.
         $this->assertNotEmpty($info->statedata);
-        $this->assertNotEmpty($info->timecreated);
-        $this->assertNotEmpty($info->timemodified);
+        $this->assertNotEmpty(transform::datetime($info->timecreated));
+        $this->assertNotEmpty(transform::datetime($info->timemodified));
 
         // Get the states info for user3 in the system context (it should be empty).
         $info = provider::get_xapi_states_for_user($user3->id, 'fake_component', $systemcontext->id);
@@ -228,7 +226,7 @@ class provider_test extends provider_testcase {
     /**
      * Test deletion of user xapi states based on an approved_userlist and component area.
      */
-    public function test_delete_states_for_userlist(): void {
+    public function test_delete_states_for_userlist() {
         global $DB;
 
         $this->resetAfterTest();

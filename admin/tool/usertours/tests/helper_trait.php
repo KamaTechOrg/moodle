@@ -21,6 +21,16 @@
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Helpers for unit tests.
+ *
+ * @package    tool_usertours
+ * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 trait tool_usertours_helper_trait {
     /**
      * A helper to create an empty tour.
@@ -29,7 +39,7 @@ trait tool_usertours_helper_trait {
      * @param   bool        $persist        Whether to persist the data
      * @return  \tool_usertours\tour
      */
-    public function helper_create_tour(?\stdClass $tourconfig = null, $persist = true) {
+    public function helper_create_tour(\stdClass $tourconfig = null, $persist = true) {
         $minvalues = [
             'id' => null,
             'pathmatch' => '/my/%',
@@ -37,7 +47,7 @@ trait tool_usertours_helper_trait {
             'name' => '',
             'description' => '',
             'configdata' => '',
-            'displaystepnumbers' => true,
+            'displaystepnumbers' => true
         ];
 
         if ($tourconfig === null) {
@@ -65,7 +75,7 @@ trait tool_usertours_helper_trait {
      * @param   bool        $persist        Whether to persist the data
      * @return  \tool_usertours\step
      */
-    public function helper_create_step(?\stdClass $stepconfig = null, $persist = true) {
+    public function helper_create_step(\stdClass $stepconfig = null, $persist = true) {
         $minvalues = [
             'id' => null,
             'title' => '',

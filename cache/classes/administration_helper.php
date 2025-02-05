@@ -14,33 +14,47 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Cache administration helper.
+ *
+ * This file is part of Moodle's cache API, affectionately called MUC.
+ * It contains the components that are requried in order to use caching.
+ *
+ * @package    core
+ * @category   cache
+ * @author     Peter Burnett <peterburnett@catalyst-au.net>
+ * @copyright  2020 Catalyst IT
+ * @copyright  2012 Sam Hemelryk
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core_cache;
 
-use core_component;
-use core\output\pix_icon;
-use lang_string;
+defined('MOODLE_INTERNAL') || die();
+use cache_helper, cache_store, cache_config, cache_factory, cache_definition;
 
 /**
  * Administration helper base class.
  *
  * Defines abstract methods for a subclass to define the admin page.
  *
- * @package     core_cache
+ * @package     core
  * @category    cache
  * @author      Peter Burnett <peterburnett@catalyst-au.net>
  * @copyright   2020 Catalyst IT
  * @copyright  2012 Sam Hemelryk
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class administration_helper extends helper {
+abstract class administration_helper extends cache_helper {
+
     /**
      * Returns an array containing all of the information about stores a renderer needs.
      * @return array
      */
     public static function get_store_instance_summaries(): array {
-        $return = [];
-        $default = [];
-        $instance = config::instance();
+        $return = array();
+        $default = array();
+        $instance = \cache_config::instance();
         $stores = $instance->get_all_stores();
         $locks = $instance->get_locks();
         foreach ($stores as $name => $details) {
@@ -50,7 +64,7 @@ abstract class administration_helper extends helper {
                 $store = new $class($details['name'], $details['configuration']);
             }
             $lock = (isset($details['lock'])) ? $locks[$details['lock']] : $instance->get_default_lock();
-            $record = [
+            $record = array(
                 'name' => $name,
                 'plugin' => $details['plugin'],
                 'default' => $details['default'],
@@ -58,24 +72,24 @@ abstract class administration_helper extends helper {
                 'requirementsmet' => $class::are_requirements_met(),
                 'mappings' => 0,
                 'lock' => $lock,
-                'modes' => [
-                    store::MODE_APPLICATION =>
-                        ($class::get_supported_modes($return) & store::MODE_APPLICATION) == store::MODE_APPLICATION,
-                    store::MODE_SESSION =>
-                        ($class::get_supported_modes($return) & store::MODE_SESSION) == store::MODE_SESSION,
-                    store::MODE_REQUEST =>
-                        ($class::get_supported_modes($return) & store::MODE_REQUEST) == store::MODE_REQUEST,
-                ],
-                'supports' => [
+                'modes' => array(
+                    cache_store::MODE_APPLICATION =>
+                        ($class::get_supported_modes($return) & cache_store::MODE_APPLICATION) == cache_store::MODE_APPLICATION,
+                    cache_store::MODE_SESSION =>
+                        ($class::get_supported_modes($return) & cache_store::MODE_SESSION) == cache_store::MODE_SESSION,
+                    cache_store::MODE_REQUEST =>
+                        ($class::get_supported_modes($return) & cache_store::MODE_REQUEST) == cache_store::MODE_REQUEST,
+                ),
+                'supports' => array(
                     'multipleidentifiers' => $store ? $store->supports_multiple_identifiers() : false,
                     'dataguarantee' => $store ? $store->supports_data_guarantee() : false,
                     'nativettl' => $store ? $store->supports_native_ttl() : false,
-                    'nativelocking' => ($store instanceof lockable_cache_interface),
-                    'keyawareness' => ($store instanceof key_aware_cache_interface),
-                    'searchable' => ($store instanceof searchable_cache_interface),
-                ],
-                'warnings' => $store ? $store->get_warnings() : [],
-            ];
+                    'nativelocking' => ($store instanceof \cache_is_lockable),
+                    'keyawareness' => ($store instanceof \cache_is_key_aware),
+                    'searchable' => ($store instanceof \cache_is_searchable)
+                ),
+                'warnings' => $store ? $store->get_warnings() : array()
+            );
             if (empty($details['default'])) {
                 $return[$name] = $record;
             } else {
@@ -122,31 +136,31 @@ abstract class administration_helper extends helper {
      *     See the code below for details
      */
     public static function get_store_plugin_summaries(): array {
-        $return = [];
+        $return = array();
         $plugins = \core_component::get_plugin_list_with_file('cachestore', 'lib.php', true);
         foreach ($plugins as $plugin => $path) {
-            $class = 'cachestore_' . $plugin;
-            $return[$plugin] = [
-                'name' => get_string('pluginname', 'cachestore_' . $plugin),
+            $class = 'cachestore_'.$plugin;
+            $return[$plugin] = array(
+                'name' => get_string('pluginname', 'cachestore_'.$plugin),
                 'requirementsmet' => $class::are_requirements_met(),
                 'instances' => 0,
-                'modes' => [
-                    store::MODE_APPLICATION => ($class::get_supported_modes() & store::MODE_APPLICATION),
-                    store::MODE_SESSION => ($class::get_supported_modes() & store::MODE_SESSION),
-                    store::MODE_REQUEST => ($class::get_supported_modes() & store::MODE_REQUEST),
-                ],
-                'supports' => [
-                    'multipleidentifiers' => ($class::get_supported_features() & store::SUPPORTS_MULTIPLE_IDENTIFIERS),
-                    'dataguarantee' => ($class::get_supported_features() & store::SUPPORTS_DATA_GUARANTEE),
-                    'nativettl' => ($class::get_supported_features() & store::SUPPORTS_NATIVE_TTL),
-                    'nativelocking' => (in_array(lockable_cache_interface::class, class_implements($class))),
-                    'keyawareness' => (array_key_exists(key_aware_cache_interface::class, class_implements($class))),
-                ],
-                'canaddinstance' => ($class::can_add_instance() && $class::are_requirements_met()),
-            ];
+                'modes' => array(
+                    cache_store::MODE_APPLICATION => ($class::get_supported_modes() & cache_store::MODE_APPLICATION),
+                    cache_store::MODE_SESSION => ($class::get_supported_modes() & cache_store::MODE_SESSION),
+                    cache_store::MODE_REQUEST => ($class::get_supported_modes() & cache_store::MODE_REQUEST),
+                ),
+                'supports' => array(
+                    'multipleidentifiers' => ($class::get_supported_features() & cache_store::SUPPORTS_MULTIPLE_IDENTIFIERS),
+                    'dataguarantee' => ($class::get_supported_features() & cache_store::SUPPORTS_DATA_GUARANTEE),
+                    'nativettl' => ($class::get_supported_features() & cache_store::SUPPORTS_NATIVE_TTL),
+                    'nativelocking' => (in_array('cache_is_lockable', class_implements($class))),
+                    'keyawareness' => (array_key_exists('cache_is_key_aware', class_implements($class))),
+                ),
+                'canaddinstance' => ($class::can_add_instance() && $class::are_requirements_met())
+            );
         }
 
-        $instance = config::instance();
+        $instance = cache_config::instance();
         $stores = $instance->get_all_stores();
         foreach ($stores as $store) {
             $plugin = $store['plugin'];
@@ -165,28 +179,28 @@ abstract class administration_helper extends helper {
      *     See the code below for details
      */
     public static function get_definition_summaries(): array {
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $config = $factory->create_config_instance();
-        $storenames = [];
+        $storenames = array();
         foreach ($config->get_all_stores() as $key => $store) {
             if (!empty($store['default'])) {
-                $storenames[$key] = new lang_string('store_' . $key, 'cache');
+                $storenames[$key] = new \lang_string('store_'.$key, 'cache');
             } else {
                 $storenames[$store['name']] = $store['name'];
             }
         }
-        /* @var definition[] $definitions */
+        /* @var cache_definition[] $definitions */
         $definitions = [];
         $return = [];
         foreach ($config->get_definitions() as $key => $definition) {
-            $definitions[$key] = definition::load($definition['component'] . '/' . $definition['area'], $definition);
+            $definitions[$key] = cache_definition::load($definition['component'].'/'.$definition['area'], $definition);
         }
         foreach ($definitions as $id => $definition) {
-            $mappings = [];
-            foreach (helper::get_stores_suitable_for_definition($definition) as $store) {
+            $mappings = array();
+            foreach (cache_helper::get_stores_suitable_for_definition($definition) as $store) {
                 $mappings[] = $storenames[$store->my_name()];
             }
-            $return[$id] = [
+            $return[$id] = array(
                 'id' => $id,
                 'name' => $definition->get_name(),
                 'mode' => $definition->get_mode(),
@@ -196,8 +210,8 @@ abstract class administration_helper extends helper {
                 'canuselocalstore' => $definition->can_use_localstore(),
                 'sharingoptions' => self::get_definition_sharing_options($definition->get_sharing_options(), false),
                 'selectedsharingoption' => self::get_definition_sharing_options($definition->get_selected_sharing_option(), true),
-                'userinputsharingkey' => $definition->get_user_input_sharing_key(),
-            ];
+                'userinputsharingkey' => $definition->get_user_input_sharing_key()
+            );
         }
         return $return;
     }
@@ -209,20 +223,20 @@ abstract class administration_helper extends helper {
      */
     public static function get_default_mode_stores(): array {
         global $OUTPUT;
-        $instance = config::instance();
-        $adequatestores = helper::get_stores_suitable_for_mode_default();
-        $icon = new pix_icon('i/warning', new lang_string('inadequatestoreformapping', 'cache'));
-        $storenames = [];
+        $instance = cache_config::instance();
+        $adequatestores = cache_helper::get_stores_suitable_for_mode_default();
+        $icon = new \pix_icon('i/warning', new \lang_string('inadequatestoreformapping', 'cache'));
+        $storenames = array();
         foreach ($instance->get_all_stores() as $key => $store) {
             if (!empty($store['default'])) {
-                $storenames[$key] = new lang_string('store_' . $key, 'cache');
+                $storenames[$key] = new \lang_string('store_'.$key, 'cache');
             }
         }
-        $modemappings = [
-            store::MODE_APPLICATION => [],
-            store::MODE_SESSION => [],
-            store::MODE_REQUEST => [],
-        ];
+        $modemappings = array(
+            cache_store::MODE_APPLICATION => array(),
+            cache_store::MODE_SESSION => array(),
+            cache_store::MODE_REQUEST => array(),
+        );
         foreach ($instance->get_mode_mappings() as $mapping) {
             $mode = $mapping['mode'];
             if (!array_key_exists($mode, $modemappings)) {
@@ -235,7 +249,7 @@ abstract class administration_helper extends helper {
                 $modemappings[$mode][$mapping['store']] = $mapping['store'];
             }
             if (!array_key_exists($mapping['store'], $adequatestores)) {
-                $modemappings[$mode][$mapping['store']] = $modemappings[$mode][$mapping['store']] . ' ' . $OUTPUT->render($icon);
+                $modemappings[$mode][$mapping['store']] = $modemappings[$mode][$mapping['store']].' '.$OUTPUT->render($icon);
             }
         }
         return $modemappings;
@@ -247,13 +261,13 @@ abstract class administration_helper extends helper {
      * @return array array of lock summaries.
      */
     public static function get_lock_summaries(): array {
-        $locks = [];
-        $instance = config::instance();
+        $locks = array();
+        $instance = cache_config::instance();
         $stores = $instance->get_all_stores();
         foreach ($instance->get_locks() as $lock) {
             $default = !empty($lock['default']);
             if ($default) {
-                $name = new lang_string($lock['name'], 'cache');
+                $name = new \lang_string($lock['name'], 'cache');
             } else {
                 $name = $lock['name'];
             }
@@ -263,12 +277,12 @@ abstract class administration_helper extends helper {
                     $uses++;
                 }
             }
-            $lockdata = [
+            $lockdata = array(
                 'name' => $name,
                 'default' => $default,
                 'uses' => $uses,
-                'type' => get_string('pluginname', $lock['type']),
-            ];
+                'type' => get_string('pluginname', $lock['type'])
+            );
             $locks[$lock['name']] = $lockdata;
         }
         return $locks;
@@ -282,19 +296,19 @@ abstract class administration_helper extends helper {
      * @return array An array of lang_string's.
      */
     public static function get_definition_sharing_options(int $sharingoption, bool $isselectedoptions = true): array {
-        $options = [];
+        $options = array();
         $prefix = ($isselectedoptions) ? 'sharingselected' : 'sharing';
-        if ($sharingoption & definition::SHARING_ALL) {
-            $options[definition::SHARING_ALL] = new lang_string($prefix . '_all', 'cache');
+        if ($sharingoption & cache_definition::SHARING_ALL) {
+            $options[cache_definition::SHARING_ALL] = new \lang_string($prefix.'_all', 'cache');
         }
-        if ($sharingoption & definition::SHARING_SITEID) {
-            $options[definition::SHARING_SITEID] = new lang_string($prefix . '_siteid', 'cache');
+        if ($sharingoption & cache_definition::SHARING_SITEID) {
+            $options[cache_definition::SHARING_SITEID] = new \lang_string($prefix.'_siteid', 'cache');
         }
-        if ($sharingoption & definition::SHARING_VERSION) {
-            $options[definition::SHARING_VERSION] = new lang_string($prefix . '_version', 'cache');
+        if ($sharingoption & cache_definition::SHARING_VERSION) {
+            $options[cache_definition::SHARING_VERSION] = new \lang_string($prefix.'_version', 'cache');
         }
-        if ($sharingoption & definition::SHARING_INPUT) {
-            $options[definition::SHARING_INPUT] = new lang_string($prefix . '_input', 'cache');
+        if ($sharingoption & cache_definition::SHARING_INPUT) {
+            $options[cache_definition::SHARING_INPUT] = new \lang_string($prefix.'_input', 'cache');
         }
         return $options;
     }
@@ -310,13 +324,13 @@ abstract class administration_helper extends helper {
      *      3. An array of default stores
      */
     public static function get_definition_store_options(string $component, string $area): array {
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $definition = $factory->create_definition($component, $area);
-        $config = config::instance();
+        $config = cache_config::instance();
         $currentstores = $config->get_stores_for_definition($definition);
         $possiblestores = $config->get_stores($definition->get_mode(), $definition->get_requirements_bin());
 
-        $defaults = [];
+        $defaults = array();
         foreach ($currentstores as $key => $store) {
             if (!empty($store['default'])) {
                 $defaults[] = $key;
@@ -329,7 +343,7 @@ abstract class administration_helper extends helper {
                 $possiblestores[$key] = $store;
             }
         }
-        return [$currentstores, $possiblestores, $defaults];
+        return array($currentstores, $possiblestores, $defaults);
     }
 
     /**
@@ -340,7 +354,7 @@ abstract class administration_helper extends helper {
      * @return array array of actions.
      */
     public function get_store_plugin_actions(string $name, array $plugindetails): array {
-        return [];
+        return array();
     }
 
     /**
@@ -351,7 +365,7 @@ abstract class administration_helper extends helper {
      * @return array array of actions.
      */
     public function get_store_instance_actions(string $name, array $storedetails): array {
-        return [];
+        return array();
     }
 
     /**
@@ -362,7 +376,7 @@ abstract class administration_helper extends helper {
      * @return array array of actions.
      */
     public function get_definition_actions(\context $context, array $definitionsummary): array {
-        return [];
+        return array();
     }
 
     /**
@@ -371,7 +385,7 @@ abstract class administration_helper extends helper {
      * @return array array of locks that are addable.
      */
     public function get_addable_lock_options(): array {
-        return [];
+        return array();
     }
 
     /**
@@ -381,7 +395,7 @@ abstract class administration_helper extends helper {
      * @param array $forminfo empty array to be set by actions.
      * @return array array of form info.
      */
-    abstract public function perform_cache_actions(string $action, array $forminfo): array;
+    public abstract function perform_cache_actions(string $action, array $forminfo): array;
 
     /**
      * This function must be implemented to display the cache admin page.

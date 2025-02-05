@@ -51,7 +51,6 @@ class mail_group_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $CFG;
-        parent::setUp();
 
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
@@ -82,14 +81,13 @@ class mail_group_test extends \advanced_testcase {
         $this->mailsink->clear();
         $this->mailsink->close();
         unset($this->mailsink);
-        parent::tearDown();
     }
 
     /**
      * Ensure that posts written in a forum marked for separate groups includes notifications for the members of that
      * group, and any user with accessallgroups.
      */
-    public function test_separate_group(): void {
+    public function test_separate_group() {
         global $CFG, $DB;
 
         $this->resetAfterTest(true);
@@ -168,7 +166,7 @@ class mail_group_test extends \advanced_testcase {
      * Ensure that posts written in a forum marked for visible groups includes notifications for the members of that
      * group, and any user with accessallgroups.
      */
-    public function test_visible_group(): void {
+    public function test_visible_group() {
         global $CFG, $DB;
 
         $this->resetAfterTest(true);

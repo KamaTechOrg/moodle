@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_usertours\local\target;
-
 /**
  * Selector target.
  *
@@ -23,7 +21,21 @@ namespace tool_usertours\local\target;
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace tool_usertours\local\target;
+
+defined('MOODLE_INTERNAL') || die();
+
+use tool_usertours\step;
+
+/**
+ * Selector target.
+ *
+ * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class selector extends base {
+
     /**
      * Convert the target value to a valid CSS selector for use in the
      * output configuration.
@@ -68,7 +80,7 @@ class selector extends base {
      * @return  $this
      */
     public static function add_config_to_form(\MoodleQuickForm $mform) {
-        $mform->addElement('text', 'targetvalue_selector', get_string('cssselector', 'tool_usertours'), ['size' => '80']);
+        $mform->addElement('text', 'targetvalue_selector', get_string('cssselector', 'tool_usertours'));
         $mform->setType('targetvalue_selector', PARAM_RAW);
         $mform->addHelpButton('targetvalue_selector', 'target_selector_targetvalue', 'tool_usertours');
     }
@@ -79,12 +91,8 @@ class selector extends base {
      * @param   MoodleQuickForm $mform      The form to add configuration to.
      */
     public static function add_disabled_constraints_to_form(\MoodleQuickForm $mform) {
-        $mform->hideIf(
-            'targetvalue_selector',
-            'targettype',
-            'noteq',
-            \tool_usertours\target::get_target_constant_for_class(self::class)
-        );
+        $mform->hideIf('targetvalue_selector', 'targettype', 'noteq',
+                \tool_usertours\target::get_target_constant_for_class(self::class));
     }
 
     /**

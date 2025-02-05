@@ -836,8 +836,7 @@ function lesson_process_post_save(&$lesson) {
  */
 function lesson_reset_course_form_definition(&$mform) {
     $mform->addElement('header', 'lessonheader', get_string('modulenameplural', 'lesson'));
-    $mform->addElement('static', 'lessondelete', get_string('delete'));
-    $mform->addElement('advcheckbox', 'reset_lesson', get_string('deleteallattempts', 'lesson'));
+    $mform->addElement('advcheckbox', 'reset_lesson', get_string('deleteallattempts','lesson'));
     $mform->addElement('advcheckbox', 'reset_lesson_user_overrides',
             get_string('removealluseroverrides', 'lesson'));
     $mform->addElement('advcheckbox', 'reset_lesson_group_overrides',
@@ -890,14 +889,14 @@ function lesson_reset_userdata($data) {
     global $CFG, $DB;
 
     $componentstr = get_string('modulenameplural', 'lesson');
-    $status = [];
+    $status = array();
 
     if (!empty($data->reset_lesson)) {
         $lessonssql = "SELECT l.id
                          FROM {lesson} l
                         WHERE l.course=:course";
 
-        $params = ["course" => $data->courseid];
+        $params = array ("course" => $data->courseid);
         $lessons = $DB->get_records_sql($lessonssql, $params);
 
         // Get rid of attempts files.
@@ -918,16 +917,12 @@ function lesson_reset_userdata($data) {
         $DB->delete_records_select('lesson_attempts', "lessonid IN ($lessonssql)", $params);
         $DB->delete_records_select('lesson_branch', "lessonid IN ($lessonssql)", $params);
 
-        // Remove all grades from gradebook.
+        // remove all grades from gradebook
         if (empty($data->reset_gradebook_grades)) {
             lesson_reset_gradebook($data->courseid);
         }
 
-        $status[] = [
-            'component' => $componentstr,
-            'item' => get_string('deleteallattempts', 'lesson'),
-            'error' => false,
-        ];
+        $status[] = array('component'=>$componentstr, 'item'=>get_string('deleteallattempts', 'lesson'), 'error'=>false);
     }
 
     $purgeoverrides = false;
@@ -935,46 +930,40 @@ function lesson_reset_userdata($data) {
     // Remove user overrides.
     if (!empty($data->reset_lesson_user_overrides)) {
         $DB->delete_records_select('lesson_overrides',
-                'lessonid IN (SELECT id FROM {lesson} WHERE course = ?) AND userid IS NOT NULL', [$data->courseid]);
-        $status[] = [
+                'lessonid IN (SELECT id FROM {lesson} WHERE course = ?) AND userid IS NOT NULL', array($data->courseid));
+        $status[] = array(
             'component' => $componentstr,
-            'item' => get_string('useroverrides', 'lesson'),
-            'error' => false,
-        ];
+            'item' => get_string('useroverridesdeleted', 'lesson'),
+            'error' => false);
         $purgeoverrides = true;
     }
     // Remove group overrides.
     if (!empty($data->reset_lesson_group_overrides)) {
         $DB->delete_records_select('lesson_overrides',
-        'lessonid IN (SELECT id FROM {lesson} WHERE course = ?) AND groupid IS NOT NULL', [$data->courseid]);
-        $status[] = [
+        'lessonid IN (SELECT id FROM {lesson} WHERE course = ?) AND groupid IS NOT NULL', array($data->courseid));
+        $status[] = array(
             'component' => $componentstr,
-            'item' => get_string('groupoverrides', 'lesson'),
-            'error' => false,
-        ];
+            'item' => get_string('groupoverridesdeleted', 'lesson'),
+            'error' => false);
         $purgeoverrides = true;
     }
-    // Updating dates - shift may be negative too.
+    /// updating dates - shift may be negative too
     if ($data->timeshift) {
         $DB->execute("UPDATE {lesson_overrides}
                          SET available = available + ?
                        WHERE lessonid IN (SELECT id FROM {lesson} WHERE course = ?)
-                         AND available <> 0", [$data->timeshift, $data->courseid]);
+                         AND available <> 0", array($data->timeshift, $data->courseid));
         $DB->execute("UPDATE {lesson_overrides}
                          SET deadline = deadline + ?
                        WHERE lessonid IN (SELECT id FROM {lesson} WHERE course = ?)
-                         AND deadline <> 0", [$data->timeshift, $data->courseid]);
+                         AND deadline <> 0", array($data->timeshift, $data->courseid));
 
         $purgeoverrides = true;
 
         // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
         // See MDL-9367.
-        shift_course_mod_dates('lesson', ['available', 'deadline'], $data->timeshift, $data->courseid);
-        $status[] = [
-            'component' => $componentstr,
-            'item' => get_string('date'),
-            'error' => false,
-        ];
+        shift_course_mod_dates('lesson', array('available', 'deadline'), $data->timeshift, $data->courseid);
+        $status[] = array('component'=>$componentstr, 'item'=>get_string('datechanged'), 'error'=>false);
     }
 
     if ($purgeoverrides) {
@@ -1015,7 +1004,7 @@ function lesson_supports($feature) {
         case FEATURE_SHOW_DESCRIPTION:
             return true;
         case FEATURE_MOD_PURPOSE:
-            return MOD_PURPOSE_INTERACTIVECONTENT;
+            return MOD_PURPOSE_CONTENT;
         default:
             return null;
     }
@@ -1293,7 +1282,7 @@ function lesson_update_media_file($lessonid, $context, $draftitemid) {
  */
 function mod_lesson_get_fontawesome_icon_map() {
     return [
-        'mod_lesson:e/copy' => 'fa-solid fa-clone',
+        'mod_lesson:e/copy' => 'fa-clone',
     ];
 }
 

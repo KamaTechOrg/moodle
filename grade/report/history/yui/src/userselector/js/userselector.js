@@ -58,7 +58,7 @@ var CSS = {
     HEADER: 'usp-header',
     HIDDEN: 'hidden',
     LIGHTBOX: 'usp-loading-lightbox',
-    LOADINGICON: 'loading-icon icon',
+    LOADINGICON: 'loading-icon',
     MORERESULTS: 'usp-more-results',
     OPTIONS: 'options',
     PICTURE: 'usp-picture',

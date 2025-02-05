@@ -29,7 +29,7 @@ class api_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function has_additional_results_provider(): array {
+    public function has_additional_results_provider() {
         return [
             'No more results' => [
                 (object) [
@@ -74,7 +74,7 @@ class api_test extends \advanced_testcase {
      * @param   object      $result     The data to test
      * @param   bool        $expected   The expected result
      */
-    public function test_has_additional_results($result, $expected): void {
+    public function test_has_additional_results($result, $expected) {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([])
@@ -88,7 +88,7 @@ class api_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function check_and_handle_api_errors_provider(): array {
+    public function check_and_handle_api_errors_provider() {
         return [
             '200 http_code' => [
                 ['http_code' => 200],
@@ -150,7 +150,7 @@ class api_test extends \advanced_testcase {
      * @param   string      $exception  The name of the expected exception
      * @param   string      $exceptionmessage  The expected message in the exception
      */
-    public function test_check_and_handle_api_errors($info, $data, $exception, $exceptionmessage): void {
+    public function test_check_and_handle_api_errors($info, $data, $exception, $exceptionmessage) {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([])
@@ -160,6 +160,7 @@ class api_test extends \advanced_testcase {
 
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('check_and_handle_api_errors');
+        $rcm->setAccessible(true);
 
         if ($exception) {
             $this->expectException($exception);
@@ -179,7 +180,7 @@ class api_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function supports_thumbnail_provider(): array {
+    public function supports_thumbnail_provider() {
         $tests = [
             'Only files support thumbnails' => [
                 (object) ['.tag' => 'folder'],
@@ -244,7 +245,7 @@ class api_test extends \advanced_testcase {
      * @param   object      $entry      The entry to test
      * @param   bool        $expected   Whether this entry supports thumbnail generation
      */
-    public function test_supports_thumbnail($entry, $expected): void {
+    public function test_supports_thumbnail($entry, $expected) {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([])
@@ -256,7 +257,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that the logout makes a call to the correct revocation endpoint.
      */
-    public function test_logout_revocation(): void {
+    public function test_logout_revocation() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['fetch_dropbox_data'])
@@ -272,7 +273,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that the logout function catches authentication_exception exceptions and discards them.
      */
-    public function test_logout_revocation_catch_auth_exception(): void {
+    public function test_logout_revocation_catch_auth_exception() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['fetch_dropbox_data'])
@@ -288,7 +289,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that the logout function does not catch any other exception.
      */
-    public function test_logout_revocation_does_not_catch_other_exceptions(): void {
+    public function test_logout_revocation_does_not_catch_other_exceptions() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['fetch_dropbox_data'])
@@ -305,7 +306,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test basic fetch_dropbox_data function.
      */
-    public function test_fetch_dropbox_data_endpoint(): void {
+    public function test_fetch_dropbox_data_endpoint() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -333,13 +334,14 @@ class api_test extends \advanced_testcase {
         // Make the call.
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('fetch_dropbox_data');
+        $rcm->setAccessible(true);
         $rcm->invoke($mock, $endpoint);
     }
 
     /**
      * Some Dropbox endpoints require that the POSTFIELDS be set to null exactly.
      */
-    public function test_fetch_dropbox_data_postfields_null(): void {
+    public function test_fetch_dropbox_data_postfields_null() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -359,13 +361,14 @@ class api_test extends \advanced_testcase {
         // Make the call.
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('fetch_dropbox_data');
+        $rcm->setAccessible(true);
         $rcm->invoke($mock, $endpoint, null);
     }
 
     /**
      * When data is specified, it should be json_encoded in POSTFIELDS.
      */
-    public function test_fetch_dropbox_data_postfields_data(): void {
+    public function test_fetch_dropbox_data_postfields_data() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -386,13 +389,14 @@ class api_test extends \advanced_testcase {
         // Make the call.
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('fetch_dropbox_data');
+        $rcm->setAccessible(true);
         $rcm->invoke($mock, $endpoint, $data);
     }
 
     /**
      * When more results are available, these should be fetched until there are no more.
      */
-    public function test_fetch_dropbox_data_recurse_on_additional_records(): void {
+    public function test_fetch_dropbox_data_recurse_on_additional_records() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -403,41 +407,30 @@ class api_test extends \advanced_testcase {
 
         $endpoint = 'testEndpoint';
 
-        $requestinvocations = $this->exactly(3);
-        $mock->expects($requestinvocations)
+        // We can't detect if fetch_dropbox_data was called twice because
+        // we can'
+        $mock->expects($this->exactly(3))
             ->method('request')
-            ->willReturnCallback(function () use ($requestinvocations): string {
-                return match (self::getInvocationCount($requestinvocations)) {
-                    1 => json_encode(['has_more' => true, 'cursor' => 'Example', 'matches' => ['foo', 'bar']]),
-                    2 => json_encode(['has_more' => true, 'cursor' => 'Example', 'matches' => ['baz']]),
-                    3 => json_encode(['has_more' => false, 'cursor' => '', 'matches' => ['bum']]),
-                    default => $this->fail('Unexpected call to the call() method.'),
-                };
-            });
+            ->will($this->onConsecutiveCalls(
+                json_encode(['has_more' => true, 'cursor' => 'Example', 'matches' => ['foo', 'bar']]),
+                json_encode(['has_more' => true, 'cursor' => 'Example', 'matches' => ['baz']]),
+                json_encode(['has_more' => false, 'cursor' => '', 'matches' => ['bum']])
+            ));
 
         // We automatically adjust for the /continue endpoint.
-        $apiinvocations = $this->exactly(3);
-        $mock->expects($apiinvocations)
+        $mock->expects($this->exactly(3))
             ->method('get_api_endpoint')
-            ->willReturnCallback(function ($endpoint) use ($apiinvocations): string {
-                switch (self::getInvocationCount($apiinvocations)) {
-                    case 1:
-                        $this->assertEquals('testEndpoint', $endpoint);
-                        return 'https://example.com/api/2/testEndpoint';
-                    case 2:
-                        $this->assertEquals('testEndpoint/continue', $endpoint);
-                        return 'https://example.com/api/2/testEndpoint/continue';
-                    case 3:
-                        $this->assertEquals('testEndpoint/continue', $endpoint);
-                        return 'https://example.com/api/2/testEndpoint/continue';
-                    default:
-                        $this->fail('Unexpected call to the get_api_endpoint() method.');
-                }
-            });
+            ->withConsecutive(['testEndpoint'], ['testEndpoint/continue'], ['testEndpoint/continue'])
+            ->willReturn($this->onConsecutiveCalls(
+                'https://example.com/api/2/testEndpoint',
+                'https://example.com/api/2/testEndpoint/continue',
+                'https://example.com/api/2/testEndpoint/continue'
+            ));
 
         // Make the call.
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('fetch_dropbox_data');
+        $rcm->setAccessible(true);
         $result = $rcm->invoke($mock, $endpoint, null, 'matches');
 
         $this->assertEquals([
@@ -454,7 +447,7 @@ class api_test extends \advanced_testcase {
     /**
      * Base tests for the fetch_dropbox_content function.
      */
-    public function test_fetch_dropbox_content(): void {
+    public function test_fetch_dropbox_content() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -480,21 +473,12 @@ class api_test extends \advanced_testcase {
         $mock->expects($this->never())
             ->method('get_api_endpoint');
 
-        $headerinvocations = $this->exactly(2);
-        $mock->expects($headerinvocations)
+        $mock->expects($this->exactly(2))
             ->method('setHeader')
-            ->willReturnCallback(function ($header) use ($data, $headerinvocations): void {
-                switch (self::getInvocationCount($headerinvocations)) {
-                    case 1:
-                        $this->assertEquals('Content-Type: ', $header);
-                        break;
-                    case 2:
-                        $this->assertEquals('Dropbox-API-Arg: ' . json_encode($data), $header);
-                        break;
-                    default:
-                        $this->fail('Unexpected call to the setHeader() method.');
-                }
-            });
+            ->withConsecutive(
+                [$this->equalTo('Content-Type: ')],
+                [$this->equalTo('Dropbox-API-Arg: ' . json_encode($data))]
+            );
 
         // Only one request should be made, and it should forcibly be a POST.
         $mock->expects($this->once())
@@ -512,6 +496,7 @@ class api_test extends \advanced_testcase {
         // Make the call.
         $rc = new \ReflectionClass(\repository_dropbox\dropbox::class);
         $rcm = $rc->getMethod('fetch_dropbox_content');
+        $rcm->setAccessible(true);
         $result = $rcm->invoke($mock, $endpoint, $data);
 
         $this->assertEquals($response, $result);
@@ -520,7 +505,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that the get_file_share_info function returns an existing link if one is available.
      */
-    public function test_get_file_share_info_existing(): void {
+    public function test_get_file_share_info_existing() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -553,7 +538,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test that the get_file_share_info function creates a new link if one is not available.
      */
-    public function test_get_file_share_info_new(): void {
+    public function test_get_file_share_info_new() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -567,23 +552,21 @@ class api_test extends \advanced_testcase {
         $sharelink = 'https://example.com/share/link';
 
         // Mock fetch_dropbox_data to return an existing file.
-        $fetchinvocations = $this->exactly(2);
-        $mock->expects($fetchinvocations)
+        $mock->expects($this->exactly(2))
             ->method('fetch_dropbox_data')
-            ->willReturnCallback(function ($path, $values) use ($fetchinvocations, $id, $file): object {
-                switch (self::getInvocationCount($fetchinvocations)) {
-                    case 1:
-                        $this->assertEquals('sharing/list_shared_links', $path);
-                        $this->assertEquals(['path' => $id], $values);
-                        return (object) ['links' => []];
-                    case 2:
-                        $this->assertEquals('sharing/create_shared_link_with_settings', $path);
-                        $this->assertEquals(['path' => $id, 'settings' => ['requested_visibility' => 'public']], $values);
-                        return $file;
-                    default:
-                        $this->fail('Unexpected call to the fetch_dropbox_data() method.');
-                }
-            });
+            ->withConsecutive(
+                [$this->equalTo('sharing/list_shared_links'), $this->equalTo(['path' => $id])],
+                [$this->equalTo('sharing/create_shared_link_with_settings'), $this->equalTo([
+                    'path' => $id,
+                    'settings' => [
+                        'requested_visibility' => 'public',
+                    ]
+                ])]
+            )
+            ->will($this->onConsecutiveCalls(
+                (object) ['links' => []],
+                $file
+            ));
 
         $mock->expects($this->once())
             ->method('normalize_file_share_info')
@@ -596,7 +579,7 @@ class api_test extends \advanced_testcase {
     /**
      * Test failure behaviour with get_file_share_info fails to create a new link.
      */
-    public function test_get_file_share_info_new_failure(): void {
+    public function test_get_file_share_info_new_failure() {
         $mock = $this->getMockBuilder(\repository_dropbox\dropbox::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
@@ -610,18 +593,19 @@ class api_test extends \advanced_testcase {
         // Mock fetch_dropbox_data to return an existing file.
         $mock->expects($this->exactly(2))
             ->method('fetch_dropbox_data')
-            ->willReturnCallback(function ($path, $values) use ($id): ?object {
-                switch ($path) {
-                    case 'sharing/list_shared_links':
-                        $this->assertEquals(['path' => $id], $values);
-                        return (object) ['links' => []];
-                    case 'sharing/create_shared_link_with_settings':
-                        $this->assertEquals(['path' => $id, 'settings' => ['requested_visibility' => 'public']], $values);
-                        return null;
-                    default:
-                        $this->fail('Unexpected call to the fetch_dropbox_data() method.');
-                }
-            });
+            ->withConsecutive(
+                [$this->equalTo('sharing/list_shared_links'), $this->equalTo(['path' => $id])],
+                [$this->equalTo('sharing/create_shared_link_with_settings'), $this->equalTo([
+                    'path' => $id,
+                    'settings' => [
+                        'requested_visibility' => 'public',
+                    ]
+                ])]
+            )
+            ->will($this->onConsecutiveCalls(
+                (object) ['links' => []],
+                null
+            ));
 
         $mock->expects($this->never())
             ->method('normalize_file_share_info');

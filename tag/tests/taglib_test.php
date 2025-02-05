@@ -36,14 +36,46 @@ class taglib_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
+    }
+
+    /**
+     * Test that the tag_set function throws an exception.
+     * This function was deprecated in 3.1
+     */
+    public function test_tag_set_get() {
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('tag_set() can not be used anymore. Please use ' .
+            'core_tag_tag::set_item_tags().');
+        tag_set();
+    }
+
+    /**
+     * Test that tag_set_add function throws an exception.
+     * This function was deprecated in 3.1
+     */
+    public function test_tag_set_add() {
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('tag_set_add() can not be used anymore. Please use ' .
+            'core_tag_tag::add_item_tag().');
+        tag_set_add();
+    }
+
+    /**
+     * Test that tag_set_delete function returns an exception.
+     * This function was deprecated in 3.1
+     */
+    public function test_tag_set_delete() {
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('tag_set_delete() can not be used anymore. Please use ' .
+            'core_tag_tag::remove_item_tag().');
+        tag_set_delete();
     }
 
     /**
      * Test the core_tag_tag::add_item_tag() and core_tag_tag::remove_item_tag() functions.
      */
-    public function test_add_remove_item_tag(): void {
+    public function test_add_remove_item_tag() {
         global $DB;
 
         // Create a course to tag.
@@ -66,7 +98,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Test add_item_tag function correctly calculates the ordering for a new tag.
      */
-    public function test_add_tag_ordering_calculation(): void {
+    public function test_add_tag_ordering_calculation() {
         global $DB;
 
         $user1 = $this->getDataGenerator()->create_user();
@@ -111,9 +143,20 @@ class taglib_test extends \advanced_testcase {
     }
 
     /**
+     * Test that tag_assign function throws an exception.
+     * This function was deprecated in 3.1
+     */
+    public function test_tag_assign() {
+        $this->expectException(\coding_exception::class);
+        $this->expectExceptionMessage('tag_assign() can not be used anymore. Please use core_tag_tag::set_item_tags() ' .
+            'or core_tag_tag::add_item_tag() instead.');
+        tag_assign();
+    }
+
+    /**
      * Test the tag cleanup function used by the cron.
      */
-    public function test_tag_cleanup(): void {
+    public function test_tag_cleanup() {
         global $DB;
 
         $task = new \core\task\tag_cron_task();
@@ -206,7 +249,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Test deleting a group of tag instances.
      */
-    public function test_tag_bulk_delete_instances(): void {
+    public function test_tag_bulk_delete_instances() {
         global $DB;
         $task = new \core\task\tag_cron_task();
 
@@ -282,7 +325,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Test for function compute_correlations() that is part of tag cron
      */
-    public function test_correlations(): void {
+    public function test_correlations() {
         global $DB;
         $task = new \core\task\tag_cron_task();
 
@@ -384,7 +427,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Test for function cleanup() that is part of tag cron
      */
-    public function test_cleanup(): void {
+    public function test_cleanup() {
         global $DB;
         $task = new \core\task\tag_cron_task();
 
@@ -447,7 +490,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('tag_instance', array('tagid' => $sometag->id)));
     }
 
-    public function test_guess_tag(): void {
+    public function test_guess_tag() {
         global $DB;
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
@@ -459,7 +502,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals(core_tag_collection::get_default(), core_tag_tag::get_by_name(0, 'Cat')->tagcollid);
     }
 
-    public function test_instances(): void {
+    public function test_instances() {
         global $DB;
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
@@ -497,7 +540,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals($initialtagscount + 1, $DB->count_records('tag'));
     }
 
-    public function test_related_tags(): void {
+    public function test_related_tags() {
         global $DB;
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);
@@ -547,7 +590,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Very basic test for create/move/update/delete actions, without any itemtype movements.
      */
-    public function test_tag_coll_basic(): void {
+    public function test_tag_coll_basic() {
         global $DB;
 
         // Make sure there is one and only one tag coll that is marked as default.
@@ -628,7 +671,7 @@ class taglib_test extends \advanced_testcase {
         return array($collid1, $collid2, $user1, $user2, $blogpost);
     }
 
-    public function test_move_tags_simple(): void {
+    public function test_move_tags_simple() {
         global $DB;
         list($collid1, $collid2, $user1, $user2, $blogpost) = $this->prepare_move_tags();
 
@@ -650,7 +693,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals(array('Tag2', 'Tag3'), array_values(core_tag_tag::get_item_tags_array('core', 'user', $user2->id)));
     }
 
-    public function test_move_tags_split_tag(): void {
+    public function test_move_tags_split_tag() {
         global $DB;
         list($collid1, $collid2, $user1, $user2, $blogpost) = $this->prepare_move_tags();
 
@@ -676,7 +719,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals(array('Tag1', 'Tag3'), array_values(core_tag_tag::get_item_tags_array('core', 'post', $blogpost->id)));
     }
 
-    public function test_move_tags_merge_tag(): void {
+    public function test_move_tags_merge_tag() {
         global $DB;
         list($collid1, $collid2, $user1, $user2, $blogpost) = $this->prepare_move_tags();
 
@@ -707,7 +750,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals(array('TAG1', 'Tag3'), array_values(core_tag_tag::get_item_tags_array('core', 'post', $blogpost->id)));
     }
 
-    public function test_move_tags_with_related(): void {
+    public function test_move_tags_with_related() {
         global $DB;
         list($collid1, $collid2, $user1, $user2, $blogpost) = $this->prepare_move_tags();
 
@@ -751,7 +794,7 @@ class taglib_test extends \advanced_testcase {
         $this->assertEquals('Tag2, Tag4', join(', ', $related21));
     }
 
-    public function test_move_tags_corrupted(): void {
+    public function test_move_tags_corrupted() {
         global $DB;
         list($collid1, $collid2, $user1, $user2, $blogpost) = $this->prepare_move_tags();
         $collid3 = core_tag_collection::create(array('name' => 'weirdcoll'))->id;
@@ -791,9 +834,20 @@ class taglib_test extends \advanced_testcase {
     }
 
     /**
+     * Tests that tag_normalize function throws an exception.
+     * This function was deprecated in 3.1
+     */
+    public function test_normalize() {
+        $this->expectException(\coding_exception::class);
+        $this->expectExceptionMessage('tag_normalize() can not be used anymore. Please use ' .
+            'core_tag_tag::normalize().');
+        tag_normalize();
+    }
+
+    /**
      * Test functions core_tag_tag::create_if_missing() and core_tag_tag::get_by_name_bulk().
      */
-    public function test_create_get(): void {
+    public function test_create_get() {
         $tagset = array('Cat', ' Dog  ', '<Mouse', '<>', 'mouse', 'Dog');
 
         $collid = core_tag_collection::get_default();
@@ -818,7 +872,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Testing function core_tag_tag::combine_tags()
      */
-    public function test_combine_tags(): void {
+    public function test_combine_tags() {
         $initialtags = array(
             array('Cat', 'Dog'),
             array('Dog', 'Cat'),
@@ -875,7 +929,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Testing function core_tag_tag::combine_tags() when related tags are present.
      */
-    public function test_combine_tags_with_related(): void {
+    public function test_combine_tags_with_related() {
         $collid = core_tag_collection::get_default();
         $context = \context_system::instance();
         core_tag_tag::set_item_tags('core', 'course', 10, $context, array('Cat', 'Cats', 'Dog'));
@@ -896,7 +950,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * Testing function core_tag_tag::combine_tags() when correlated tags are present.
      */
-    public function test_combine_tags_with_correlated(): void {
+    public function test_combine_tags_with_correlated() {
         $task = new \core\task\tag_cron_task();
 
         $tags = $this->prepare_correlated();
@@ -942,7 +996,7 @@ class taglib_test extends \advanced_testcase {
      * get_tags_by_area_in_contexts should return an empty array if there
      * are no tag instances for the area in the given context.
      */
-    public function test_get_tags_by_area_in_contexts_empty(): void {
+    public function test_get_tags_by_area_in_contexts_empty() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -960,7 +1014,7 @@ class taglib_test extends \advanced_testcase {
      * have instances in the given context even when there is only a single
      * instance.
      */
-    public function test_get_tags_by_area_in_contexts_single_tag_one_context(): void {
+    public function test_get_tags_by_area_in_contexts_single_tag_one_context() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -989,7 +1043,7 @@ class taglib_test extends \advanced_testcase {
      * that have tag instances in for the area in the given context and
      * should ignore all tags that don't have an instance.
      */
-    public function test_get_tags_by_area_in_contexts_multiple_tags_one_context(): void {
+    public function test_get_tags_by_area_in_contexts_multiple_tags_one_context() {
         $tagnames = ['foo', 'bar', 'baz'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1019,7 +1073,7 @@ class taglib_test extends \advanced_testcase {
      * Tags with tag instances in the same area with in difference contexts
      * should be ignored.
      */
-    public function test_get_tags_by_area_in_contexts_multiple_tags_multiple_contexts(): void {
+    public function test_get_tags_by_area_in_contexts_multiple_tags_multiple_contexts() {
         $tagnames = ['foo', 'bar', 'baz', 'bop', 'bam', 'bip'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1060,7 +1114,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * get_items_tags should return an empty array if the tag area is disabled.
      */
-    public function test_get_items_tags_disabled_component(): void {
+    public function test_get_items_tags_disabled_component() {
         global $CFG;
 
         $user1 = $this->getDataGenerator()->create_user();
@@ -1081,7 +1135,7 @@ class taglib_test extends \advanced_testcase {
      * get_items_tags should return an empty array if the tag item ids list
      * is empty.
      */
-    public function test_get_items_tags_empty_itemids(): void {
+    public function test_get_items_tags_empty_itemids() {
         $user1 = $this->getDataGenerator()->create_user();
         $context1 = \context_user::instance($user1->id);
         $component = 'core';
@@ -1097,7 +1151,7 @@ class taglib_test extends \advanced_testcase {
      * get_items_tags should return an array indexed by the item ids with empty
      * arrays as the values when the component or itemtype is unknown.
      */
-    public function test_get_items_tags_unknown_component_itemtype(): void {
+    public function test_get_items_tags_unknown_component_itemtype() {
         $itemids = [1, 2, 3];
         $result = core_tag_tag::get_items_tags('someunknowncomponent', 'user', $itemids);
         foreach ($itemids as $itemid) {
@@ -1137,7 +1191,7 @@ class taglib_test extends \advanced_testcase {
      *      3 => []
      * ]
      */
-    public function test_get_items_tags_missing_itemids(): void {
+    public function test_get_items_tags_missing_itemids() {
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
         $user3 = $this->getDataGenerator()->create_user();
@@ -1178,7 +1232,7 @@ class taglib_test extends \advanced_testcase {
      * set_item_tags should remove any tags that aren't in the given list and should
      * add any instances that are missing.
      */
-    public function test_set_item_tags_no_multiple_context_add_remove_instances(): void {
+    public function test_set_item_tags_no_multiple_context_add_remove_instances() {
         $tagnames = ['foo', 'bar', 'baz', 'bop'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1219,7 +1273,7 @@ class taglib_test extends \advanced_testcase {
      * context if the tag area for the items doesn't allow multiple contexts for
      * the tag instances.
      */
-    public function test_set_item_tags_no_multiple_context_updates_context_of_instances(): void {
+    public function test_set_item_tags_no_multiple_context_updates_context_of_instances() {
         $tagnames = ['foo', 'bar'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1258,7 +1312,7 @@ class taglib_test extends \advanced_testcase {
      * the new set of tags, regardless of the context that the tag instance
      * is in.
      */
-    public function test_set_item_tags_no_multiple_contex_deletes_old_instancest(): void {
+    public function test_set_item_tags_no_multiple_contex_deletes_old_instancest() {
         $tagnames = ['foo', 'bar', 'baz', 'bop'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1307,7 +1361,7 @@ class taglib_test extends \advanced_testcase {
      * set_item_tags should not change tag instances in a different context to the one
      * it's opertating on if the tag area allows instances from multiple contexts.
      */
-    public function test_set_item_tags_allow_multiple_context_doesnt_update_context(): void {
+    public function test_set_item_tags_allow_multiple_context_doesnt_update_context() {
         global $DB;
         $tagnames = ['foo', 'bar', 'bop'];
         $collid = core_tag_collection::get_default();
@@ -1360,7 +1414,7 @@ class taglib_test extends \advanced_testcase {
      * the new set of tags only in the same context if the tag area allows
      * multiple contexts.
      */
-    public function test_set_item_tags_allow_multiple_context_deletes_instances_in_same_context(): void {
+    public function test_set_item_tags_allow_multiple_context_deletes_instances_in_same_context() {
         $tagnames = ['foo', 'bar', 'baz', 'bop'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1404,7 +1458,7 @@ class taglib_test extends \advanced_testcase {
      * set_item_tags should allow multiple instances of the same tag in different
      * contexts if the tag area allows multiple contexts.
      */
-    public function test_set_item_tags_allow_multiple_context_same_tag_multiple_contexts(): void {
+    public function test_set_item_tags_allow_multiple_context_same_tag_multiple_contexts() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1449,7 +1503,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * delete_instances_as_record with an empty set of instances should do nothing.
      */
-    public function test_delete_instances_as_record_empty_set(): void {
+    public function test_delete_instances_as_record_empty_set() {
         $user = $this->getDataGenerator()->create_user();
         $context = \context_user::instance($user->id);
         $component = 'core';
@@ -1469,7 +1523,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_as_record with an instance that doesn't exist should do
      * nothing.
      */
-    public function test_delete_instances_as_record_missing_set(): void {
+    public function test_delete_instances_as_record_missing_set() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1494,7 +1548,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_as_record with a list of all tag instances should
      * leave no tags left.
      */
-    public function test_delete_instances_as_record_whole_set(): void {
+    public function test_delete_instances_as_record_whole_set() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1517,7 +1571,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_as_record with a list of only some tag instances should
      * delete only the given tag instances and leave other tag instances.
      */
-    public function test_delete_instances_as_record_partial_set(): void {
+    public function test_delete_instances_as_record_partial_set() {
         $tagnames = ['foo', 'bar'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1542,7 +1596,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * delete_instances_by_id with an empty set of ids should do nothing.
      */
-    public function test_delete_instances_by_id_empty_set(): void {
+    public function test_delete_instances_by_id_empty_set() {
         $user = $this->getDataGenerator()->create_user();
         $context = \context_user::instance($user->id);
         $component = 'core';
@@ -1562,7 +1616,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_by_id with an id that doesn't exist should do
      * nothing.
      */
-    public function test_delete_instances_by_id_missing_set(): void {
+    public function test_delete_instances_by_id_missing_set() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1586,7 +1640,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_by_id with a list of all tag instance ids should
      * leave no tags left.
      */
-    public function test_delete_instances_by_id_whole_set(): void {
+    public function test_delete_instances_by_id_whole_set() {
         $tagnames = ['foo'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1609,7 +1663,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances_by_id with a list of only some tag instance ids should
      * delete only the given tag instance ids and leave other tag instances.
      */
-    public function test_delete_instances_by_id_partial_set(): void {
+    public function test_delete_instances_by_id_partial_set() {
         $tagnames = ['foo', 'bar'];
         $collid = core_tag_collection::get_default();
         $tags = core_tag_tag::create_if_missing($collid, $tagnames);
@@ -1635,7 +1689,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances should delete all tag instances for a component if given
      * only the component as a parameter.
      */
-    public function test_delete_instances_with_component(): void {
+    public function test_delete_instances_with_component() {
         global $DB;
 
         $tagnames = ['foo', 'bar'];
@@ -1665,7 +1719,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances should delete all tag instances for a component if given
      * only the component as a parameter.
      */
-    public function test_delete_instances_with_component_and_itemtype(): void {
+    public function test_delete_instances_with_component_and_itemtype() {
         global $DB;
 
         $tagnames = ['foo', 'bar'];
@@ -1698,7 +1752,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances should delete all tag instances for a component in a context
      * if given both the component and context id as parameters.
      */
-    public function test_delete_instances_with_component_and_context(): void {
+    public function test_delete_instances_with_component_and_context() {
         global $DB;
 
         $tagnames = ['foo', 'bar', 'baz'];
@@ -1734,7 +1788,7 @@ class taglib_test extends \advanced_testcase {
      * delete_instances should delete all tag instances for a component, item type
      * and context if given the component, itemtype, and context id as parameters.
      */
-    public function test_delete_instances_with_component_and_itemtype_and_context(): void {
+    public function test_delete_instances_with_component_and_itemtype_and_context() {
         global $DB;
 
         $tagnames = ['foo', 'bar', 'baz'];
@@ -1779,7 +1833,7 @@ class taglib_test extends \advanced_testcase {
      * change_instances_context should not change any existing instance contexts
      * if not given any instance ids.
      */
-    public function test_change_instances_context_empty_set(): void {
+    public function test_change_instances_context_empty_set() {
         global $DB;
 
         $tagnames = ['foo'];
@@ -1807,7 +1861,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * change_instances_context should only change the context of the given ids.
      */
-    public function test_change_instances_context_partial_set(): void {
+    public function test_change_instances_context_partial_set() {
         global $DB;
 
         $tagnames = ['foo', 'bar'];
@@ -1838,7 +1892,7 @@ class taglib_test extends \advanced_testcase {
     /**
      * change_instances_context should change multiple items from multiple contexts.
      */
-    public function test_change_instances_context_multiple_contexts(): void {
+    public function test_change_instances_context_multiple_contexts() {
         global $DB;
 
         $tagnames = ['foo', 'bar'];
@@ -1879,7 +1933,7 @@ class taglib_test extends \advanced_testcase {
      * change_instances_context moving an instance from one context into a context
      * that already has an instance of that tag should throw an exception.
      */
-    public function test_change_instances_context_conflicting_instances(): void {
+    public function test_change_instances_context_conflicting_instances() {
         global $DB;
 
         $tagnames = ['foo'];

@@ -25,8 +25,6 @@
  */
 
 use quizaccess_seb\seb_quiz_settings;
-use quizaccess_seb\settings_provider;
-use quizaccess_seb\template;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -75,15 +73,7 @@ class restore_quizaccess_seb_subplugin extends restore_mod_quiz_access_subplugin
         unset($data->id);
         $data->timecreated = $data->timemodified = time();
         $data->usermodified = $USER->id;
-
-        // Do not use template if it is no longer enabled.
-        if ($data->requiresafeexambrowser == settings_provider::USE_SEB_TEMPLATE &&
-                !$DB->record_exists(template::TABLE, ['id' => $data->templateid, 'enabled' => '1'])) {
-            $data->templateid = 0;
-            $data->requiresafeexambrowser = settings_provider::USE_SEB_NO;
-        }
-
-        $DB->insert_record(seb_quiz_settings::TABLE, $data);
+        $DB->insert_record(quizaccess_seb\seb_quiz_settings::TABLE, $data);
 
         // Process attached files.
         $this->add_related_files('quizaccess_seb', 'filemanager_sebconfigfile', null);
@@ -122,10 +112,7 @@ class restore_quizaccess_seb_subplugin extends restore_mod_quiz_access_subplugin
         }
 
         // Update the restored quiz settings to use restored template.
-        // Check if template is enabled before using it.
-        if ($template->get('enabled')) {
-            $DB->set_field(seb_quiz_settings::TABLE, 'templateid', $template->get('id'), ['quizid' => $quizid]);
-        }
+        $DB->set_field(\quizaccess_seb\seb_quiz_settings::TABLE, 'templateid', $template->get('id'), ['quizid' => $quizid]);
     }
 
 }

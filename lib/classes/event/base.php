@@ -170,7 +170,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @throws \coding_exception
      */
-    final public static function create(?array $data = null) {
+    public static final function create(array $data = null) {
         global $USER, $CFG;
 
         $data = (array)$data;
@@ -296,7 +296,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @return void
      */
-    abstract protected function init();
+    protected abstract function init();
 
     /**
      * Let developers validate their custom data (such as $this->data['other'], contextlevel, etc.).
@@ -376,7 +376,7 @@ abstract class base implements \IteratorAggregate {
      * @param array $logextra the format is standardised by logging API
      * @return bool|\core\event\base
      */
-    final public static function restore(array $data, array $logextra) {
+    public static final function restore(array $data, array $logextra) {
         $classname = $data['eventname'];
         $component = $data['component'];
         $action = $data['action'];
@@ -427,7 +427,7 @@ abstract class base implements \IteratorAggregate {
      * @param array $logextra
      * @return unknown_logged
      */
-    final protected static function restore_unknown(array $data, array $logextra) {
+    protected static final function restore_unknown(array $data, array $logextra) {
         $classname = '\core\event\unknown_logged';
 
         /** @var unknown_logged $event */
@@ -447,7 +447,7 @@ abstract class base implements \IteratorAggregate {
      * @param \stdClass $legacy
      * @return base
      */
-    final public static function restore_legacy($legacy) {
+    public static final function restore_legacy($legacy) {
         $classname = get_called_class();
         /** @var base $event */
         $event = new $classname();
@@ -606,7 +606,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @return array Static information about the event.
      */
-    final public static function get_static_info() {
+    public static final function get_static_info() {
         /** Var \core\event\base $event. */
         $event = new static();
         // Set static event data specific for child class.
@@ -772,7 +772,7 @@ abstract class base implements \IteratorAggregate {
     /**
      * Trigger event.
      */
-    final public function trigger() {
+    public final function trigger() {
         global $CFG;
 
         if ($this->restored) {
@@ -802,7 +802,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @return bool
      */
-    final public function is_triggered() {
+    public final function is_triggered() {
         return $this->triggered;
     }
 
@@ -811,7 +811,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @return bool
      */
-    final public function is_dispatched() {
+    public final function is_dispatched() {
         return $this->dispatched;
     }
 
@@ -820,7 +820,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @return bool
      */
-    final public function is_restored() {
+    public final function is_restored() {
         return $this->restored;
     }
 
@@ -835,7 +835,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @throws \coding_exception if used after ::trigger()
      */
-    final public function add_record_snapshot($tablename, $record) {
+    public final function add_record_snapshot($tablename, $record) {
         global $DB, $CFG;
 
         if ($this->triggered) {
@@ -876,7 +876,7 @@ abstract class base implements \IteratorAggregate {
      *
      * @throws \coding_exception if used after ::restore()
      */
-    final public function get_record_snapshot($tablename, $id) {
+    public final function get_record_snapshot($tablename, $id) {
         global $DB;
 
         if ($this->restored) {

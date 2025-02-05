@@ -232,75 +232,48 @@ $functions = [
         'ajax'          => true,
     ],
 
-    'mod_quiz_save_overrides' => [
-        'classname'     => 'mod_quiz\external\save_overrides',
-        'description'   => 'Update or insert quiz overrides',
-        'type'          => 'write',
-        'capabilities'  => 'mod/quiz:manageoverrides',
-        'ajax'          => true,
-    ],
-
-    'mod_quiz_delete_overrides' => [
-        'classname'     => 'mod_quiz\external\delete_overrides',
-        'description'   => 'Delete quiz overrides',
-        'type'          => 'write',
-        'capabilities'  => 'mod/quiz:manageoverrides',
-        'ajax'          => true,
-    ],
-
-    'mod_quiz_get_overrides' => [
-        'classname'     => 'mod_quiz\external\get_overrides',
-        'description'   => 'Get quiz overrides',
+    'mod_quiz_get_quiz_questions' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'get_quiz_questions',
+        'description'   => 'Returns the list of questions in a quiz.',
         'type'          => 'read',
-        'capabilities'  => 'mod/quiz:manageoverrides',
-        'ajax'          => true,
+        'capabilities'  => 'mod/quiz:view',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
 
-    'mod_quiz_create_grade_items' => [
-        'classname' => 'mod_quiz\external\create_grade_items',
-        'description' => 'Create quiz grade items. All grade items must belong to the same quiz.',
-        'type' => 'write',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
+    'mod_quiz_create_quiz' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'create_quiz',
+        'description'   => 'Create new quiz.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
 
-    'mod_quiz_delete_grade_items' => [
-        'classname' => 'mod_quiz\external\delete_grade_items',
-        'description' => 'Delete quiz grade items. All grade items must belong to the same quiz.',
-        'type' => 'write',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
+    'mod_quiz_create_question_in_quiz' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'create_question_in_quiz',
+        'description'   => 'Create new question in quiz.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
 
-    'mod_quiz_update_grade_items' => [
-        'classname' => 'mod_quiz\external\update_grade_items',
-        'description' => 'Update quiz grade items. All grade items must belong to the same quiz.',
-        'type' => 'write',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
+    'mod_quiz_update_question_grade' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'update_question_grade',
+        'description'   => 'Update question grade.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
-
-    'mod_quiz_update_slots' => [
-        'classname' => 'mod_quiz\external\update_slots',
-        'description' => 'Update the properties of slots in a quiz. All slots must belong to the same quiz.',
-        'type' => 'write',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
-    ],
-
-    'mod_quiz_get_edit_grading_page_data' => [
-        'classname' => 'mod_quiz\external\get_edit_grading_page_data',
-        'description' => 'Get the data required to re-render the Quiz grading setup page',
-        'type' => 'read',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
-    ],
-
-    'mod_quiz_create_grade_item_per_section' => [
-        'classname' => 'mod_quiz\external\create_grade_item_per_section',
-        'description' => 'For a quiz with no grade items yet, create a grade item for each section, with the questions in that section assigned.',
-        'type' => 'write',
-        'capabilities' => 'mod/quiz:manage',
-        'ajax' => true,
+    
+    'mod_quiz_regrade_attempt' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'regrade_attempt',
+        'description'   => 'Regrade attempt.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
 ];

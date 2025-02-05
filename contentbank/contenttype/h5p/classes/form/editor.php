@@ -116,7 +116,6 @@ class editor extends edit_content {
             $mform->addElement('cancel', 'cancel', get_string('back'));
         } else {
             $this->h5peditor->add_editor_to_form($mform);
-            parent::definition();
             $this->add_action_buttons();
         }
     }
@@ -158,10 +157,6 @@ class editor extends edit_content {
             // Create entry in content bank.
             $contenttype = new contenttype($context);
             $newcontent = $contenttype->create_content($cbrecord);
-            $cfdata = fullclone($data);
-            $cfdata->id = $newcontent->get_id();
-            $handler = \core_contentbank\customfield\content_handler::create();
-            $handler->instance_form_save($cfdata, true);
             if ($file && $newcontent) {
                 $updatedfilerecord = new stdClass();
                 $updatedfilerecord->id = $file->get_id();
@@ -177,10 +172,6 @@ class editor extends edit_content {
         } else {
             // Update content.
             $this->content->update_content();
-            $cfdata = fullclone($data);
-            $cfdata->id = $this->content->get_id();
-            $handler = \core_contentbank\customfield\content_handler::create();
-            $handler->instance_form_save($cfdata, true);
         }
 
         return $contentid ?? $newcontent->get_id();

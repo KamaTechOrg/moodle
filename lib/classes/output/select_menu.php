@@ -18,6 +18,8 @@ declare(strict_types=1);
 
 namespace core\output;
 
+use renderer_base;
+
 /**
  * A single-select combobox widget that is functionally similar to an HTML select element.
  *
@@ -26,7 +28,7 @@ namespace core\output;
  * @copyright 2022 Shamim Rezaie <shamim@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class select_menu implements renderable, templatable {
+class select_menu implements \renderable, \templatable {
     /** @var array List of options. */
     protected $options;
 
@@ -39,9 +41,6 @@ class select_menu implements renderable, templatable {
     /** @var array Button label's attributes */
     protected $labelattributes = [];
 
-    /** @var bool Whether the label is inline or not */
-    protected $inlinelabel = false;
-
     /** @var string Name of the combobox element */
     protected $name;
 
@@ -50,10 +49,10 @@ class select_menu implements renderable, templatable {
      *
      * @param string $name Name of the combobox element
      * @param array $options List of options in an associative array format like ['val' => 'Option'].
-     *                       Supports grouped options as well. Empty string or null values will be rendered as dividers.
+     *                       Supports grouped options as well.
      * @param string|null $selected The value of the preselected option.
      */
-    public function __construct(string $name, array $options, ?string $selected = null) {
+    public function __construct(string $name, array $options, string $selected = null) {
         $this->name = $name;
         $this->options = $options;
         $this->selected = $selected;
@@ -64,12 +63,10 @@ class select_menu implements renderable, templatable {
      *
      * @param string $label The label.
      * @param array $attributes List of attributes to apply on the label element.
-     * @param bool $inlinelabel Whether the label is inline or not.
      */
-    public function set_label(string $label, array $attributes = [], bool $inlinelabel = false) {
+    public function set_label(string $label, array $attributes = []) {
         $this->label = $label;
         $this->labelattributes = $attributes;
-        $this->inlinelabel = $inlinelabel;
     }
 
     /**
@@ -88,33 +85,25 @@ class select_menu implements renderable, templatable {
                             'name' => $groupname,
                             'isgroup' => true,
                             'id' => \html_writer::random_id('select-menu-group'),
-                            'options' => [],
+                            'options' => []
                         ];
                     }
                     foreach ($optoptions as $optvalue => $optoption) {
-                        if (empty($optoption)) {
-                            $flattened[$groupname]['options'][$optvalue] = ['isdivider' => true];
-                        } else {
-                            $flattened[$groupname]['options'][$optvalue] = [
-                                'name' => $optoption,
-                                'value' => $optvalue,
-                                'selected' => $this->selected == $optvalue,
-                                'id' => \html_writer::random_id('select-menu-option'),
-                            ];
-                        }
+                        $flattened[$groupname]['options'][$optvalue] = [
+                            'name' => $optoption,
+                            'value' => $optvalue,
+                            'selected' => $this->selected == $optvalue,
+                            'id' => \html_writer::random_id('select-menu-option'),
+                        ];
                     }
                 }
             } else {
-                if (empty($option)) {
-                    $flattened[$value] = ['isdivider' => true];
-                } else {
-                    $flattened[$value] = [
-                        'name' => $option,
-                        'value' => $value,
-                        'selected' => $this->selected == $value,
-                        'id' => \html_writer::random_id('select-menu-option'),
-                    ];
-                }
+                $flattened[$value] = [
+                    'name' => $option,
+                    'value' => $value,
+                    'selected' => $this->selected == $value,
+                    'id' => \html_writer::random_id('select-menu-option'),
+                ];
             }
         }
 
@@ -166,7 +155,6 @@ class select_menu implements renderable, templatable {
         $data = new \stdClass();
         $data->baseid = \html_writer::random_id('select-menu');
         $data->label = $this->label;
-        $data->inlinelabel = $this->inlinelabel;
         $data->options = $this->flatten_options();
         $data->selectedoption = $this->get_selected_option();
         $data->name = $this->name;

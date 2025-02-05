@@ -21,6 +21,7 @@ namespace core_reportbuilder\external;
 use advanced_testcase;
 use core_reportbuilder_generator;
 use core_reportbuilder\manager;
+use core_reportbuilder\local\helpers\report;
 use core_user\reportbuilder\datasource\users;
 
 /**
@@ -31,7 +32,7 @@ use core_user\reportbuilder\datasource\users;
  * @copyright   2022 Paul Holden <paulh@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class custom_report_columns_sorting_exporter_test extends advanced_testcase {
+class custom_report_columns_sorting_exporter_test extends advanced_testcase {
 
     /**
      * Test exported data structure
@@ -45,20 +46,13 @@ final class custom_report_columns_sorting_exporter_test extends advanced_testcas
         $generator = $this->getDataGenerator()->get_plugin_generator('core_reportbuilder');
         $report = $generator->create_report(['name' => 'My report', 'source' => users::class, 'default' => false]);
 
-        // Add a couple of columns (enable sorting on the email column, move it to first place.).
-        $columnfullname = $generator->create_column([
-            'reportid' => $report->get('id'),
-            'uniqueidentifier' => 'user:fullname',
-            'sortenabled' => false,
-            'sortorder' => 2,
-        ]);
-        $columnemail = $generator->create_column([
-            'reportid' => $report->get('id'),
-            'uniqueidentifier' => 'user:email',
-            'sortenabled' => true,
-            'sortdirection' => SORT_DESC,
-            'sortorder' => 1,
-        ]);
+        // Add a couple of columns.
+        $columnfullname = $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:fullname']);
+        $columnemail = $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:email']);
+
+        // Enable sorting on the email column, move it to first place.
+        report::toggle_report_column_sorting($report->get('id'), $columnemail->get('id'), true, SORT_DESC);
+        report::reorder_report_column_sorting($report->get('id'), $columnemail->get('id'), 1);
 
         $reportinstance = manager::get_report_from_persistent($report);
 
@@ -76,11 +70,7 @@ final class custom_report_columns_sorting_exporter_test extends advanced_testcas
         $this->assertEquals(1, $sortcolumnemail['sortorder']);
         $this->assertEquals(SORT_DESC, $sortcolumnemail['sortdirection']);
         $this->assertEquals('Disable initial sorting for column \'Email address\'', $sortcolumnemail['sortenabledtitle']);
-        $this->assertEquals([
-            'key' => 't/sort_desc',
-            'component' => 'moodle',
-            'title' => 'Change initial sorting for column \'Email address\' to ascending',
-        ], $sortcolumnemail['sorticon']);
+        $this->assertEquals('Sort column \'Email address\' ascending', $sortcolumnemail['sorticon']['title']);
 
         // Fullname column.
         $this->assertEquals($columnfullname->get('id'), $sortcolumnfullname['id']);
@@ -89,11 +79,7 @@ final class custom_report_columns_sorting_exporter_test extends advanced_testcas
         $this->assertEquals(2, $sortcolumnfullname['sortorder']);
         $this->assertEquals(SORT_ASC, $sortcolumnfullname['sortdirection']);
         $this->assertEquals('Enable initial sorting for column \'Full name\'', $sortcolumnfullname['sortenabledtitle']);
-        $this->assertEquals([
-            'key' => 't/sort_asc',
-            'component' => 'moodle',
-            'title' => 'Change initial sorting for column \'Full name\' to descending',
-        ], $sortcolumnfullname['sorticon']);
+        $this->assertEquals('Sort column \'Full name\' descending', $sortcolumnfullname['sorticon']['title']);
 
         $this->assertNotEmpty($export->helpicon);
     }

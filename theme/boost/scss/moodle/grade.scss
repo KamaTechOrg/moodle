@@ -157,7 +157,7 @@
             margin-right: 28px;
             font-style: italic;
             font-weight: bold;
-            color: #{shift-color($success, 20%)};
+            color: #{theme-color-level('success', 2)};
 
             input {
                 margin-bottom: 0;
@@ -429,6 +429,12 @@
 
                             .itemselect {
                                 margin-right: 15px;
+                            }
+
+                            .itemicon {
+                                font-size: 18px;
+                                width: 18px;
+                                height: 18px;
                             }
                         }
 

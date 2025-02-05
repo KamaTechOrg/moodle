@@ -16,9 +16,9 @@
 
 namespace cachestore_redis;
 
+use cache_definition;
+use cache_store;
 use cachestore_redis;
-use core_cache\definition;
-use core_cache\store;
 
 require_once(__DIR__.'/../../../tests/fixtures/stores.php');
 require_once(__DIR__.'/../lib.php');
@@ -57,8 +57,8 @@ class compressor_test extends \advanced_testcase {
      * @return cachestore_redis
      */
     public function create_store($compressor, $serializer) {
-        /** @var definition $definition */
-        $definition = definition::load_adhoc(store::MODE_APPLICATION, 'cachestore_redis', 'phpunit_test');
+        /** @var cache_definition $definition */
+        $definition = cache_definition::load_adhoc(cache_store::MODE_APPLICATION, 'cachestore_redis', 'phpunit_test');
         $config = cachestore_redis::unit_test_configuration();
         $config['compressor'] = $compressor;
         $config['serializer'] = $serializer;
@@ -71,7 +71,7 @@ class compressor_test extends \advanced_testcase {
     /**
      * It misses a value.
      */
-    public function test_it_can_miss_one(): void {
+    public function test_it_can_miss_one() {
         $store = $this->create_store(cachestore_redis::COMPRESSOR_PHP_GZIP, \Redis::SERIALIZER_PHP);
 
         self::assertFalse($store->get('missme'));
@@ -80,7 +80,7 @@ class compressor_test extends \advanced_testcase {
     /**
      * It misses many values.
      */
-    public function test_it_can_miss_many(): void {
+    public function test_it_can_miss_many() {
         $store = $this->create_store(cachestore_redis::COMPRESSOR_PHP_GZIP, \Redis::SERIALIZER_PHP);
 
         $expected = ['missme' => false, 'missmetoo' => false];
@@ -91,7 +91,7 @@ class compressor_test extends \advanced_testcase {
     /**
      * It misses some values.
      */
-    public function test_it_can_miss_some(): void {
+    public function test_it_can_miss_some() {
         $store = $this->create_store(cachestore_redis::COMPRESSOR_PHP_GZIP, \Redis::SERIALIZER_PHP);
         $store->set('iamhere', 'youfoundme');
 
@@ -105,7 +105,7 @@ class compressor_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_for_test_it_works_with_different_types(): array {
+    public function provider_for_test_it_works_with_different_types() {
         $object = new \stdClass();
         $object->field = 'value';
 
@@ -134,7 +134,7 @@ class compressor_test extends \advanced_testcase {
      * @param string $key
      * @param mixed $value
      */
-    public function test_it_works_with_different_types($key, $value): void {
+    public function test_it_works_with_different_types($key, $value) {
         $store = $this->create_store(cachestore_redis::COMPRESSOR_PHP_GZIP, \Redis::SERIALIZER_PHP);
         $store->set($key, $value);
 
@@ -144,10 +144,10 @@ class compressor_test extends \advanced_testcase {
     /**
      * Test it works with different types for many.
      */
-    public function test_it_works_with_different_types_for_many(): void {
+    public function test_it_works_with_different_types_for_many() {
         $store = $this->create_store(cachestore_redis::COMPRESSOR_PHP_GZIP, \Redis::SERIALIZER_PHP);
 
-        $provider = self::provider_for_test_it_works_with_different_types();
+        $provider = $this->provider_for_test_it_works_with_different_types();
         $keys = [];
         $values = [];
         $expected = [];
@@ -166,7 +166,7 @@ class compressor_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function provider_for_tests_setget(): array {
+    public function provider_for_tests_setget() {
         if (!cachestore_redis::are_requirements_met()) {
             // Even though we skip all tests in this case, this provider can still show warnings about non-existing class.
             return [];
@@ -234,7 +234,7 @@ class compressor_test extends \advanced_testcase {
      * @param string $rawexpected1
      * @param string $rawexpected2
      */
-    public function test_it_can_use_getset($name, $serializer, $compressor, $rawexpected1, $rawexpected2): void {
+    public function test_it_can_use_getset($name, $serializer, $compressor, $rawexpected1, $rawexpected2) {
         // Create a connection with the desired serialisation.
         $store = $this->create_store($compressor, $serializer);
         $store->set('key', 'value1');
@@ -258,7 +258,7 @@ class compressor_test extends \advanced_testcase {
      * @param string $rawexpected1
      * @param string $rawexpected2
      */
-    public function test_it_can_use_getsetmany($name, $serializer, $compressor, $rawexpected1, $rawexpected2): void {
+    public function test_it_can_use_getsetmany($name, $serializer, $compressor, $rawexpected1, $rawexpected2) {
         $many = [
             ['key' => 'key1', 'value' => 'value1'],
             ['key' => 'key2', 'value' => 'value2'],

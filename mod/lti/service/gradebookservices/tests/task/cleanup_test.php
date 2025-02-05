@@ -32,14 +32,13 @@ class cleanup_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
     /**
      * Test the cleanup task.
      */
-    public function test_cleanup_task(): void {
+    public function test_cleanup_task() {
         global $DB;
 
         // Create a course.
@@ -96,7 +95,7 @@ class cleanup_test extends \advanced_testcase {
     /**
      * Test the cleanup task with a manual grade item.
      */
-    public function test_cleanup_task_with_manual_item(): void {
+    public function test_cleanup_task_with_manual_item() {
         global $CFG, $DB;
 
         // This is required when running the unit test in isolation.

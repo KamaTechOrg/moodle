@@ -73,8 +73,8 @@ class table implements \renderable {
         ];
         $table->colclasses = [
             'text-center',
-            'text-start',
-            'text-start',
+            'text-left',
+            'text-left',
             'text-center',
             'text-center',
             'text-center',

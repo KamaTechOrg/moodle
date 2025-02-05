@@ -52,7 +52,6 @@ class automated_backup_test extends \advanced_testcase {
 
     protected function setUp(): void {
         global $DB, $CFG;
-        parent::setUp();
 
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -96,7 +95,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the automated backup run when the there is course backup should be skipped.
      */
-    public function test_automated_backup_skipped_run(): void {
+    public function test_automated_backup_skipped_run() {
         global $DB;
 
         // Enable automated back up.
@@ -117,9 +116,11 @@ class automated_backup_test extends \advanced_testcase {
         $classobject = $this->backupcronautomatedhelper->return_this();
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'get_courses');
+        $method->setAccessible(true); // Allow accessing of private method.
         $courses = $method->invoke($classobject);
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'check_and_push_automated_backups');
+        $method->setAccessible(true); // Allow accessing of private method.
         $emailpending = $method->invokeArgs($classobject, [$courses, $admin]);
 
         $this->expectOutputRegex('/Skipping course id ' . $this->course->id . ': Not scheduled for backup until/');
@@ -132,7 +133,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the automated backup run when the there is course backup can be pushed to adhoc task.
      */
-    public function test_automated_backup_push_run(): void {
+    public function test_automated_backup_push_run() {
         global $DB;
 
         // Enable automated back up.
@@ -144,6 +145,7 @@ class automated_backup_test extends \advanced_testcase {
         $classobject = $this->backupcronautomatedhelper->return_this();
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'get_courses');
+        $method->setAccessible(true); // Allow accessing of private method.
         $courses = $method->invoke($classobject);
 
         // Create this backup course.
@@ -159,6 +161,7 @@ class automated_backup_test extends \advanced_testcase {
         $DB->update_record('backup_courses', $backupcourse);
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'check_and_push_automated_backups');
+        $method->setAccessible(true); // Allow accessing of private method.
         $emailpending = $method->invokeArgs($classobject, [$courses, $admin]);
         $this->assertTrue($emailpending);
 
@@ -172,7 +175,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the automated backup inactive run.
      */
-    public function test_inactive_run(): void {
+    public function test_inactive_run() {
         backup_cron_automated_helper::run_automated_backup();
         $this->expectOutputString("Checking automated backup status...INACTIVE\n");
     }
@@ -180,7 +183,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the invisible course being skipped.
      */
-    public function test_should_skip_invisible_course(): void {
+    public function test_should_skip_invisible_course() {
         global $DB;
 
         set_config('backup_auto_active', true, 'backup');
@@ -201,6 +204,7 @@ class automated_backup_test extends \advanced_testcase {
         $nextstarttime = backup_cron_automated_helper::calculate_next_automated_backup(null, time());
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'should_skip_course_backup');
+        $method->setAccessible(true); // Allow accessing of private method.
         $skipped = $method->invokeArgs($classobject, [$backupcourse, $course, $nextstarttime]);
 
         $this->assertTrue($skipped);
@@ -210,7 +214,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the not modified course being skipped.
      */
-    public function test_should_skip_not_modified_course_in_days(): void {
+    public function test_should_skip_not_modified_course_in_days() {
         global $DB;
 
         set_config('backup_auto_active', true, 'backup');
@@ -235,6 +239,7 @@ class automated_backup_test extends \advanced_testcase {
         $nextstarttime = backup_cron_automated_helper::calculate_next_automated_backup(null, time());
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'should_skip_course_backup');
+        $method->setAccessible(true); // Allow accessing of private method.
         $skipped = $method->invokeArgs($classobject, [$backupcourse, $course, $nextstarttime]);
 
         $this->assertTrue($skipped);
@@ -244,7 +249,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Tests the backup not modified course being skipped.
      */
-    public function test_should_skip_not_modified_course_since_prev(): void {
+    public function test_should_skip_not_modified_course_since_prev() {
         global $DB;
 
         set_config('backup_auto_active', true, 'backup');
@@ -269,6 +274,7 @@ class automated_backup_test extends \advanced_testcase {
         $nextstarttime = backup_cron_automated_helper::calculate_next_automated_backup(null, time());
 
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'should_skip_course_backup');
+        $method->setAccessible(true); // Allow accessing of private method.
         $skipped = $method->invokeArgs($classobject, [$backupcourse, $course, $nextstarttime]);
 
         $this->assertTrue($skipped);
@@ -278,7 +284,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Test the task completes when coureid is missing.
      */
-    public function test_task_complete_when_courseid_is_missing(): void {
+    public function test_task_complete_when_courseid_is_missing() {
         global $DB;
         $admin = get_admin();
         $classobject = $this->backupcronautomatedhelper->return_this();
@@ -292,6 +298,7 @@ class automated_backup_test extends \advanced_testcase {
 
         // Create a backup task.
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'push_course_backup_adhoc_task');
+        $method->setAccessible(true); // Allow accessing of private method.
         $method->invokeArgs($classobject, [$backupcourse, $admin]);
 
         // Delete course for this test.
@@ -310,7 +317,7 @@ class automated_backup_test extends \advanced_testcase {
     /**
      * Test the task completes when backup course is missing.
      */
-    public function test_task_complete_when_backup_course_is_missing(): void {
+    public function test_task_complete_when_backup_course_is_missing() {
         global $DB;
         $admin = get_admin();
         $classobject = $this->backupcronautomatedhelper->return_this();
@@ -324,6 +331,7 @@ class automated_backup_test extends \advanced_testcase {
 
         // Create a backup task.
         $method = new \ReflectionMethod('\backup_cron_automated_helper', 'push_course_backup_adhoc_task');
+        $method->setAccessible(true); // Allow accessing of private method.
         $method->invokeArgs($classobject, [$backupcourse, $admin]);
 
         // Delete backup course for this test.

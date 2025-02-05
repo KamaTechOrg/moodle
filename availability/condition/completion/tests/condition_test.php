@@ -45,14 +45,13 @@ class condition_test extends \advanced_testcase {
      * Load required classes.
      */
     public function setUp(): void {
-        parent::setUp();
         condition::wipe_static_cache();
     }
 
     /**
      * Tests constructing and using condition as part of tree.
      */
-    public function test_in_tree(): void {
+    public function test_in_tree() {
         global $USER, $CFG;
         $this->resetAfterTest();
 
@@ -102,7 +101,7 @@ class condition_test extends \advanced_testcase {
      * Tests the constructor including error conditions. Also tests the
      * string conversion feature (intended for debugging only).
      */
-    public function test_constructor(): void {
+    public function test_constructor() {
         // No parameters.
         $structure = new \stdClass();
         try {
@@ -166,7 +165,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the save() function.
      */
-    public function test_save(): void {
+    public function test_save() {
         $structure = (object)['cm' => 42, 'e' => COMPLETION_COMPLETE];
         $cond = new condition($structure);
         $structure->type = 'completion';
@@ -176,7 +175,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the is_available and get_description functions.
      */
-    public function test_usage(): void {
+    public function test_usage() {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
         $this->resetAfterTest();
@@ -470,7 +469,7 @@ class condition_test extends \advanced_testcase {
         $this->assertMatchesRegularExpression($description, $information);
     }
 
-    public static function previous_activity_data(): array {
+    public function previous_activity_data(): array {
         // Assign grade, condition, activity to complete, activity to test, result, resultnot, description.
         return [
             'Missing previous activity complete' => [
@@ -635,7 +634,7 @@ class condition_test extends \advanced_testcase {
 
     }
 
-    public static function section_previous_activity_data(): array {
+    public function section_previous_activity_data(): array {
         return [
             // Condition, Activity completion, section to test, result, resultnot, description.
             'Completion complete Section with no previous activity' => [
@@ -689,7 +688,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests completion_value_used static function.
      */
-    public function test_completion_value_used(): void {
+    public function test_completion_value_used() {
         global $CFG, $DB;
         $this->resetAfterTest();
         $prevvalue = condition::OPTION_PREVIOUS;
@@ -769,7 +768,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the update_dependency_id() function.
      */
-    public function test_update_dependency_id(): void {
+    public function test_update_dependency_id() {
         $cond = new condition((object)[
             'cm' => 42, 'e' => COMPLETION_COMPLETE, 'selfid' => 43
         ]);

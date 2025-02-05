@@ -25,6 +25,8 @@
 require_once("../../config.php");
 require_once("lib.php");
 
+$current_tab = 'analysis';
+
 $id = required_param('id', PARAM_INT);  // Course module id.
 
 $url = new moodle_url('/mod/feedback/analysis.php', array('id'=>$id));

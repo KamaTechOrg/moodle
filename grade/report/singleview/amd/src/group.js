@@ -19,8 +19,6 @@
  * @module    gradereport_singleview/group
  * @copyright 2023 Mathew May <mathew.solutions>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @deprecated since Moodle 4.5 - please use core_course/actionbar/group instead.
- * @todo       Final deprecation in Moodle 6.0. See MDL-82116.
  */
 import GroupSearch from 'core_group/comboboxsearch/group';
 import Url from 'core/url';
@@ -37,11 +35,6 @@ export default class Group extends GroupSearch {
      * @param {string} item The page type we are currently on.
      */
     constructor(item) {
-        window.console.warn(
-            'The gradereport_singleview/group module has been deprecated since Moodle 4.5.' +
-            ' Please use core_course/actionbar/group instead.',
-        );
-
         super();
         this.item = item;
 
@@ -64,7 +57,7 @@ export default class Group extends GroupSearch {
     }
 
     /**
-     * Build up the link that is dedicated to a particular result.
+     * Build up the view all link that is dedicated to a particular result.
      *
      * @param {Number} groupID The ID of the group selected.
      * @returns {string|*}

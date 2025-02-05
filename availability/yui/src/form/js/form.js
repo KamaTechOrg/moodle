@@ -272,17 +272,13 @@ M.core_availability.plugin = {
      * overridden by child plugin.
      *
      * @method init
-     * @param {String} component Component name e.g. 'availability_date'.
-     * @param {boolean} allowAdd Indicates whether adding new instances of the plugin is permitted.
-     * @param {Object} params Additional parameters.
-     * @param {boolean} displayMode Whether the eye icon is show or hide. True for "Hide", false for "Show".
+     * @param {String} component Component name e.g. 'availability_date'
      */
-    init: function(component, allowAdd, params, displayMode) {
+    init: function(component, allowAdd, params) {
         var name = component.replace(/^availability_/, '');
         this.allowAdd = allowAdd;
         M.core_availability.form.plugins[name] = this;
         this.initInner.apply(this, params);
-        this.displayMode = displayMode;
     },
 
     /**
@@ -438,7 +434,7 @@ M.core_availability.List = function(json, root, parentRoot) {
         noneNode.appendChild(deleteIcon.span);
 
         // Also if it's not the root, none is actually invalid, so add a label.
-        noneNode.appendChild(Y.Node.create('<span class="mt-1 badge bg-warning text-dark">' +
+        noneNode.appendChild(Y.Node.create('<span class="mt-1 badge badge-warning">' +
                 M.util.get_string('invalid', 'availability') + '</span>'));
     }
 
@@ -780,17 +776,12 @@ M.core_availability.List.prototype.clickAdd = function() {
 M.core_availability.List.prototype.getAddHandler = function(type, dialogRef) {
     return function() {
         var newItem;
-        var displayMode = true;
-        // Check if we have changed the eye icon in the manage restriction to hidden.
-        if (type && M.core_availability.form.plugins[type].displayMode) {
-            displayMode = false;
-        }
         if (type) {
             // Create an Item object to represent the child.
-            newItem = new M.core_availability.Item({type: type, creating: true, showc: displayMode}, this.root);
+            newItem = new M.core_availability.Item({type: type, creating: true}, this.root);
         } else {
             // Create a new List object to represent the child.
-            newItem = new M.core_availability.List({c: [], showc: displayMode}, false, this.root);
+            newItem = new M.core_availability.List({c: [], showc: true}, false, this.root);
         }
         // Add to list.
         this.addChild(newItem);
@@ -1009,7 +1000,7 @@ M.core_availability.Item = function(json, root) {
 
     // Add the invalid marker (empty).
     this.node.appendChild(document.createTextNode(' '));
-    this.node.appendChild(Y.Node.create('<span class="badge bg-warning text-dark"/>'));
+    this.node.appendChild(Y.Node.create('<span class="badge badge-warning"/>'));
 };
 Y.augment(M.core_availability.Item, Y.EventTarget, true, null, {emitFacade: true});
 
@@ -1046,7 +1037,7 @@ M.core_availability.Item.prototype.fillErrors = function(errors) {
         errors.push('core_availability:item_unknowntype');
     }
     // If any errors were added, add the marker to this item.
-    var errorLabel = this.node.one('> .bg-warning');
+    var errorLabel = this.node.one('> .badge-warning');
     if (errors.length !== before && !errorLabel.get('firstChild')) {
         var errorString = '';
         // Fetch the last error code from the array of errors and split using the ':' delimiter.

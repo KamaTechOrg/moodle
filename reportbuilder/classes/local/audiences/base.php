@@ -22,10 +22,9 @@ use core_plugin_manager;
 use MoodleQuickForm;
 use stdClass;
 use core\output\notification;
-use core_reportbuilder\external\custom_report_audience_cards_exporter;
 use core_reportbuilder\local\helpers\database;
 use core_reportbuilder\local\models\audience;
-use core_reportbuilder\exception\report_access_exception;
+use core_reportbuilder\report_access_exception;
 
 /**
  * Audience base class
@@ -49,8 +48,7 @@ abstract class base {
     }
 
     /**
-     * Creates an instance of audience type, with persistent. Typically by loading an existing record, however in the absence of
-     * specified classname (in the case of {@see custom_report_audience_cards_exporter}) we create one based on the current class
+     * Loads an existing instance of audience with persistent
      *
      * @param int $id
      * @param null|stdClass $record
@@ -58,9 +56,9 @@ abstract class base {
      */
     final public static function instance(int $id = 0, ?stdClass $record = null): ?self {
         $persistent = new audience($id, $record);
-
-        // Populate persistent classname automatically if not set (e.g. when not loading an existing instance).
+        // Needed for get_audience_types() method.
         if (!$classname = $persistent->get('classname')) {
+            // Use the called class name.
             $classname = get_called_class();
             $persistent->set('classname', $classname);
         }

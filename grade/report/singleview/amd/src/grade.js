@@ -21,6 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import GradeItemSearch from 'core_grades/comboboxsearch/grade';
+import Url from 'core/url';
 
 // Define our standard lookups.
 const selectors = {
@@ -33,18 +34,12 @@ export default class GradeItems extends GradeItemSearch {
 
     courseID = component.querySelector(selectors.courseid).dataset.courseid;
 
-    /**
-     * Construct the class.
-     *
-     * @param {string} baseUrl The base URL for the page.
-     */
-    constructor(baseUrl) {
+    constructor() {
         super();
-        this.baseUrl = baseUrl;
     }
 
-    static init(baseUrl) {
-        return new GradeItems(baseUrl);
+    static init() {
+        return new GradeItems();
     }
 
     /**
@@ -54,10 +49,11 @@ export default class GradeItems extends GradeItemSearch {
      * @returns {string|*}
      */
     selectOneLink(gradeID) {
-        const url = new URL(this.baseUrl);
-        url.searchParams.set('gradesearchvalue', this.getSearchTerm());
-        url.searchParams.set('item', 'grade');
-        url.searchParams.set('itemid', gradeID);
-        return url.toString();
+        return Url.relativeUrl('/grade/report/singleview/index.php', {
+            id: this.courseID,
+            gradesearchvalue: this.getSearchTerm(),
+            item: 'grade',
+            itemid: gradeID,
+        }, false);
     }
 }

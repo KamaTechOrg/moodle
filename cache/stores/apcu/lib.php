@@ -14,19 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use core_cache\configurable_cache_interface;
-use core_cache\definition;
-use core_cache\key_aware_cache_interface;
-use core_cache\store;
-
 /**
- * The APCu cache store class.
+ * APCu cache store main library.
  *
  * @package    cachestore_apcu
  * @copyright  2012 Sam Hemelryk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cachestore_apcu extends store implements configurable_cache_interface, key_aware_cache_interface {
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The APCu cache store class.
+ *
+ * @copyright  2012 Sam Hemelryk
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class cachestore_apcu extends cache_store implements cache_is_key_aware, cache_is_configurable {
+
     /**
      * The required version of APCu for this extension.
      */
@@ -40,7 +45,7 @@ class cachestore_apcu extends store implements configurable_cache_interface, key
 
     /**
      * The definition used when this instance was initialised.
-     * @var definition
+     * @var cache_definition
      */
     protected $definition = null;
 
@@ -76,7 +81,7 @@ class cachestore_apcu extends store implements configurable_cache_interface, key
     /**
      * Static method to check if a store is usable with the given mode.
      *
-     * @param int $mode One of store::MODE_*
+     * @param int $mode One of cache_store::MODE_*
      * @return bool True if the mode is supported.
      */
     public static function is_supported_mode($mode) {
@@ -133,10 +138,10 @@ class cachestore_apcu extends store implements configurable_cache_interface, key
      *
      * This function should prepare any given connections etc.
      *
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return bool
      */
-    public function initialise(definition $definition) {
+    public function initialise(cache_definition $definition) {
         $this->definition = $definition;
         $this->cacheprefix = $this->storeprefix.$definition->generate_definition_hash().'__';
         return true;
@@ -298,10 +303,10 @@ class cachestore_apcu extends store implements configurable_cache_interface, key
      *
      * Returns an instance of the cache store, or false if one cannot be created.
      *
-     * @param definition $definition
-     * @return store
+     * @param cache_definition $definition
+     * @return cache_store
      */
-    public static function initialise_test_instance(definition $definition) {
+    public static function initialise_test_instance(cache_definition $definition) {
         $testperformance = get_config('cachestore_apcu', 'testperformance');
         if (empty($testperformance)) {
             return false;

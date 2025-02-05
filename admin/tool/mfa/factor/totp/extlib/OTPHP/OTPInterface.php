@@ -1,132 +1,123 @@
 <?php
 
-declare(strict_types=1);
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014-2018 Spomky-Labs
+ *
+ * This software may be modified and distributed under the terms
+ * of the MIT license.  See the LICENSE file for details.
+ */
 
 namespace OTPHP;
 
 interface OTPInterface
 {
-    public const DEFAULT_DIGITS = 6;
-
-    public const DEFAULT_DIGEST = 'sha1';
-
     /**
-     * Create a OTP object from an existing secret.
+     * @param int $timestamp
      *
-     * @param non-empty-string $secret
+     * @return string Return the OTP at the specified timestamp
      */
-    public static function createFromSecret(string $secret): self;
+    public function at(int $timestamp): string;
 
     /**
-     * Create a new OTP object. A random 64 bytes secret will be generated.
-     */
-    public static function generate(): self;
-
-    /**
-     * @param non-empty-string $secret
-     */
-    public function setSecret(string $secret): void;
-
-    public function setDigits(int $digits): void;
-
-    /**
-     * @param non-empty-string $digest
-     */
-    public function setDigest(string $digest): void;
-
-    /**
-     * Generate the OTP at the specified input.
+     * Verify that the OTP is valid with the specified input.
+     * If no input is provided, the input is set to a default value or false is returned.
      *
-     * @param 0|positive-int $input
+     * @param string   $otp
+     * @param int|null $input
+     * @param int|null $window
      *
-     * @return non-empty-string Return the OTP at the specified timestamp
+     * @return bool
      */
-    public function at(int $input): string;
+    public function verify(string $otp, $input = null, $window = null): bool;
 
     /**
-     * Verify that the OTP is valid with the specified input. If no input is provided, the input is set to a default
-     * value or false is returned.
-     *
-     * @param non-empty-string $otp
-     * @param null|0|positive-int $input
-     * @param null|0|positive-int $window
-     */
-    public function verify(string $otp, null|int $input = null, null|int $window = null): bool;
-
-    /**
-     * @return non-empty-string The secret of the OTP
+     * @return string The secret of the OTP
      */
     public function getSecret(): string;
 
     /**
-     * @param non-empty-string $label The label of the OTP
+     * @param string $label The label of the OTP
      */
-    public function setLabel(string $label): void;
+    public function setLabel(string $label);
 
     /**
-     * @return non-empty-string|null The label of the OTP
+     * @return string|null The label of the OTP
      */
-    public function getLabel(): null|string;
+    public function getLabel();
 
     /**
-     * @return non-empty-string|null The issuer
+     * @return string|null The issuer
      */
-    public function getIssuer(): ?string;
+    public function getIssuer();
 
     /**
-     * @param non-empty-string $issuer
+     * @param string $issuer
+     *
+     * @throws \InvalidArgumentException
      */
-    public function setIssuer(string $issuer): void;
+    public function setIssuer(string $issuer);
 
     /**
      * @return bool If true, the issuer will be added as a parameter in the provisioning URI
      */
     public function isIssuerIncludedAsParameter(): bool;
 
-    public function setIssuerIncludedAsParameter(bool $issuer_included_as_parameter): void;
+    /**
+     * @param bool $issuer_included_as_parameter
+     *
+     * @return $this
+     */
+    public function setIssuerIncludedAsParameter(bool $issuer_included_as_parameter);
 
     /**
-     * @return positive-int Number of digits in the OTP
+     * @return int Number of digits in the OTP
      */
     public function getDigits(): int;
 
     /**
-     * @return non-empty-string Digest algorithm used to calculate the OTP. Possible values are 'md5', 'sha1', 'sha256' and 'sha512'
+     * @return string Digest algorithm used to calculate the OTP. Possible values are 'md5', 'sha1', 'sha256' and 'sha512'
      */
     public function getDigest(): string;
 
     /**
-     * @param non-empty-string $parameter
+     * @param string $parameter
+     *
+     * @return null|mixed
      */
-    public function getParameter(string $parameter): mixed;
+    public function getParameter(string $parameter);
 
     /**
-     * @param non-empty-string $parameter
+     * @param string $parameter
+     *
+     * @return bool
      */
     public function hasParameter(string $parameter): bool;
 
     /**
-     * @return array<non-empty-string, mixed>
+     * @return array
      */
     public function getParameters(): array;
 
     /**
-     * @param non-empty-string $parameter
+     * @param string $parameter
+     * @param mixed  $value
+     *
+     * @return $this
      */
-    public function setParameter(string $parameter, mixed $value): void;
+    public function setParameter(string $parameter, $value);
 
     /**
-     * Get the provisioning URI.
-     *
-     * @return non-empty-string
+     * @return string Get the provisioning URI
      */
     public function getProvisioningUri(): string;
 
     /**
-     * Get the provisioning URI.
+     * @param string $uri         The Uri of the QRCode generator with all parameters. By default the Googgle Chart API is used. This Uri MUST contain a placeholder that will be replaced by the method.
+     * @param string $placeholder The placeholder to be replaced in the QR Code generator URI. Default value is {PROVISIONING_URI}.
      *
-     * @param non-empty-string $uri         The Uri of the QRCode generator with all parameters. This Uri MUST contain a placeholder that will be replaced by the method.
-     * @param non-empty-string $placeholder the placeholder to be replaced in the QR Code generator URI
+     * @return string Get the provisioning URI
      */
-    public function getQrCodeUri(string $uri, string $placeholder): string;
+    public function getQrCodeUri(string $uri = 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl={PROVISIONING_URI}', string $placeholder = '{PROVISIONING_URI}'): string;
 }

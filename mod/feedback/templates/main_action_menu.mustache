@@ -57,7 +57,7 @@
                     "url": "http://example.org/help",
                     "linktext": "",
                     "icon":{
-                        "extraclasses": "",
+                        "extraclasses": "iconhelp",
                         "attributes": [
                             {"name": "src", "value": "../../../pix/help.svg"},
                             {"name": "alt", "value": "Help icon"}
@@ -169,20 +169,15 @@
                 </div>
             {{/singleselect}}
         {{/left}}
-        {{#addselect}}
-            <div class="navitem">
-                {{> core/action_menu }}
-            </div>
-        {{/addselect}}
         {{#usetemplate }}
             <div class="navitem">
                 {{> mod_feedback/use_template }}
             </div>
         {{/usetemplate}}
-        {{#actionsselect}}
-            <div class="navitem ms-sm-auto">
-                {{> core/action_menu }}
+        {{#export}}
+            <div class="navitem ml-sm-auto">
+                {{> core/action_link }}
             </div>
-        {{/actionsselect}}
+        {{/export}}
     </div>
 </div>

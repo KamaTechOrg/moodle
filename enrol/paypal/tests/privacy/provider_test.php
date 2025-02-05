@@ -83,7 +83,6 @@ class provider_test extends \core_privacy\tests\provider_testcase {
 
     protected function setUp(): void {
         global $DB;
-        parent::setUp();
 
         $this->resetAfterTest();
 
@@ -203,7 +202,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_metadata().
      */
-    public function test_get_metadata(): void {
+    public function test_get_metadata() {
         $collection = new collection('enrol_paypal');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
@@ -250,7 +249,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_contexts_for_userid().
      */
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
         $coursecontext1 = \context_course::instance($this->course1->id);
         $coursecontext2 = \context_course::instance($this->course2->id);
 
@@ -273,7 +272,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_contexts_for_userid with a user who is a receiver.
      */
-    public function test_get_contexts_for_userid_receiver(): void {
+    public function test_get_contexts_for_userid_receiver() {
         $coursecontext1 = \context_course::instance($this->course1->id);
         $coursecontext2 = \context_course::instance($this->course2->id);
 
@@ -295,7 +294,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_contexts_for_userid with a user who is a business.
      */
-    public function test_get_contexts_for_userid_business(): void {
+    public function test_get_contexts_for_userid_business() {
         $coursecontext1 = \context_course::instance($this->course1->id);
         $coursecontext2 = \context_course::instance($this->course2->id);
         $coursecontext3 = \context_course::instance($this->course3->id);
@@ -318,7 +317,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::export_user_data().
      */
-    public function test_export_user_data(): void {
+    public function test_export_user_data() {
         $coursecontext1 = \context_course::instance($this->course1->id);
 
         $this->setUser($this->student1);
@@ -335,7 +334,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::export_user_data() when user is not enrolled.
      */
-    public function test_export_user_data_not_enrolled(): void {
+    public function test_export_user_data_not_enrolled() {
         $coursecontext1 = \context_course::instance($this->course1->id);
 
         $this->setUser($this->student2);
@@ -349,7 +348,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::export_user_data() when user has no enrolment.
      */
-    public function test_export_user_data_no_enrolment(): void {
+    public function test_export_user_data_no_enrolment() {
         $coursecontext1 = \context_course::instance($this->course1->id);
 
         $this->setUser($this->student0);
@@ -360,7 +359,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertFalse($writer->has_any_data());
     }
 
-    public function test_export_user_data_multiple_paypal_history(): void {
+    public function test_export_user_data_multiple_paypal_history() {
         $coursecontext2 = \context_course::instance($this->course2->id);
 
         $this->setUser($this->student2);
@@ -379,7 +378,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_all_users_in_context().
      */
-    public function test_delete_data_for_all_users_in_context(): void {
+    public function test_delete_data_for_all_users_in_context() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -412,7 +411,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_all_users_in_context() when there is multiple transaction histories for a user.
      */
-    public function test_delete_data_for_all_users_in_context_multiple_transactions(): void {
+    public function test_delete_data_for_all_users_in_context_multiple_transactions() {
         global $DB;
 
         $coursecontext2 = \context_course::instance($this->course2->id);
@@ -445,7 +444,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_user() when student is enrolled in multiple courses and deleting from one of them.
      */
-    public function test_delete_data_for_user_from_single_context(): void {
+    public function test_delete_data_for_user_from_single_context() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -498,7 +497,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_user() when student is enrolled in multiple courses and deleting from all of them.
      */
-    public function test_delete_data_for_user_from_multiple_context(): void {
+    public function test_delete_data_for_user_from_multiple_context() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -552,7 +551,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_user() when user is not enrolled, but is the receiver of the payment.
      */
-    public function test_delete_data_for_user_for_business_user(): void {
+    public function test_delete_data_for_user_for_business_user() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -597,7 +596,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_user() when user is not enrolled, but is the receiver of the payment.
      */
-    public function test_delete_data_for_user_for_receiver_user(): void {
+    public function test_delete_data_for_user_for_receiver_user() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -668,7 +667,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_users_in_context().
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
         $coursecontext1 = \context_course::instance($this->course1->id);
         $coursecontext2 = \context_course::instance($this->course2->id);
         $coursecontext3 = \context_course::instance($this->course3->id);
@@ -714,7 +713,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_users().
      */
-    public function test_delete_data_for_users(): void {
+    public function test_delete_data_for_users() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -774,7 +773,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_users() for business user deletion.
      */
-    public function test_delete_data_for_users_business(): void {
+    public function test_delete_data_for_users_business() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);
@@ -809,7 +808,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_users() for receiver user deletion.
      */
-    public function test_delete_data_for_users_receiver(): void {
+    public function test_delete_data_for_users_receiver() {
         global $DB;
 
         $coursecontext1 = \context_course::instance($this->course1->id);

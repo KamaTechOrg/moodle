@@ -25,6 +25,8 @@
 require_once("../../config.php");
 require_once("lib.php");
 
+$current_tab = 'analysis';
+
 $id = required_param('id', PARAM_INT);  //the POST dominated the GET
 $courseitemfilter = optional_param('courseitemfilter', '0', PARAM_INT);
 $courseitemfiltertyp = optional_param('courseitemfiltertyp', '0', PARAM_ALPHANUM);
@@ -116,7 +118,7 @@ if ($courseitemfilter > 0) {
 
             echo '<tr>';
             echo '<td>'.$shortname.'</td>';
-            echo '<td class="text-end">';
+            echo '<td class="text-right">';
             echo format_float(($c->sumvalue / $c->countvalue), 2);
             echo '</td>';
             echo '</tr>';

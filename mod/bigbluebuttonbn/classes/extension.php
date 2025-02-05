@@ -16,10 +16,7 @@
 namespace mod_bigbluebuttonbn;
 
 use cache;
-use cm_info;
 use mod_bigbluebuttonbn\local\extension\action_url_addons;
-use mod_bigbluebuttonbn\local\extension\broker_meeting_events_addons;
-use mod_bigbluebuttonbn\local\extension\custom_completion_addons;
 use mod_bigbluebuttonbn\local\extension\mod_form_addons;
 use mod_bigbluebuttonbn\local\extension\mod_instance_helper;
 use stdClass;
@@ -118,27 +115,6 @@ class extension {
     }
 
     /**
-     * Get all custom_completion addons classes.
-     *
-     * @return array of custom completion addon classes.
-     */
-    public static function custom_completion_addons_classes(): array {
-        return self::get_classes_implementing(custom_completion_addons::class);
-    }
-
-    /**
-     * Get all custom_completion addons classes instances.
-     *
-     * @param cm_info $cm
-     * @param int $userid
-     * @param array|null $completionstate
-     * @return array of custom completion addon instances.
-     */
-    public static function custom_completion_addons_instances(cm_info $cm, int $userid, ?array $completionstate = null): array {
-        return self::get_instances_implementing(custom_completion_addons::class, [$cm, $userid, $completionstate]);
-    }
-
-    /**
      * Get all mod_form addons classes instances
      *
      * @param \MoodleQuickForm $mform
@@ -147,7 +123,7 @@ class extension {
      * @return array of custom completion addon classes instances
      */
     public static function mod_form_addons_instances(\MoodleQuickForm $mform, ?stdClass $bigbluebuttondata = null,
-        ?string $suffix = null): array {
+        string $suffix = null): array {
         return self::get_instances_implementing(mod_form_addons::class, [$mform, $bigbluebuttondata, $suffix]);
     }
 
@@ -217,16 +193,5 @@ class extension {
         foreach ($formmanagersclasses as $fmclass) {
             $fmclass->delete_instance($id);
         }
-    }
-
-    /**
-     * Get all broker_meeting_events addons classes instances
-     *
-     * @param instance|null $instance
-     * @param string|null $data
-     * @return array of custom completion addon classes instances
-     */
-    public static function broker_meeting_events_addons_instances(instance $instance, string $data): array {
-        return self::get_instances_implementing(broker_meeting_events_addons::class, [$instance, $data]);
     }
 }

@@ -18,9 +18,8 @@ declare(strict_types=1);
 
 namespace core_reportbuilder\task;
 
-use core\{clock, di};
-use core\task\adhoc_task;
 use core_user;
+use core\task\adhoc_task;
 use core_reportbuilder\local\helpers\schedule as helper;
 use core_reportbuilder\local\models\schedule;
 use moodle_exception;
@@ -141,9 +140,7 @@ class send_schedule extends adhoc_task {
         }
 
         // Finish, clean up (set persistent property manually to avoid updating it's user/time modified data).
-        $DB->set_field($schedule::TABLE, 'timelastsent', di::get(clock::class)->time(), [
-            'id' => $schedule->get('id'),
-        ]);
+        $DB->set_field($schedule::TABLE, 'timelastsent', time(), ['id' => $schedule->get('id')]);
 
         if ($scheduleattachment !== null) {
             $scheduleattachment->delete();

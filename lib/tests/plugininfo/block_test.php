@@ -32,6 +32,8 @@ class block_test extends advanced_testcase {
 
     /**
      * Test the get_enabled_plugins method.
+     *
+     * @covers ::get_enabled_plugins
      */
     public function test_get_enabled_plugins(): void {
         $this->resetAfterTest();
@@ -68,7 +70,7 @@ class block_test extends advanced_testcase {
         $this->assertEquals($expected, $plugininfo->is_uninstall_allowed());
     }
 
-    public static function is_uninstall_allowed_provider(): array {
+    public function is_uninstall_allowed_provider(): array {
         $plugins = block::get_enabled_plugins();
         return array_map(function ($plugin) {
             $expected = true;

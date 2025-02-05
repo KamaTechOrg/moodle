@@ -46,7 +46,7 @@ define(['jquery', 'core/ajax', 'core/str', 'core/notification'], function($, Aja
             args: {
                 profileurl: inputValue,
                 course: inputElement.dataset.courseid,
-                section: inputElement.dataset.sectionnum
+                section: inputElement.dataset.sectionid
             }
         }])[0].then(function(result) {
             return result;

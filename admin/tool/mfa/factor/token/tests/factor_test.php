@@ -35,7 +35,6 @@ class factor_test extends \advanced_testcase {
     public \factor_token\factor $factor;
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         $this->factor = new \factor_token\factor('token');
     }
@@ -46,11 +45,12 @@ class factor_test extends \advanced_testcase {
      * @covers ::calculate_expiry_time
      * @return void
      */
-    public function test_calculate_expiry_time_in_general(): void {
+    public function test_calculate_expiry_time_in_general() {
         $timestamp = 1642213800; // 1230 UTC.
 
         set_config('expireovernight', 0, 'factor_token');
         $method = new \ReflectionMethod($this->factor, 'calculate_expiry_time');
+        $method->setAccessible(true);
 
         // Test that non-overnight timestamps are just exactly as configured.
         // We don't need to care about 0 or negative ints, they will just make the cookie expire immediately.
@@ -92,9 +92,10 @@ class factor_test extends \advanced_testcase {
      * @param int $timestamp
      * @dataProvider timestamp_provider
      */
-    public function test_calculate_expiry_time_for_overnight_expiry_with_one_day_expiry($timestamp): void {
+    public function test_calculate_expiry_time_for_overnight_expiry_with_one_day_expiry($timestamp) {
         // Setup configuration.
         $method = new \ReflectionMethod($this->factor, 'calculate_expiry_time');
+        $method->setAccessible(true);
         set_config('expireovernight', 1, 'factor_token');
         set_config('expiry', DAYSECS, 'factor_token');
 
@@ -140,9 +141,10 @@ class factor_test extends \advanced_testcase {
      * @param int $timestamp
      * @dataProvider timestamp_provider
      */
-    public function test_calculate_expiry_time_for_overnight_expiry_with_two_day_expiry($timestamp): void {
+    public function test_calculate_expiry_time_for_overnight_expiry_with_two_day_expiry($timestamp) {
         // Setup configuration.
         $method = new \ReflectionMethod($this->factor, 'calculate_expiry_time');
+        $method->setAccessible(true);
         set_config('expireovernight', 1, 'factor_token');
         set_config('expiry', 2 * DAYSECS, 'factor_token');
 
@@ -190,9 +192,10 @@ class factor_test extends \advanced_testcase {
      * @param int $timestamp
      * @dataProvider timestamp_provider
      */
-    public function test_calculate_expiry_time_for_overnight_expiry_with_three_hour_expiry($timestamp): void {
+    public function test_calculate_expiry_time_for_overnight_expiry_with_three_hour_expiry($timestamp) {
         // Setup configuration.
         $method = new \ReflectionMethod($this->factor, 'calculate_expiry_time');
+        $method->setAccessible(true);
         set_config('expireovernight', 1, 'factor_token');
         set_config('expiry', 3 * HOURSECS, 'factor_token');
 
@@ -234,9 +237,10 @@ class factor_test extends \advanced_testcase {
      * @param int $timestamp
      * @dataProvider timestamp_provider
      */
-    public function test_calculate_expiry_time_for_overnight_expiry_with_an_hour_expiry($timestamp): void {
+    public function test_calculate_expiry_time_for_overnight_expiry_with_an_hour_expiry($timestamp) {
         // Setup configuration.
         $method = new \ReflectionMethod($this->factor, 'calculate_expiry_time');
+        $method->setAccessible(true);
         set_config('expireovernight', 1, 'factor_token');
         set_config('expiry', HOURSECS, 'factor_token');
 
@@ -276,7 +280,7 @@ class factor_test extends \advanced_testcase {
      * Increments by 30 minutes to cover half hour and hour cases.
      * Starting timestamp: 2022-01-15 07:30:00 Australia/Melbourne time.
      */
-    public static function timestamp_provider(): array {
+    public function timestamp_provider() {
         $starttimestamp = 1642192200;
         foreach (range(0, 23) as $i) {
             $timestamps[] = [$starttimestamp + ($i * HOURSECS)];

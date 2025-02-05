@@ -53,7 +53,6 @@ class engine_test extends \advanced_testcase {
      * @return void
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
 
         if ($this->requires_manual_index_update()) {
@@ -87,7 +86,6 @@ class engine_test extends \advanced_testcase {
             $this->generator->teardown();
             $this->generator = null;
         }
-        parent::tearDown();
     }
 
     /**
@@ -95,7 +93,7 @@ class engine_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_index(): void {
+    public function test_index() {
         global $DB;
 
         $this->add_mock_search_area();
@@ -122,7 +120,7 @@ class engine_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_search(): void {
+    public function test_search() {
         global $USER, $DB;
 
         $this->add_mock_search_area();
@@ -209,7 +207,7 @@ class engine_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_delete(): void {
+    public function test_delete() {
 
         $this->add_mock_search_area();
 
@@ -234,7 +232,7 @@ class engine_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_alloweduserid(): void {
+    public function test_alloweduserid() {
 
         $this->add_mock_search_area();
 
@@ -308,7 +306,7 @@ class engine_test extends \advanced_testcase {
         $this->assertEquals($originalid, $results[0]->get('id'));
     }
 
-    public function test_delete_by_id(): void {
+    public function test_delete_by_id() {
 
         $this->add_mock_search_area();
 
@@ -340,7 +338,7 @@ class engine_test extends \advanced_testcase {
     /**
      * Tries out deleting data for a context or a course.
      */
-    public function test_deleted_contexts_and_courses(): void {
+    public function test_deleted_contexts_and_courses() {
         // Create some courses and activities.
         $generator = $this->getDataGenerator();
         $course1 = $generator->create_course(['fullname' => 'C1', 'summary' => 'xyzzy']);

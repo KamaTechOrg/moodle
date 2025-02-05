@@ -20,7 +20,6 @@
  * @package    core_course
  * @copyright  2014 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \core_courseformat\base
  * @coversDefaultClass \core_courseformat\base
  */
 class base_test extends advanced_testcase {
@@ -40,8 +39,9 @@ class base_test extends advanced_testcase {
      * Tests the save and load functionality.
      *
      * @author Jason den Dulk
+     * @covers \core_courseformat
      */
-    public function test_courseformat_saveandload(): void {
+    public function test_courseformat_saveandload() {
         $this->resetAfterTest();
 
         $courseformatoptiondata = (object) [
@@ -64,7 +64,7 @@ class base_test extends advanced_testcase {
         $this->assertEqualsCanonicalizing($courseformatoptiondata, (object) $savedcourseformatoptiondata);
     }
 
-    public function test_available_hook(): void {
+    public function test_available_hook() {
         global $DB;
         $this->resetAfterTest();
 
@@ -183,7 +183,7 @@ class base_test extends advanced_testcase {
     /**
      * Test for supports_news() with a course format plugin that doesn't define 'news_items' in default blocks.
      */
-    public function test_supports_news(): void {
+    public function test_supports_news() {
         $this->resetAfterTest();
         $format = course_get_format((object)['format' => 'testformat']);
         $this->assertFalse($format->supports_news());
@@ -192,20 +192,20 @@ class base_test extends advanced_testcase {
     /**
      * Test for supports_news() for old course format plugins that defines 'news_items' in default blocks.
      */
-    public function test_supports_news_legacy(): void {
+    public function test_supports_news_legacy() {
         $this->resetAfterTest();
         $format = course_get_format((object)['format' => 'testlegacy']);
         $this->assertTrue($format->supports_news());
     }
 
     /**
-     * Test for get_view_url().
-     *
-     * @covers ::get_view_url
+     * Test for get_view_url() to ensure that the url is only given for the correct cases
      */
-    public function test_get_view_url(): void {
+    public function test_get_view_url() {
         global $CFG;
         $this->resetAfterTest();
+
+        $linkcoursesections = $CFG->linkcoursesections;
 
         // Generate a course with two sections (0 and 1) and two modules. Course format is set to 'testformat'.
         // This will allow us to test the default implementation of get_view_url.
@@ -218,20 +218,22 @@ class base_test extends advanced_testcase {
         $format->update_course_format_options($data);
 
         // In page.
+        $CFG->linkcoursesections = 0;
+        $this->assertNotEmpty($format->get_view_url(null));
+        $this->assertNotEmpty($format->get_view_url(0));
+        $this->assertNotEmpty($format->get_view_url(1));
+        $CFG->linkcoursesections = 1;
         $this->assertNotEmpty($format->get_view_url(null));
         $this->assertNotEmpty($format->get_view_url(0));
         $this->assertNotEmpty($format->get_view_url(1));
 
         // Navigation.
-        $this->assertStringContainsString('course/view.php', $format->get_view_url(0));
-        $this->assertStringContainsString('course/view.php', $format->get_view_url(1));
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(0, ['navigation' => 1]));
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(1, ['navigation' => 1]));
-        // When sr parameter is defined, the section.php page should be returned.
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(0, ['sr' => 1]));
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(1, ['sr' => 1]));
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(0, ['sr' => 0]));
-        $this->assertStringContainsString('course/section.php', $format->get_view_url(1, ['sr' => 0]));
+        $CFG->linkcoursesections = 0;
+        $this->assertNull($format->get_view_url(1, ['navigation' => 1]));
+        $this->assertNull($format->get_view_url(0, ['navigation' => 1]));
+        $CFG->linkcoursesections = 1;
+        $this->assertNotEmpty($format->get_view_url(1, ['navigation' => 1]));
+        $this->assertNotEmpty($format->get_view_url(0, ['navigation' => 1]));
 
         // Expand section.
         // The current course format $format uses the format 'testformat' which does not use sections.
@@ -262,7 +264,7 @@ class base_test extends advanced_testcase {
      * @param string $result the expected result classname
      * @param bool $exception if the method will raise an exception
      */
-    public function test_get_output_classname($find, $result, $exception): void {
+    public function test_get_output_classname($find, $result, $exception) {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course(['format' => 'theunittest']);
@@ -281,7 +283,7 @@ class base_test extends advanced_testcase {
      *
      * @return array the testing scenarios
      */
-    public static function get_output_classname_provider(): array {
+    public function get_output_classname_provider(): array {
         return [
             'overridden class' => [
                 'find' => 'state\\course',
@@ -306,7 +308,7 @@ class base_test extends advanced_testcase {
      *
      * @covers ::get_sections_preferences
      */
-    public function test_get_sections_preferences(): void {
+    public function test_get_sections_preferences() {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
@@ -340,7 +342,7 @@ class base_test extends advanced_testcase {
      *
      * @covers ::set_sections_preference
      */
-    public function test_set_sections_preference(): void {
+    public function test_set_sections_preference() {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
@@ -465,7 +467,7 @@ class base_test extends advanced_testcase {
      * @dataProvider delete_format_data_provider
      * @param bool $usehook if it should use course_delete to trigger $format->delete_format_data as a hook
      */
-    public function test_delete_format_data(bool $usehook): void {
+    public function test_delete_format_data(bool $usehook) {
         global $DB;
 
         $this->resetAfterTest();
@@ -516,7 +518,7 @@ class base_test extends advanced_testcase {
      *
      * @return array the testing scenarios
      */
-    public static function delete_format_data_provider(): array {
+    public function delete_format_data_provider(): array {
         return [
             'direct call' => [
                 'usehook' => false
@@ -531,7 +533,7 @@ class base_test extends advanced_testcase {
      * Test duplicate_section()
      * @covers ::duplicate_section
      */
-    public function test_duplicate_section(): void {
+    public function test_duplicate_section() {
         global $DB;
 
         $this->setAdminUser();
@@ -574,20 +576,14 @@ class base_test extends advanced_testcase {
      * @param string $key the string key
      * @param string|null $data any string data
      * @param array|null $expectedstring the expected string (null for exception)
-     * @param string $courseformat the course format
      */
-    public function test_get_format_string(
-        string $key,
-        ?string $data,
-        ?array $expectedstring,
-        string $courseformat = 'topics'
-    ): void {
+    public function test_get_format_string(string $key, ?string $data, ?array $expectedstring) {
         global $DB;
 
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['format' => $courseformat]);
+        $course = $generator->create_course(['format' => 'topics']);
 
         if ($expectedstring) {
             $expected = get_string($expectedstring[0], $expectedstring[1], $expectedstring[2]);
@@ -604,13 +600,12 @@ class base_test extends advanced_testcase {
      *
      * @return array the testing scenarios
      */
-    public static function get_format_string_provider(): array {
+    public function get_format_string_provider(): array {
         return [
             'Existing in format lang' => [
-                'key' => 'addsection',
+                'key' => 'sectionsdelete',
                 'data' => null,
-                'expectedstring' => ['addsection', 'format_weeks', null],
-                'courseformat' => 'weeks',
+                'expectedstring' => ['sectionsdelete', 'format_topics', null],
             ],
             'Not existing in format lang' => [
                 'key' => 'bulkedit',
@@ -618,9 +613,9 @@ class base_test extends advanced_testcase {
                 'expectedstring' => ['bulkedit', 'core_courseformat', null],
             ],
             'Existing in format lang with data' => [
-                'key' => 'section_highlight_feedback',
+                'key' => 'selectsection',
                 'data' => 'Example',
-                'expectedstring' => ['section_highlight_feedback', 'format_topics', 'Example'],
+                'expectedstring' => ['selectsection', 'format_topics', 'Example'],
             ],
             'Not existing in format lang with data' => [
                 'key' => 'bulkselection',
@@ -644,7 +639,7 @@ class base_test extends advanced_testcase {
      * @param string $destination the reference of the destination section
      * @param string[] $order the references of the final section order
      */
-    public function test_move_section_after(string $movesection, string $destination, array $order): void {
+    public function test_move_section_after(string $movesection, string $destination, array $order) {
         global $DB;
 
         $this->resetAfterTest();
@@ -683,7 +678,7 @@ class base_test extends advanced_testcase {
      *
      * @return array the testing scenarios
      */
-    public static function move_section_after_provider(): array {
+    public function move_section_after_provider(): array {
         return [
             'Move top' => [
                 'movesection' => 'section3',
@@ -769,7 +764,7 @@ class base_test extends advanced_testcase {
      * @param string $expectedparam the expected param to check
      * @param string $exception if an exception is expected
      */
-    public function test_get_non_ajax_cm_action_url(string $action, string $expectedparam, bool $exception): void {
+    public function test_get_non_ajax_cm_action_url(string $action, string $expectedparam, bool $exception) {
         global $DB;
 
         $this->resetAfterTest();
@@ -794,7 +789,7 @@ class base_test extends advanced_testcase {
      *
      * @return array the testing scenarios
      */
-    public static function get_non_ajax_cm_action_url_provider(): array {
+    public function get_non_ajax_cm_action_url_provider(): array {
         return [
             'duplicate' => [
                 'action' => 'cmDuplicate',
@@ -827,252 +822,6 @@ class base_test extends advanced_testcase {
                 'exception' => true,
             ],
         ];
-    }
-
-    /**
-     * Test get_required_jsfiles().
-     *
-     * @covers ::get_required_jsfiles
-     */
-    public function test_get_required_jsfiles(): void {
-        $this->resetAfterTest();
-
-        $generator = $this->getDataGenerator();
-
-        $course = $generator->create_course(['format' => 'testformat']);
-        $format = course_get_format($course);
-        $this->assertEmpty($format->get_required_jsfiles());
-    }
-
-    /**
-     * Test set_sectionid().
-     *
-     * @covers ::set_sectionid
-     * @covers ::get_sectionid
-     * @covers ::get_sectionnum
-     */
-    public function test_set_sectionid(): void {
-        $this->resetAfterTest();
-
-        $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['numsections' => 2]);
-        $format = course_get_format($course);
-
-        // No section.
-        $this->assertNull($format->get_sectionid());
-        $this->assertNull($format->get_sectionnum());
-
-        // Valid section.
-        $sectionnum = 1;
-        $modinfo = get_fast_modinfo($course);
-        $sectioninfo = $modinfo->get_section_info($sectionnum);
-        $sectionid = $sectioninfo->id;
-        $format->set_sectionid($sectionid);
-        $this->assertEquals($sectionid, $format->get_sectionid());
-        $this->assertEquals($sectionnum, $format->get_sectionnum());
-
-        // Null section.
-        $format->set_sectionid(null);
-        $this->assertNull($format->get_sectionid());
-        $this->assertNull($format->get_sectionnum());
-
-        // Invalid section.
-        $this->expectException(\coding_exception::class);
-        $format->set_sectionid(-1);
-    }
-
-    /**
-     * Test set_sectionnum().
-     *
-     * @dataProvider set_sectionnum_provider
-     * @covers ::set_sectionnum
-     * @param int|null $sectionnum The section number
-     * @param bool $nullexpected If null is expected
-     * @param bool $exceptionexpected If an exception is expected
-     */
-    public function test_set_sectionnum(?int $sectionnum, bool $nullexpected = false, bool $exceptionexpected = false): void {
-        $this->resetAfterTest();
-
-        $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['numsections' => 2]);
-        $format = course_get_format($course);
-
-        if ($exceptionexpected) {
-            $this->expectException(\coding_exception::class);
-        }
-        $format->set_sectionnum($sectionnum);
-        if ($nullexpected) {
-            $this->assertNull($format->get_sectionid());
-            $this->assertNull($format->get_sectionnum());
-        } else {
-            $this->assertNotNull($format->get_sectionid());
-            $this->assertNotNull($format->get_sectionnum());
-        }
-    }
-
-    /**
-     * Data provider for test_set_sectionnum.
-     *
-     * @return array The testing scenarios
-     */
-    public static function set_sectionnum_provider(): array {
-        return [
-            'General sectionnumber' => [
-                'sectionnum' => 0,
-                'nullexpected' => false,
-            ],
-            'Existing sectionnumber' => [
-                'sectionnum' => 1,
-                'nullexpected' => false,
-            ],
-            'Another existing sectionnumber' => [
-                'sectionnum' => 2,
-                'nullexpected' => false,
-            ],
-            'Null sectionnumber' => [
-                'sectionnum' => null,
-                'nullexpected' => true,
-            ],
-            'Invalid sectionnumber' => [
-                'sectionnum' => 3,
-                'nullexpected' => true,
-                'exceptionexpected' => true,
-            ],
-            'Another invalid sectionnumber' => [
-                'sectionnum' => -1,
-                'nullexpected' => true,
-                'exceptionexpected' => true,
-            ],
-        ];
-    }
-
-    /**
-     * Test can_sections_be_removed_from_navigation().
-     *
-     * @covers ::can_sections_be_removed_from_navigation
-     */
-    public function test_can_sections_be_removed_from_navigation(): void {
-        $this->resetAfterTest();
-
-        $generator = $this->getDataGenerator();
-
-        $course = $generator->create_course();
-        $format = course_get_format($course);
-        $this->assertFalse($format->can_sections_be_removed_from_navigation());
-
-        $course = $generator->create_course(['format' => 'testformatsections']);
-        $format = course_get_format($course);
-        $this->assertTrue($format->can_sections_be_removed_from_navigation());
-    }
-
-    public function test_is_section_visible(): void {
-        $this->resetAfterTest();
-
-        $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['format' => 'testformatsections'], ['hiddensections' => 1]);
-        course_create_sections_if_missing($course, [0, 1, 2]);
-
-        // Students cannot view hidden sections.
-        $sectioninfo = get_fast_modinfo($course)->get_section_info(1);
-        \core_courseformat\formatactions::section($course)->update($sectioninfo, ['visible' => false]);
-
-        $format = course_get_format($course);
-
-        // Force max sections to 1 to detect section 2 as orphan.
-        $format->forcemaxsections = 1;
-
-        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
-        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
-
-        $this->setUser($teacher);
-        $modinfoteacher = get_fast_modinfo($course, $teacher->id);
-        $this->assertTrue($format->is_section_visible($modinfoteacher->get_section_info(0)));
-        $this->assertTrue($format->is_section_visible($modinfoteacher->get_section_info(1)));
-        $this->assertTrue($format->is_section_visible($modinfoteacher->get_section_info(2)));
-
-        $this->setUser($student);
-        $modinfostudent = get_fast_modinfo($course, $student->id);
-        $this->assertTrue($format->is_section_visible($modinfostudent->get_section_info(0)));
-        $this->assertFalse($format->is_section_visible($modinfostudent->get_section_info(1)));
-        $this->assertFalse($format->is_section_visible($modinfostudent->get_section_info(2)));
-    }
-
-    /**
-     * Test can_sections_be_removed_from_navigation().
-     *
-     * @covers ::session_cache
-     * @covers ::session_cache_reset
-     * @covers ::session_cache_reset_all
-     * @covers ::invalidate_all_session_caches_for_course
-     */
-    public function test_session_caches_methods(): void {
-        global $DB;
-
-        $this->resetAfterTest();
-        $generator = $this->getDataGenerator();
-
-        $course1 = $generator->create_course(['format' => 'topics']);
-        $course2 = $generator->create_course(['format' => 'topics']);
-
-        // Force some cacherev to the course.
-        $course1->cacherev = 12345;
-        $course2->cacherev = 67890;
-        $DB->set_field('course', 'cacherev', $course1->cacherev, ['id' => $course1->id]);
-        $DB->set_field('course', 'cacherev', $course2->cacherev, ['id' => $course2->id]);
-
-        $teacher = $generator->create_and_enrol($course1, 'editingteacher');
-        $generator->enrol_user($teacher->id, $course2->id, 'editingteacher');
-        $this->setUser($teacher);
-
-        // The cache key uses time() as hash. To not wait a second between calls we fake an initial value.
-        $statecache = cache::make('core', 'courseeditorstate');
-        $statecache->set($course1->id, $course1->cacherev . '_11111');
-        $statecache->set($course2->id, $course2->cacherev . '_22222');
-
-        $course1cachekey = \core_courseformat\base::session_cache($course1);
-
-        // Validate the method returns the same value when called twice.
-        $course1cachekeyagain = \core_courseformat\base::session_cache($course1);
-        $this->assertEquals($course1cachekey, $course1cachekeyagain);
-
-        // Validate other course has a diferent cache key.
-        $course2cachekey = \core_courseformat\base::session_cache($course2);
-        $this->assertNotEquals($course1cachekey, $course2cachekey);
-
-        // Reset the specific course cache.
-        \core_courseformat\base::session_cache_reset($course1);
-
-        $resetcachekey = \core_courseformat\base::session_cache($course1);
-        $this->assertNotEquals($course1cachekey, $resetcachekey);
-
-        $reset2cachekey = \core_courseformat\base::session_cache($course2);
-        $this->assertEquals($course2cachekey, $reset2cachekey);
-
-        // Return to the initial value.
-        $statecache->set($course1->id, $course1->cacherev . '_11111');
-        $statecache->set($course2->id, $course2->cacherev . '_22222');
-
-        // Reset all user course caches.
-        \core_courseformat\base::session_cache_reset_all();
-
-        $resetallcachekey = \core_courseformat\base::session_cache($course1);
-        $this->assertNotEquals($course1cachekey, $resetallcachekey);
-
-        $resetall2cachekey = \core_courseformat\base::session_cache($course2);
-        $this->assertNotEquals($course2cachekey, $resetall2cachekey);
-
-        // Return to the initial value.
-        $statecache->set($course1->id, $course1->cacherev . '_11111');
-        $statecache->set($course2->id, $course2->cacherev . '_22222');
-
-        // Invalidate cache on course 1.
-        \core_courseformat\base::invalidate_all_session_caches_for_course($course1);
-
-        $invalidatecachekey = \core_courseformat\base::session_cache($course1);
-        $this->assertNotEquals($course1cachekey, $invalidatecachekey);
-
-        $invalidate2cachekey = \core_courseformat\base::session_cache($course2);
-        $this->assertEquals($course2cachekey, $invalidate2cachekey);
     }
 }
 
@@ -1110,27 +859,12 @@ class format_testformat extends core_courseformat\base {
  */
 class format_testformatsections extends core_courseformat\base {
     /**
-     * @var int|null $forcemaxsections The maximum number of sections.
-     */
-    public ?int $forcemaxsections = null;
-    /**
      * Returns if this course format uses sections.
      *
      * @return true
      */
     public function uses_sections() {
         return true;
-    }
-
-    public function can_sections_be_removed_from_navigation(): bool {
-        return true;
-    }
-
-    public function get_last_section_number(): int {
-        if ($this->forcemaxsections !== null) {
-            return $this->forcemaxsections;
-        }
-        return parent::get_last_section_number();
     }
 }
 

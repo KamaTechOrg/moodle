@@ -109,7 +109,6 @@ class external_test extends externallib_advanced_testcase {
      */
     public function setUp(): void {
         global $DB;
-        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -137,7 +136,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test test_mod_lesson_get_lessons_by_courses
      */
-    public function test_mod_lesson_get_lessons_by_courses(): void {
+    public function test_mod_lesson_get_lessons_by_courses() {
         global $DB;
 
         // Create additional course.
@@ -272,7 +271,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test the validate_attempt function.
      */
-    public function test_validate_attempt(): void {
+    public function test_validate_attempt() {
         global $DB;
 
         $this->setUser($this->student);
@@ -368,7 +367,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test the get_lesson_access_information function.
      */
-    public function test_get_lesson_access_information(): void {
+    public function test_get_lesson_access_information() {
         global $DB;
 
         $this->setUser($this->student);
@@ -410,7 +409,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test test_view_lesson invalid id.
      */
-    public function test_view_lesson_invalid_id(): void {
+    public function test_view_lesson_invalid_id() {
         $this->expectException('moodle_exception');
         mod_lesson_external::view_lesson(0);
     }
@@ -418,7 +417,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test test_view_lesson user not enrolled.
      */
-    public function test_view_lesson_user_not_enrolled(): void {
+    public function test_view_lesson_user_not_enrolled() {
         // Test not-enrolled user.
         $usernotenrolled = self::getDataGenerator()->create_user();
         $this->setUser($usernotenrolled);
@@ -429,7 +428,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test test_view_lesson user student.
      */
-    public function test_view_lesson_user_student(): void {
+    public function test_view_lesson_user_student() {
         // Test user with full capabilities.
         $this->setUser($this->student);
 
@@ -456,7 +455,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test test_view_lesson user missing capabilities.
      */
-    public function test_view_lesson_user_missing_capabilities(): void {
+    public function test_view_lesson_user_missing_capabilities() {
         // Test user with no capabilities.
         // We need a explicit prohibit since this capability is only defined in authenticated user and guest roles.
         assign_capability('mod/lesson:view', CAP_PROHIBIT, $this->studentrole->id, $this->context->id);
@@ -472,7 +471,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test for get_questions_attempts
      */
-    public function test_get_questions_attempts(): void {
+    public function test_get_questions_attempts() {
         global $DB;
 
         $this->setUser($this->student);
@@ -536,7 +535,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get user grade.
      */
-    public function test_get_user_grade(): void {
+    public function test_get_user_grade() {
         global $DB;
 
         // Add grades for the user.
@@ -600,7 +599,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_user_attempt_grade
      */
-    public function test_get_user_attempt_grade(): void {
+    public function test_get_user_attempt_grade() {
         global $DB;
 
         // Create a fake attempt for the first possible answer.
@@ -651,7 +650,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_content_pages_viewed
      */
-    public function test_get_content_pages_viewed(): void {
+    public function test_get_content_pages_viewed() {
         global $DB;
 
         // Create another content pages.
@@ -701,7 +700,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_user_timers
      */
-    public function test_get_user_timers(): void {
+    public function test_get_user_timers() {
         global $DB;
 
         // Create a couple of timers for the current user.
@@ -740,7 +739,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test for get_pages
      */
-    public function test_get_pages(): void {
+    public function test_get_pages() {
         global $DB;
 
         $this->setAdminUser();
@@ -809,7 +808,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test launch_attempt. Time restrictions already tested in test_validate_attempt.
      */
-    public function test_launch_attempt(): void {
+    public function test_launch_attempt() {
         global $DB, $SESSION;
 
         // Test time limit restriction.
@@ -842,7 +841,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test launch_attempt not finished forcing review mode.
      */
-    public function test_launch_attempt_not_finished_in_review_mode(): void {
+    public function test_launch_attempt_not_finished_in_review_mode() {
         global $DB, $SESSION;
 
         // Create a timer for the current user.
@@ -872,7 +871,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test launch_attempt just finished forcing review mode.
      */
-    public function test_launch_attempt_just_finished_in_review_mode(): void {
+    public function test_launch_attempt_just_finished_in_review_mode() {
         global $DB, $SESSION, $USER;
 
         // Create a timer for the current user.
@@ -920,7 +919,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test launch_attempt not just finished forcing review mode.
      */
-    public function test_launch_attempt_not_just_finished_in_review_mode(): void {
+    public function test_launch_attempt_not_just_finished_in_review_mode() {
         global $DB, $CFG, $SESSION;
 
         // Create a timer for the current user.
@@ -951,7 +950,7 @@ class external_test extends externallib_advanced_testcase {
     /*
      * Test get_page_data
      */
-    public function test_get_page_data(): void {
+    public function test_get_page_data() {
         global $DB;
 
         // Test a content page first (page1).
@@ -992,7 +991,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_page_data as student
      */
-    public function test_get_page_data_student(): void {
+    public function test_get_page_data_student() {
         // Now check using a normal student account.
         $this->setUser($this->student);
         // First we need to launch the lesson so the timer is on.
@@ -1013,7 +1012,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_page_data without launching attempt.
      */
-    public function test_get_page_data_without_launch(): void {
+    public function test_get_page_data_without_launch() {
         // Now check using a normal student account.
         $this->setUser($this->student);
 
@@ -1076,7 +1075,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test process_page
      */
-    public function test_process_page(): void {
+    public function test_process_page() {
         global $DB;
 
         // Attempt first with incorrect response.
@@ -1098,7 +1097,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test finish attempt not doing anything.
      */
-    public function test_finish_attempt_not_doing_anything(): void {
+    public function test_finish_attempt_not_doing_anything() {
 
         $this->setUser($this->student);
         // First we need to launch the lesson so the timer is on.
@@ -1129,7 +1128,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test finish attempt with correct answer.
      */
-    public function test_finish_attempt_with_correct_answer(): void {
+    public function test_finish_attempt_with_correct_answer() {
         // Create a finished attempt.
         $result = $this->create_attempt($this->student, true, true);
 
@@ -1156,7 +1155,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_attempts_overview
      */
-    public function test_get_attempts_overview(): void {
+    public function test_get_attempts_overview() {
         global $DB;
 
         // Create a finished attempt with incorrect answer.
@@ -1235,7 +1234,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_attempts_overview when there aren't attempts.
      */
-    public function test_get_attempts_overview_no_attempts(): void {
+    public function test_get_attempts_overview_no_attempts() {
         $this->setAdminUser();
         $result = mod_lesson_external::get_attempts_overview($this->lesson->id);
         $result = external_api::clean_returnvalue(mod_lesson_external::get_attempts_overview_returns(), $result);
@@ -1246,7 +1245,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_user_attempt
      */
-    public function test_get_user_attempt(): void {
+    public function test_get_user_attempt() {
         global $DB;
 
         // Create a finished and unfinished attempt with incorrect answer.
@@ -1303,7 +1302,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_pages_possible_jumps
      */
-    public function test_get_pages_possible_jumps(): void {
+    public function test_get_pages_possible_jumps() {
         $this->setAdminUser();
         $result = mod_lesson_external::get_pages_possible_jumps($this->lesson->id);
         $result = external_api::clean_returnvalue(mod_lesson_external::get_pages_possible_jumps_returns(), $result);
@@ -1326,7 +1325,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_pages_possible_jumps when offline attemps are disabled for a normal user
      */
-    public function test_get_pages_possible_jumps_with_offlineattemps_disabled(): void {
+    public function test_get_pages_possible_jumps_with_offlineattemps_disabled() {
         $this->setUser($this->student->id);
         $result = mod_lesson_external::get_pages_possible_jumps($this->lesson->id);
         $result = external_api::clean_returnvalue(mod_lesson_external::get_pages_possible_jumps_returns(), $result);
@@ -1336,7 +1335,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_pages_possible_jumps when offline attemps are enabled for a normal user
      */
-    public function test_get_pages_possible_jumps_with_offlineattemps_enabled(): void {
+    public function test_get_pages_possible_jumps_with_offlineattemps_enabled() {
         global $DB;
 
         $DB->set_field('lesson', 'allowofflineattempts', 1, array('id' => $this->lesson->id));
@@ -1349,7 +1348,7 @@ class external_test extends externallib_advanced_testcase {
     /*
      * Test get_lesson user student.
      */
-    public function test_get_lesson_user_student(): void {
+    public function test_get_lesson_user_student() {
         // Test user with full capabilities.
         $this->setUser($this->student);
 
@@ -1363,7 +1362,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_lesson user student with missing password.
      */
-    public function test_get_lesson_user_student_with_missing_password(): void {
+    public function test_get_lesson_user_student_with_missing_password() {
         global $DB;
 
         // Test user with full capabilities.
@@ -1381,7 +1380,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_lesson user student with correct password.
      */
-    public function test_get_lesson_user_student_with_correct_password(): void {
+    public function test_get_lesson_user_student_with_correct_password() {
         global $DB;
         // Test user with full capabilities.
         $this->setUser($this->student);
@@ -1399,7 +1398,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test get_lesson teacher.
      */
-    public function test_get_lesson_teacher(): void {
+    public function test_get_lesson_teacher() {
         global $DB;
         // Test user with full capabilities.
         $this->setUser($this->teacher);

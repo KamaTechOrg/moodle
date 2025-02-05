@@ -203,7 +203,7 @@ class core_backup_renderer extends plugin_renderer_base {
                         $table->data = array();
                     }
                     $name = get_string('pluginname', $activity->modulename);
-                    $icon = new image_icon('monologo', '', $activity->modulename);
+                    $icon = new image_icon('monologo', '', $activity->modulename, ['class' => 'iconlarge icon-pre']);
                     $table->data[] = array(
                         $this->output->render($icon).$name,
                         format_string($activity->title),
@@ -278,8 +278,8 @@ class core_backup_renderer extends plugin_renderer_base {
      * @param int $currentcourse
      * @return string
      */
-    public function course_selector(moodle_url $nextstageurl, $wholecourse = true, ?restore_category_search $categories = null,
-                                    ?restore_course_search $courses = null, $currentcourse = null) {
+    public function course_selector(moodle_url $nextstageurl, $wholecourse = true, restore_category_search $categories = null,
+                                    restore_course_search $courses = null, $currentcourse = null) {
         global $CFG;
         require_once($CFG->dirroot.'/course/lib.php');
 
@@ -395,7 +395,7 @@ class core_backup_renderer extends plugin_renderer_base {
      * @param import_course_search $courses
      * @return string
      */
-    public function import_course_selector(moodle_url $nextstageurl, ?import_course_search $courses = null) {
+    public function import_course_selector(moodle_url $nextstageurl, import_course_search $courses = null) {
         $html  = html_writer::start_tag('div', array('class' => 'import-course-selector backup-restore'));
         $html .= html_writer::start_tag('form', array('method' => 'post', 'action' => $nextstageurl->out_omit_querystring()));
         foreach ($nextstageurl->params() as $key => $value) {
@@ -429,7 +429,7 @@ class core_backup_renderer extends plugin_renderer_base {
         $count ++;
         $html  = html_writer::start_tag('div', ['class' => 'detail-pair', 'role' => 'row']);
         $html .= html_writer::tag('div', $label, ['class' => 'detail-pair-label mb-2', 'role' => 'cell']);
-        $html .= html_writer::tag('div', $value, ['class' => 'detail-pair-value ps-2', 'role' => 'cell']);
+        $html .= html_writer::tag('div', $value, ['class' => 'detail-pair-value pl-2', 'role' => 'cell']);
         $html .= html_writer::end_tag('div');
         return $html;
     }
@@ -522,7 +522,7 @@ class core_backup_renderer extends plugin_renderer_base {
     public function substage_buttons($haserrors) {
         $output  = html_writer::start_tag('div', array('continuebutton'));
         if (!$haserrors) {
-            $attrs = ['type' => 'submit', 'value' => get_string('continue'), 'class' => 'btn btn-primary me-1'];
+            $attrs = ['type' => 'submit', 'value' => get_string('continue'), 'class' => 'btn btn-primary mr-1'];
             $output .= html_writer::empty_tag('input', $attrs);
         }
         $attrs = array('type' => 'submit', 'name' => 'cancel', 'value' => get_string('cancel'), 'class' => 'btn btn-secondary');
@@ -576,7 +576,7 @@ class core_backup_renderer extends plugin_renderer_base {
      * @param array $options
      * @return string
      */
-    public function backup_files_viewer(?array $options = null) {
+    public function backup_files_viewer(array $options = null) {
         $files = new backup_files_viewer($options);
         return $this->render($files);
     }
@@ -621,140 +621,91 @@ class core_backup_renderer extends plugin_renderer_base {
     public function render_backup_files_viewer(backup_files_viewer $viewer) {
 
         $files = $viewer->files;
-        $filestodisplay = false;
-        foreach ($files as $file) {
-            if (!$file->is_directory()) {
-                $filestodisplay = true;
-                break;
-            }
-        }
 
         $async = \async_helper::is_async_enabled();
 
-        switch($viewer->filearea) {
-            case 'activity':
-                $title = get_string('choosefilefromactivitybackup', 'backup');
-                $description = get_string('choosefilefromactivitybackup_help', 'backup');
-                $button = get_string('managefiles_activity', 'backup');
-                $nofilesstring = get_string('restorenofilesbackuparea_activity', 'backup');
-                break;
-            case 'course':
-                $title = get_string('choosefilefromcoursebackup', 'backup');
-                $description = get_string('choosefilefromcoursebackup_help', 'backup');
-                $button = get_string('managefiles_course', 'backup');
-                $nofilesstring = get_string('restorenofilesbackuparea_course', 'backup');
-                break;
-            case 'backup':
-                $title = get_string('choosefilefromuserbackup', 'backup');
-                $description = get_string('choosefilefromuserbackup_help', 'backup');
-                $button = get_string('managefiles_backup', 'backup');
-                $nofilesstring = get_string('restorenofilesbackuparea_backup', 'backup');
-                break;
-            case 'automated':
-                $title = get_string('choosefilefromautomatedbackup', 'backup');
-                $description = get_string('choosefilefromautomatedbackup_help', 'backup');
-                $button = get_string('managefiles_automated', 'backup');
-                $nofilesstring = get_string('restorenofilesbackuparea_automated', 'backup');
-                break;
-            default:
-                $title = '';
-                $description = '';
-                $button = get_string('managefiles', 'backup');
-                $nofilesstring = get_string('restorenofilesbackuparea', 'backup');
-        }
-
-        $html = html_writer::tag('h3', $title, ['class' => 'mt-6']);
-        $html .= html_writer::tag('div', $description, ['class' => 'mb-3']);
-
-        if ($filestodisplay || $async) {
-            $tablehead = [
+        $tablehead = array(
                 get_string('filename', 'backup'),
                 get_string('time'),
                 get_string('size'),
                 get_string('download'),
-                get_string('restore'),
-            ];
-            if ($async) {
-                $tablehead[] = get_string('status', 'backup');
-            }
-
-            $table = new html_table();
-            $table->attributes['class'] = 'backup-files-table generaltable';
-            $table->head = $tablehead;
-            $table->width = '100%';
-            $table->data = [];
-
-            // First add in progress asynchronous backups.
-            // Only if asynchronous backups are enabled.
-            if ($async) {
-                $tabledata = [];
-                $backups = \async_helper::get_async_backups($viewer->filearea, $viewer->filecontext->instanceid);
-                // For each backup get, new item name, time restore created and progress.
-                foreach ($backups as $backup) {
-                    $status = $this->get_status_display($backup->status, $backup->backupid);
-                    $timecreated = $backup->timecreated;
-                    $tablerow = [$backup->filename, userdate($timecreated), '-', '-', '-', $status];
-                    $tabledata[] = $tablerow;
-                }
-                $table->data = $tabledata;
-            }
-
-            // Add completed backups.
-            foreach ($files as $file) {
-                if ($file->is_directory()) {
-                    continue;
-                }
-                $fileurl = moodle_url::make_pluginfile_url(
-                    $file->get_contextid(),
-                    $file->get_component(),
-                    $file->get_filearea(),
-                    null,
-                    $file->get_filepath(),
-                    $file->get_filename(),
-                    true
-                );
-                $params = [];
-                $params['action'] = 'choosebackupfile';
-                $params['filename'] = $file->get_filename();
-                $params['filepath'] = $file->get_filepath();
-                $params['component'] = $file->get_component();
-                $params['filearea'] = $file->get_filearea();
-                $params['filecontextid'] = $file->get_contextid();
-                $params['contextid'] = $viewer->currentcontext->id;
-                $params['itemid'] = $file->get_itemid();
-                $restoreurl = new moodle_url('/backup/restorefile.php', $params);
-                $restorelink = html_writer::link($restoreurl, get_string('restore'));
-                $downloadlink = html_writer::link($fileurl, get_string('download'));
-
-                // Conditional display of the restore and download links, initially only for the 'automated' filearea.
-                if ($params['filearea'] == 'automated') {
-                    if (!has_capability('moodle/restore:viewautomatedfilearea', $viewer->currentcontext)) {
-                        $restorelink = '';
-                    }
-                    if (!can_download_from_backup_filearea($params['filearea'], $viewer->currentcontext)) {
-                        $downloadlink = '';
-                    }
-                }
-                $tabledata = [
-                    $file->get_filename(),
-                    userdate ($file->get_timemodified()),
-                    display_size ($file->get_filesize()),
-                    $downloadlink,
-                    $restorelink,
-                ];
-                if ($async) {
-                    $tabledata[] = $this->get_status_display(backup::STATUS_FINISHED_OK, null);
-                }
-
-                $table->data[] = $tabledata;
-            }
-
-            $html .= html_writer::table($table);
-        } else {
-            // There are no files to display.
-            $html .= $this->notification($nofilesstring, 'notifymessage');
-
+                get_string('restore'));
+        if ($async) {
+            $tablehead[] = get_string('status', 'backup');
         }
+
+        $table = new html_table();
+        $table->attributes['class'] = 'backup-files-table generaltable';
+        $table->head = $tablehead;
+        $table->width = '100%';
+        $table->data = [];
+
+        // First add in progress asynchronous backups.
+        // Only if asynchronous backups are enabled.
+        if ($async) {
+            $tabledata = [];
+            $backups = \async_helper::get_async_backups($viewer->filearea, $viewer->filecontext->instanceid);
+            // For each backup get, new item name, time restore created and progress.
+            foreach ($backups as $backup) {
+                $status = $this->get_status_display($backup->status, $backup->backupid);
+                $timecreated = $backup->timecreated;
+                $tablerow = [$backup->filename, userdate($timecreated), '-', '-', '-', $status];
+                $tabledata[] = $tablerow;
+            }
+            $table->data = $tabledata;
+        }
+
+        // Add completed backups.
+        foreach ($files as $file) {
+            if ($file->is_directory()) {
+                continue;
+            }
+            $fileurl = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                null,
+                $file->get_filepath(),
+                $file->get_filename(),
+                true
+            );
+            $params = array();
+            $params['action'] = 'choosebackupfile';
+            $params['filename'] = $file->get_filename();
+            $params['filepath'] = $file->get_filepath();
+            $params['component'] = $file->get_component();
+            $params['filearea'] = $file->get_filearea();
+            $params['filecontextid'] = $file->get_contextid();
+            $params['contextid'] = $viewer->currentcontext->id;
+            $params['itemid'] = $file->get_itemid();
+            $restoreurl = new moodle_url('/backup/restorefile.php', $params);
+            $restorelink = html_writer::link($restoreurl, get_string('restore'));
+            $downloadlink = html_writer::link($fileurl, get_string('download'));
+
+            // Conditional display of the restore and download links, initially only for the 'automated' filearea.
+            if ($params['filearea'] == 'automated') {
+                if (!has_capability('moodle/restore:viewautomatedfilearea', $viewer->currentcontext)) {
+                    $restorelink = '';
+                }
+                if (!can_download_from_backup_filearea($params['filearea'], $viewer->currentcontext)) {
+                    $downloadlink = '';
+                }
+            }
+            $tabledata = array(
+                $file->get_filename(),
+                userdate ($file->get_timemodified()),
+                display_size ($file->get_filesize()),
+                $downloadlink,
+                $restorelink
+            );
+            if ($async) {
+                $tabledata[] = $this->get_status_display(backup::STATUS_FINISHED_OK, null);
+            }
+
+            $table->data[] = $tabledata;
+        }
+
+        $html = html_writer::table($table);
 
         // For automated backups, the ability to manage backup files is controlled by the ability to download them.
         // All files must be from the same file area in a backup_files_viewer.
@@ -774,7 +725,7 @@ class core_backup_renderer extends plugin_renderer_base {
                         'component' => $viewer->component,
                         'returnurl' => $this->page->url->out())
                 ),
-                $button,
+                get_string('managefiles', 'backup'),
                 'post'
             );
         }
@@ -866,7 +817,7 @@ class core_backup_renderer extends plugin_renderer_base {
         if ($component->get_count() === 0) {
             $output .= $this->output->notification(get_string('nomatchingcourses', 'backup'));
 
-            $output .= html_writer::start_tag('div', ['class' => 'ics-search d-flex flex-wrap align-items-center']);
+            $output .= html_writer::start_tag('div', array('class' => 'ics-search form-inline'));
             $attrs = array(
                 'type' => 'text',
                 'name' => restore_course_search::$VAR_SEARCH,
@@ -880,7 +831,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 'type' => 'submit',
                 'name' => 'searchcourses',
                 'value' => get_string('search'),
-                'class' => 'btn btn-secondary ms-1'
+                'class' => 'btn btn-secondary ml-1'
             );
             $output .= html_writer::empty_tag('input', $attrs);
             $output .= html_writer::end_tag('div');
@@ -933,7 +884,7 @@ class core_backup_renderer extends plugin_renderer_base {
         $output .= html_writer::table($table);
         $output .= html_writer::end_tag('div');
 
-        $output .= html_writer::start_tag('div', ['class' => 'ics-search d-flex flex-wrap align-items-center']);
+        $output .= html_writer::start_tag('div', array('class' => 'ics-search form-inline'));
         $attrs = array(
             'type' => 'text',
             'name' => restore_course_search::$VAR_SEARCH,
@@ -946,7 +897,7 @@ class core_backup_renderer extends plugin_renderer_base {
             'type' => 'submit',
             'name' => 'searchcourses',
             'value' => get_string('search'),
-            'class' => 'btn btn-secondary ms-1'
+            'class' => 'btn btn-secondary ml-1'
         );
         $output .= html_writer::empty_tag('input', $attrs);
         $output .= html_writer::end_tag('div');
@@ -1036,7 +987,7 @@ class core_backup_renderer extends plugin_renderer_base {
      * @param \context $context The Moodle context for these restores.
      * @return string $html The table HTML.
      */
-    public function restore_progress_viewer($userid, $context) {
+    public function restore_progress_viewer ($userid, $context) {
         $tablehead = array(get_string('course'), get_string('time'), get_string('status', 'backup'));
 
         $table = new html_table();
@@ -1147,7 +1098,7 @@ class backup_files_viewer implements renderable {
      * Constructor of backup_files_viewer class
      * @param array $options
      */
-    public function __construct(?array $options = null) {
+    public function __construct(array $options = null) {
         global $CFG, $USER;
         $fs = get_file_storage();
         $this->currentcontext = $options['currentcontext'];

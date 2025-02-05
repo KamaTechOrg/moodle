@@ -188,8 +188,8 @@ $string['colles8short'] = 'I\'m critical of readings';
 $string['colles9'] = 'I explain my ideas to other students.';
 $string['colles9short'] = 'I explain my ideas';
 $string['customintro'] = 'Description';
-$string['deleteallanswers'] = 'All survey responses';
-$string['deleteanalysis'] = 'Response analysis';
+$string['deleteallanswers'] = 'Delete all survey responses';
+$string['deleteanalysis'] = 'Delete response analysis';
 $string['done'] = 'Done';
 $string['download'] = 'Download';
 $string['downloadexcel'] = 'Download data as Excel spreadsheet';
@@ -281,3 +281,8 @@ $string['thanksforanswers'] = 'Thanks for answering this survey, {$a}';
 $string['time'] = 'Time';
 $string['notyetanswered'] = 'Not yet answered';
 $string['allquestionrequireanswer'] = 'All questions are required and must be answered.';
+
+// Deprecated since Moodle 4.0.
+$string['clicktocontinue'] = 'Click here to continue';
+$string['viewsurveyresponses'] = 'View {$a} survey responses';
+$string['allquestions'] = 'All questions in order, all students';

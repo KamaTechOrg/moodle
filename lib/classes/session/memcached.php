@@ -14,7 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Memcached based session handler.
+ *
+ * @package    core
+ * @copyright  2013 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core\session;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Memcached based session handler.
@@ -86,7 +96,10 @@ class memcached extends handler {
         }
     }
 
-    #[\Override]
+    /**
+     * Start the session.
+     * @return bool success
+     */
     public function start() {
         ini_set('memcached.sess_locking', $this->requires_write_lock() ? '1' : '0');
 
@@ -119,7 +132,9 @@ class memcached extends handler {
         return $result;
     }
 
-    #[\Override]
+    /**
+     * Init session handler.
+     */
     public function init() {
         if (!extension_loaded('memcached')) {
             throw new exception('sessionhandlerproblem', 'error', '', null, 'memcached extension is not loaded');
@@ -163,7 +178,14 @@ class memcached extends handler {
 
     }
 
-    #[\Override]
+    /**
+     * Check the backend contains data for this session id.
+     *
+     * Note: this is intended to be called from manager::session_exists() only.
+     *
+     * @param string $sid
+     * @return bool true if session found.
+     */
     public function session_exists($sid) {
         if (!$this->servers) {
             return false;
@@ -187,11 +209,14 @@ class memcached extends handler {
         return false;
     }
 
-    #[\Override]
-    public function destroy_all(): bool {
+    /**
+     * Kill all active sessions, the core sessions table is
+     * purged afterwards.
+     */
+    public function kill_all_sessions() {
         global $DB;
         if (!$this->servers) {
-            return false;
+            return;
         }
 
         // Go through the list of all servers because
@@ -220,14 +245,15 @@ class memcached extends handler {
         foreach ($memcacheds as $memcached) {
             $memcached->quit();
         }
-
-        return true;
     }
 
-    #[\Override]
-    public function destroy(string $id): bool {
+    /**
+     * Kill one session, the session record is removed afterwards.
+     * @param string $sid
+     */
+    public function kill_session($sid) {
         if (!$this->servers) {
-            return false;
+            return;
         }
 
         // Go through the list of all servers because
@@ -238,11 +264,9 @@ class memcached extends handler {
             list($host, $port) = $server;
             $memcached = new \Memcached();
             $memcached->addServer($host, $port);
-            $memcached->delete($this->prefix . $id);
+            $memcached->delete($this->prefix . $sid);
             $memcached->quit();
         }
-
-        return true;
     }
 
     /**
@@ -257,7 +281,7 @@ class memcached extends handler {
      * @param   string  $str save_path value containing memcached connection string
      * @return  array[]
      */
-    protected static function connection_string_to_memcache_servers(string $str): array {
+    protected static function connection_string_to_memcache_servers(string $str) : array {
         $servers = [];
         $parts   = explode(',', $str);
         foreach ($parts as $part) {

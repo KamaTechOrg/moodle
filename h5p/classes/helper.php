@@ -163,7 +163,7 @@ class helper {
      *
      * @return int The representation of display options as int
      */
-    public static function decode_display_options(core $core, ?int $displayint = null): \stdClass {
+    public static function decode_display_options(core $core, int $displayint = null): \stdClass {
         $config = new \stdClass();
         if ($displayint === null) {
             $displayint = self::get_display_options($core, $config);
@@ -232,7 +232,7 @@ class helper {
      * @return \stored_file The file created
      */
     public static function create_fake_stored_file_from_path(string $filepath, int $userid = 0,
-            ?\context $context = null): \stored_file {
+            \context $context = null): \stored_file {
         if (is_null($context)) {
             $context = context_system::instance();
         }
@@ -301,16 +301,16 @@ class helper {
      * @param string $statusaction A link to 'Run now' option for the task
      * @return array
      */
-    private static function convert_info_into_array(string $tool,
+    static private function convert_info_into_array(string $tool,
         \moodle_url $link,
         int $status,
         string $statusaction = ''): array {
 
         $statusclasses = array(
-            TEXTFILTER_DISABLED => 'badge bg-danger text-white',
-            TEXTFILTER_OFF => 'badge bg-warning text-dark',
-            0 => 'badge bg-danger text-white',
-            TEXTFILTER_ON => 'badge bg-success text-white',
+            TEXTFILTER_DISABLED => 'badge badge-danger',
+            TEXTFILTER_OFF => 'badge badge-warning',
+            0 => 'badge badge-danger',
+            TEXTFILTER_ON => 'badge badge-success',
         );
 
         $statuschoices = array(
@@ -476,7 +476,7 @@ class helper {
      * @param  factory $factory The \core_h5p\factory object
      * @return array|null The information export file otherwise null.
      */
-    public static function get_export_info(string $exportfilename, ?\moodle_url $url = null, ?factory $factory = null): ?array {
+    public static function get_export_info(string $exportfilename, \moodle_url $url = null, ?factory $factory = null): ?array {
 
         if (!$factory) {
             $factory = new factory();

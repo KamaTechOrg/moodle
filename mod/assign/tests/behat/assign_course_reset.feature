@@ -44,19 +44,19 @@ Feature: Assign reset
     And I log out
 
     And I am on the "Test assignment name" Activity page logged in as teacher1
-    And I navigate to "Submissions" in current page administration
+    And I follow "View all submissions"
     And I should see "Submitted for grading"
     When I am on the "Course 1" "reset" page
     And I set the following fields to these values:
-        | All submissions | 1  |
+        | Delete all submissions | 1  |
     And I press "Reset course"
     And I press "Continue"
     And I am on the "Test assignment name" Activity page
-    And I navigate to "Submissions" in current page administration
+    And I follow "View all submissions"
     Then I should not see "Submitted for grading"
 
   @javascript
-  Scenario: Use course reset to remove user overrides
+  Scenario: Use course reset to remove user overrides.
     And I am on the "Test assignment name" Activity page logged in as teacher1
     And I navigate to "Overrides" in current page administration
     And I press "Add user override"
@@ -71,11 +71,9 @@ Feature: Assign reset
     And I press "Save"
     And I should see "Sam1 Student1"
     When I am on the "Course 1" "reset" page
-    And I press "Deselect all"
     And I set the following fields to these values:
-        | All user overrides | 1  |
+        | Delete all user overrides | 1  |
     And I press "Reset course"
-    And I click on "Reset course" "button" in the "Reset course?" "dialogue"
     And I press "Continue"
     And I am on "Course 1" course homepage
     And I click on "Test assignment name" "link" in the "region-main" "region"
@@ -99,7 +97,7 @@ Feature: Assign reset
     And I should see "Group 1"
     And I am on the "Course 1" "reset" page
     And I set the following fields to these values:
-        | All group overrides | 1  |
+        | Delete all group overrides | 1  |
     And I press "Reset course"
     And I press "Continue"
     And I am on the "Test assignment name" Activity page
@@ -114,15 +112,15 @@ Feature: Assign reset
         | blindmarking | 1 |
     And I press "Save"
     When I am on the "Test assignment name" Activity page
-    And I navigate to "Submissions" in current page administration
-    And I choose the "Reveal student identities" item in the "Actions" action menu
+    And I follow "View all submissions"
+    And I select "Reveal student identities" from the "Grading action" singleselect
     And I press "Continue"
     And I should see "Sam1 Student1"
     When I am on the "Course 1" "reset" page
     And I set the following fields to these values:
-        | All submissions | 1 |
+        | Delete all submissions | 1 |
     And I press "Reset course"
     And I press "Continue"
     And I am on the "Test assignment name" Activity page
-    And I navigate to "Submissions" in current page administration
+    And I follow "View all submissions"
     Then I should not see "Sam1 Student1"

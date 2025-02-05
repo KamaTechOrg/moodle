@@ -34,6 +34,7 @@ namespace core\output;
  * @since      2.9
  */
 class mustache_uniqid_helper {
+
     /** @var string $uniqid The unique id */
     private $uniqid = null;
 

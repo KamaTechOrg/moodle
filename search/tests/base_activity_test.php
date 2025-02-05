@@ -53,7 +53,6 @@ class base_activity_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $DB;
-        parent::setUp();
         $this->resetAfterTest();
         set_config('enableglobalsearch', true);
 
@@ -104,13 +103,12 @@ class base_activity_test extends \advanced_testcase {
             $this->generator->teardown();
             $this->generator = null;
         }
-        parent::tearDown();
     }
 
     /**
      * Test base activity get search fileareas
      */
-    public function test_get_search_fileareas_base(): void {
+    public function test_get_search_fileareas_base() {
 
         $builder = $this->getMockBuilder('\core_search\base_activity');
         $builder->disableOriginalConstructor();
@@ -124,7 +122,7 @@ class base_activity_test extends \advanced_testcase {
     /**
      * Test base attach files
      */
-    public function test_attach_files_base(): void {
+    public function test_attach_files_base() {
         $filearea = 'intro';
         $component = 'mod_forum';
         $module = 'forum';
@@ -178,7 +176,7 @@ class base_activity_test extends \advanced_testcase {
     /**
      * Tests getting the recordset.
      */
-    public function test_get_document_recordset(): void {
+    public function test_get_document_recordset() {
         global $USER, $DB;
 
         // Get all the forums to index (no restriction).
@@ -287,7 +285,7 @@ class base_activity_test extends \advanced_testcase {
     /**
      * Tests the get_doc_url function.
      */
-    public function test_get_doc_url(): void {
+    public function test_get_doc_url() {
         $area = new \mod_forum\search\activity();
         $results = self::recordset_to_indexed_array($area->get_document_recordset());
 
@@ -301,7 +299,7 @@ class base_activity_test extends \advanced_testcase {
     /**
      * Tests the check_access function.
      */
-    public function test_check_access(): void {
+    public function test_check_access() {
         global $CFG;
         require_once($CFG->dirroot . '/course/lib.php');
 
@@ -335,7 +333,7 @@ class base_activity_test extends \advanced_testcase {
      * Tests the module version of get_contexts_to_reindex, which is supposed to return all the
      * activity contexts in order of date added.
      */
-    public function test_get_contexts_to_reindex(): void {
+    public function test_get_contexts_to_reindex() {
         global $DB;
 
         $this->resetAfterTest();
@@ -373,7 +371,7 @@ class base_activity_test extends \advanced_testcase {
     /**
      * Test document icon.
      */
-    public function test_get_doc_icon(): void {
+    public function test_get_doc_icon() {
         $baseactivity = $this->getMockBuilder('\core_search\base_activity')
             ->disableOriginalConstructor()
             ->onlyMethods(array('get_module_name'))

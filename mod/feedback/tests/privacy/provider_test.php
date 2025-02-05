@@ -49,14 +49,13 @@ require_once($CFG->dirroot . '/mod/feedback/lib.php');
 class provider_test extends provider_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
     /**
      * Test getting the contexts for a user.
      */
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');
@@ -121,7 +120,7 @@ class provider_test extends provider_testcase {
     /**
      * Test getting the users in a context.
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');
@@ -198,7 +197,7 @@ class provider_test extends provider_testcase {
     /**
      * Test deleting user data.
      */
-    public function test_delete_data_for_user(): void {
+    public function test_delete_data_for_user() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');
@@ -252,7 +251,7 @@ class provider_test extends provider_testcase {
     /**
      * Test deleting data within a context for an approved userlist.
      */
-    public function test_delete_data_for_users(): void {
+    public function test_delete_data_for_users() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');
@@ -312,7 +311,7 @@ class provider_test extends provider_testcase {
     /**
      * Test deleting a whole context.
      */
-    public function test_delete_data_for_all_users_in_context(): void {
+    public function test_delete_data_for_all_users_in_context() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');
@@ -351,7 +350,7 @@ class provider_test extends provider_testcase {
     /**
      * Test exporting data.
      */
-    public function test_export_user_data(): void {
+    public function test_export_user_data() {
         global $DB;
         $dg = $this->getDataGenerator();
         $fg = $dg->get_plugin_generator('mod_feedback');

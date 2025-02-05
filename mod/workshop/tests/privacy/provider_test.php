@@ -124,7 +124,6 @@ class provider_test extends provider_testcase {
      */
     protected function setUp(): void {
         global $DB;
-        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -179,7 +178,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::get_contexts_for_userid()} implementation.
      */
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
 
         $cm11 = get_coursemodule_from_instance('workshop', $this->workshop11->id);
         $cm12 = get_coursemodule_from_instance('workshop', $this->workshop12->id);
@@ -210,7 +209,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::get_users_in_context()} implementation.
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
 
         $cm11 = get_coursemodule_from_instance('workshop', $this->workshop11->id);
         $cm12 = get_coursemodule_from_instance('workshop', $this->workshop12->id);
@@ -257,7 +256,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::export_user_data()} implementation.
      */
-    public function test_export_user_data_1(): void {
+    public function test_export_user_data_1() {
 
         $contextlist = new \core_privacy\local\request\approved_contextlist($this->student1, 'mod_workshop', [
             \context_module::instance($this->workshop11->cmid)->id,
@@ -270,7 +269,7 @@ class provider_test extends provider_testcase {
 
         $workshop = $writer->get_data([]);
         $this->assertEquals('Workshop11', $workshop->name);
-        $this->assertObjectHasProperty('phase', $workshop);
+        $this->assertObjectHasAttribute('phase', $workshop);
 
         $mysubmission = $writer->get_data([
             get_string('mysubmission', 'mod_workshop'),
@@ -309,7 +308,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::export_user_data()} implementation.
      */
-    public function test_export_user_data_2(): void {
+    public function test_export_user_data_2() {
 
         $contextlist = new \core_privacy\local\request\approved_contextlist($this->student2, 'mod_workshop', [
             \context_module::instance($this->workshop11->cmid)->id,
@@ -329,7 +328,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::delete_data_for_all_users_in_context()} implementation.
      */
-    public function test_delete_data_for_all_users_in_context(): void {
+    public function test_delete_data_for_all_users_in_context() {
         global $DB;
 
         $this->assertTrue($DB->record_exists('workshop_submissions', ['workshopid' => $this->workshop11->id]));
@@ -346,7 +345,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::delete_data_for_user()} implementation.
      */
-    public function test_delete_data_for_user(): void {
+    public function test_delete_data_for_user() {
         global $DB;
 
         $student1submissions = $DB->get_records('workshop_submissions', [
@@ -430,7 +429,7 @@ class provider_test extends provider_testcase {
     /**
      * Test {@link \mod_workshop\privacy\provider::delete_data_for_users()} implementation.
      */
-    public function test_delete_data_for_users(): void {
+    public function test_delete_data_for_users() {
         global $DB;
 
         // Student1 has submissions in two workshops.

@@ -42,17 +42,17 @@ use stdClass;
 class completion extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
+    protected function get_default_table_aliases(): array {
         return [
-            'course_completion',
-            'course',
-            'grade_grades' ,
-            'grade_items',
-            'user',
+            'course_completion' => 'ccomp',
+            'course' => 'c',
+            'grade_grades' => 'gg',
+            'grade_items' => 'gi',
+            'user' => 'u',
         ];
     }
 
@@ -91,13 +91,11 @@ class completion extends base {
      * @return column[]
      */
     protected function get_all_columns(): array {
-        [
-            'course_completion' => $coursecompletion,
-            'course' => $course,
-            'grade_grades' => $grade,
-            'grade_items' => $gradeitem,
-            'user' => $user,
-        ] = $this->get_table_aliases();
+        $coursecompletion = $this->get_table_alias('course_completion');
+        $course = $this->get_table_alias('course');
+        $grade = $this->get_table_alias('grade_grades');
+        $gradeitem = $this->get_table_alias('grade_items');
+        $user = $this->get_table_alias('user');
 
         // Completed column.
         $columns[] = (new column(
@@ -224,7 +222,7 @@ class completion extends base {
         $currenttime = time();
         $columns[] = (new column(
             'dayscourse',
-            new lang_string('daystakingcourse', 'completion'),
+            new lang_string('daystakingcourse', 'course'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -236,10 +234,9 @@ class completion extends base {
                         {$coursecompletion}.timecompleted
                         ELSE
                         {$currenttime}
-                    END - {$course}.startdate)
+                    END - {$course}.startdate) / " . DAYSECS . "
                 END)", 'dayscourse')
-            ->set_is_sortable(true)
-            ->set_callback([format::class, 'format_time']);
+            ->set_is_sortable(true);
 
         // Days since last completion (days since last enrolment date until completion or until current date if not completed).
         $columns[] = (new column(
@@ -256,10 +253,9 @@ class completion extends base {
                         {$coursecompletion}.timecompleted
                         ELSE
                         {$currenttime}
-                    END - {$coursecompletion}.timeenrolled)
+                    END - {$coursecompletion}.timeenrolled) / " . DAYSECS . "
                 END)", 'daysuntilcompletion')
-            ->set_is_sortable(true)
-            ->set_callback([format::class, 'format_time']);
+            ->set_is_sortable(true);
 
         // Student course grade.
         $columns[] = (new column(

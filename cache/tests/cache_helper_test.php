@@ -19,22 +19,23 @@ namespace core_cache;
 /**
  * PHPunit tests for the cache_helper class.
  *
- * @package    core_cache
+ * @package    core
  * @category   cache
  * @copyright  2023 Andrew Lyons <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \core_cache\helper
+ * @coversDefaultClass \cache_helper
  */
-final class cache_helper_test extends \advanced_testcase {
+class cache_helper_test extends \advanced_testcase {
     /**
      * Test the result_found method.
      *
      * @param mixed $value
      * @param bool $expected
      * @dataProvider result_found_provider
+     * @covers ::result_found
      */
     public function test_result_found($value, bool $expected): void {
-        $this->assertEquals($expected, helper::result_found($value));
+        $this->assertEquals($expected, \cache_helper::result_found($value));
     }
 
     /**
@@ -42,7 +43,7 @@ final class cache_helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function result_found_provider(): array {
+    public function result_found_provider(): array {
         return [
             // Only false values are considered as not found.
             [false, false],

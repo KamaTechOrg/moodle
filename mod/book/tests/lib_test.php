@@ -42,12 +42,11 @@ require_once($CFG->dirroot . '/mod/book/lib.php');
 class lib_test extends \advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
     }
 
-    public function test_export_contents(): void {
+    public function test_export_contents() {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/course/externallib.php');
 
@@ -197,7 +196,7 @@ class lib_test extends \advanced_testcase {
      * Test book_view
      * @return void
      */
-    public function test_book_view(): void {
+    public function test_book_view() {
         global $CFG, $DB;
 
         $CFG->enablecompletion = 1;
@@ -243,7 +242,7 @@ class lib_test extends \advanced_testcase {
         $this->assertEquals(1, $completiondata->completionstate);
     }
 
-    public function test_book_core_calendar_provide_event_action(): void {
+    public function test_book_core_calendar_provide_event_action() {
         // Create the activity.
         $course = $this->getDataGenerator()->create_course();
         $book = $this->getDataGenerator()->create_module('book', array('course' => $course->id));
@@ -266,7 +265,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_book_core_calendar_provide_event_action_in_hidden_section(): void {
+    public function test_book_core_calendar_provide_event_action_in_hidden_section() {
         // Create the activity.
         $course = $this->getDataGenerator()->create_course();
         $book = $this->getDataGenerator()->create_module('book', array('course' => $course->id));
@@ -294,7 +293,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_book_core_calendar_provide_event_action_for_user(): void {
+    public function test_book_core_calendar_provide_event_action_for_user() {
         // Create the activity.
         $course = $this->getDataGenerator()->create_course();
         $book = $this->getDataGenerator()->create_module('book', array('course' => $course->id));
@@ -323,7 +322,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_book_core_calendar_provide_event_action_as_non_user(): void {
+    public function test_book_core_calendar_provide_event_action_as_non_user() {
         global $CFG;
 
         // Create the activity.
@@ -348,7 +347,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_book_core_calendar_provide_event_action_already_completed(): void {
+    public function test_book_core_calendar_provide_event_action_already_completed() {
         global $CFG;
 
         $CFG->enablecompletion = 1;
@@ -379,7 +378,7 @@ class lib_test extends \advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_book_core_calendar_provide_event_action_already_completed_for_user(): void {
+    public function test_book_core_calendar_provide_event_action_already_completed_for_user() {
         global $CFG;
 
         $CFG->enablecompletion = 1;
@@ -434,7 +433,7 @@ class lib_test extends \advanced_testcase {
         return \calendar_event::create($event);
     }
 
-    public function test_mod_book_get_tagged_chapters(): void {
+    public function test_mod_book_get_tagged_chapters() {
         global $DB;
 
         $this->resetAfterTest();

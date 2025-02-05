@@ -46,11 +46,10 @@ use core_block\privacy\provider;
 class provider_test extends provider_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
         $c2 = $dg->create_course();
@@ -98,7 +97,7 @@ class provider_test extends provider_testcase {
     /**
      * Test that user IDs are returned for a given context.
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
         global $DB;
         $u1 = $this->getDataGenerator()->create_user();
         $u2 = $this->getDataGenerator()->create_user();
@@ -126,7 +125,7 @@ class provider_test extends provider_testcase {
     }
 
 
-    public function test_delete_data_for_user(): void {
+    public function test_delete_data_for_user() {
         global $DB;
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
@@ -196,7 +195,7 @@ class provider_test extends provider_testcase {
             'name' => "docked_block_instance_{$blockmentees->instance->id}"]));
     }
 
-    public function test_delete_data_for_all_users_in_context(): void {
+    public function test_delete_data_for_all_users_in_context() {
         global $DB;
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
@@ -302,7 +301,7 @@ class provider_test extends provider_testcase {
     /**
      * Test the deletion of data related to a context and a list of users.
      */
-    public function test_delete_data_for_users(): void {
+    public function test_delete_data_for_users() {
         global $DB;
         $u1 = $this->getDataGenerator()->create_user();
         $u2 = $this->getDataGenerator()->create_user();
@@ -340,7 +339,7 @@ class provider_test extends provider_testcase {
                 ['name' => "block{$blockcontext->instanceid}hidden"]));
     }
 
-    public function test_export_data_for_user(): void {
+    public function test_export_data_for_user() {
         global $DB;
         $dg = $this->getDataGenerator();
         $c1 = $dg->create_course();
@@ -382,12 +381,12 @@ class provider_test extends provider_testcase {
         $this->assertEquals($yes, $prefs->block_is_hidden->value);
 
         $prefs = writer::with_context($bprivatefiles->context)->get_user_context_preferences('core_block');
-        $this->assertObjectNotHasProperty('block_is_docked', $prefs);
+        $this->assertObjectNotHasAttribute('block_is_docked', $prefs);
         $this->assertEquals($no, $prefs->block_is_hidden->value);
 
         $prefs = writer::with_context($bmyprofile->context)->get_user_context_preferences('core_block');
         $this->assertEquals($yes, $prefs->block_is_docked->value);
-        $this->assertObjectNotHasProperty('block_is_hidden', $prefs);
+        $this->assertObjectNotHasAttribute('block_is_hidden', $prefs);
     }
 
     /**

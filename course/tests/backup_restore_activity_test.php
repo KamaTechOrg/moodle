@@ -34,13 +34,12 @@ class backup_restore_activity_test extends \advanced_testcase {
         global $CFG;
         require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
-        parent::setUpBeforeClass();
     }
 
     /**
      * Test that duplicating a page preserves the lang setting.
      */
-    public function test_duplicating_page_preserves_lang(): void {
+    public function test_duplicating_page_preserves_lang() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -58,7 +57,7 @@ class backup_restore_activity_test extends \advanced_testcase {
         $this->assertEquals('en', $newpagecm->lang);
     }
 
-    public function test_activity_forced_lang_not_restored_without_capability(): void {
+    public function test_activity_forced_lang_not_restored_without_capability() {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();

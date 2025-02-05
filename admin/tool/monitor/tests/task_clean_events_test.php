@@ -30,7 +30,6 @@ class task_clean_events_test extends \advanced_testcase {
      * Test set up.
      */
     public function setUp(): void {
-        parent::setUp();
         set_config('enablemonitor', 1, 'tool_monitor');
         $this->resetAfterTest(true);
     }
@@ -38,7 +37,7 @@ class task_clean_events_test extends \advanced_testcase {
     /**
      * Tests the cleaning up of events.
      */
-    public function test_clean_events(): void {
+    public function test_clean_events() {
         global $DB;
 
         // Create the necessary items for testing.

@@ -602,19 +602,6 @@ abstract class question_testcase extends advanced_testcase {
         }
         return;
     }
-
-    /**
-     * Check that 2 XML strings are the same, ignoring differences in line endings.
-     *
-     * @param string $expectedxml The expected XML string
-     * @param string $xml The XML string to check
-     */
-    public function assert_same_xml($expectedxml, $xml) {
-        $this->assertEquals(
-            phpunit_util::normalise_line_endings($expectedxml),
-            phpunit_util::normalise_line_endings($xml)
-        );
-    }
 }
 
 
@@ -879,11 +866,11 @@ abstract class qbehaviour_walkthrough_test_base extends question_testcase {
         $this->quba->manual_grade($this->slot, $comment, $mark, $commentformat);
     }
 
-    protected function save_quba(?moodle_database $db = null) {
+    protected function save_quba(moodle_database $db = null) {
         question_engine::save_questions_usage_by_activity($this->quba, $db);
     }
 
-    protected function load_quba(?moodle_database $db = null) {
+    protected function load_quba(moodle_database $db = null) {
         $this->quba = question_engine::load_questions_usage_by_activity($this->quba->get_id(), $db);
     }
 

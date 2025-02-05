@@ -62,11 +62,12 @@ class template extends \core\form\persistent {
         $mform->addElement('selectyesno', 'enabled', get_string('enabled', 'quizaccess_seb'));
         $mform->setType('enabled', PARAM_INT);
 
-        if ($this->get_persistent()->get('id')) {
-            $mform->hardFreezeAllVisibleExcept(['enabled']);
-        }
-
         $this->add_action_buttons();
+
+        if (!empty($this->get_persistent()) && !$this->get_persistent()->can_delete()) {
+            $mform->hardFreezeAllVisibleExcept([]);
+            $mform->addElement('cancel');
+        }
     }
 
     /**

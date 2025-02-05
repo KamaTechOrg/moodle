@@ -80,7 +80,6 @@ class behat_partial_named_selector extends \Behat\Mink\Selector\PartialNamedSele
         'group_message' => 'group_message',
         'autocomplete' => 'autocomplete',
         'iframe' => 'iframe',
-        'option_role' => 'option_role',
     );
 
     /**
@@ -265,9 +264,6 @@ XPATH
 .//li[contains(concat(' ', normalize-space(@class), ' '), ' section ')][./descendant::*[self::h3]
     [normalize-space(.) = %locator%][contains(concat(' ', normalize-space(@class), ' '), ' sectionname ') or
     contains(concat(' ', normalize-space(@class), ' '), ' section-title ')]] |
-.//li[contains(concat(' ', normalize-space(@class), ' '), ' section ')][./descendant::*[self::h4]
-    [normalize-space(.) = %locator%][contains(concat(' ', normalize-space(@class), ' '), ' sectionname ') or
-    contains(concat(' ', normalize-space(@class), ' '), ' section-title ')]] |
 .//div[contains(concat(' ', normalize-space(@class), ' '), ' sitetopic ')]
     [./descendant::*[self::h2][normalize-space(.) = %locator%] or %locator% = 'frontpage']
 XPATH
@@ -328,13 +324,7 @@ XPATH
 XPATH
         ,
             'date_time' => <<<XPATH
-.//*[
-    (%idMatch% or ./legend[%exactTagTextMatch%]
-        or parent::div[@data-groupname=%locator% or ./label[contains(normalize-space(string(.)), %locator%)]]
-    ) and
-    (@data-fieldtype='date' or @data-fieldtype='date_time'
-        or @data-fieldtype='date_selector' or @data-fieldtype='date_time_selector')
-]
+.//fieldset[(%idMatch% or ./legend[%exactTagTextMatch%]) and (@data-fieldtype='date' or @data-fieldtype='date_time')]
 XPATH
         ,
             'select_menu' => <<<XPATH

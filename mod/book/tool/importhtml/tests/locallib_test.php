@@ -40,11 +40,10 @@ require_once($CFG->dirroot.'/mod/book/tool/importhtml/locallib.php');
 class locallib_test extends \advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_import_chapters_events(): void {
+    public function test_import_chapters_events() {
         $course = $this->getDataGenerator()->create_course();
         $book = $this->getDataGenerator()->create_module('book', array('course' => $course->id));
         $context = \context_module::instance($book->cmid);
@@ -58,7 +57,7 @@ class locallib_test extends \advanced_testcase {
         $record->filename = 'chapters.zip';
 
         $fs = get_file_storage();
-        $file = $fs->create_file_from_pathname($record, self::get_fixture_path(__NAMESPACE__, 'chapters.zip'));
+        $file = $fs->create_file_from_pathname($record, __DIR__ . '/fixtures/chapters.zip');
 
         // Importing the chapters.
         $sink = $this->redirectEvents();

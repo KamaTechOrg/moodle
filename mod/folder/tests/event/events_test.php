@@ -31,7 +31,6 @@ class events_test extends \advanced_testcase {
      * Tests set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -41,7 +40,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for updating a folder, so the unit test will simply create
      * and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_folder_updated(): void {
+    public function test_folder_updated() {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $folder = $this->getDataGenerator()->create_module('folder', array('course' => $course->id));
@@ -73,7 +72,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for updating a folder, so the unit test will simply create
      * and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_all_files_downloaded(): void {
+    public function test_all_files_downloaded() {
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $folder = $this->getDataGenerator()->create_module('folder', array('course' => $course->id));

@@ -123,7 +123,6 @@ class cm implements named_templatable, renderable {
             'cmid' => $mod->id,
             'editing' => $PAGE->user_is_editing(),
             'sectionnum' => $this->section->section,
-            'cmbulk' => !$mod->get_delegated_section_info(),
         ];
 
         // Add partial data segments.
@@ -136,7 +135,6 @@ class cm implements named_templatable, renderable {
         $haspartials['editor'] = $this->add_editor_data($data, $output);
         $haspartials['groupmode'] = $this->add_groupmode_data($data, $output);
         $haspartials['visibility'] = $this->add_visibility_data($data, $output);
-        $this->add_actvitychooserbutton_data($data, $output);
         $this->add_format_data($data, $haspartials, $output);
 
         // Calculated fields.
@@ -187,7 +185,7 @@ class cm implements named_templatable, renderable {
             $this->displayoptions
         );
         $modavailability = $availability->export_for_template($output);
-        $data->modavailability = $modavailability ?? false;
+        $data->modavailability = $modavailability;
         return $availability->has_availability($output);
     }
 
@@ -313,7 +311,7 @@ class cm implements named_templatable, renderable {
         if (!$this->format->show_editor($editcaps)) {
             return false;
         }
-        $returnsection = $this->format->get_sectionnum();
+        $returnsection = $this->format->get_section_number();
         // Edit actions.
         $controlmenu = new $this->controlmenuclass(
             $this->format,
@@ -321,8 +319,7 @@ class cm implements named_templatable, renderable {
             $this->mod,
             $this->displayoptions
         );
-        $data->controlmenu = $controlmenu->export_for_template($output) ?? false;
-
+        $data->controlmenu = $controlmenu->export_for_template($output);
         if (!$this->format->supports_components()) {
             // Add the legacy YUI move link.
             $data->moveicon = course_get_cm_move($this->mod, $returnsection);
@@ -353,22 +350,11 @@ class cm implements named_templatable, renderable {
     protected function add_visibility_data(stdClass &$data, renderer_base $output): bool {
         $visibility = new $this->visibilityclass($this->format, $this->section, $this->mod);
         $templatedata = $visibility->export_for_template($output);
-        $data->visibility = $templatedata ?? false;
         if ($templatedata) {
+            $data->visibility = $templatedata;
             return true;
         }
         return false;
-    }
-
-    /**
-     * Add the activity chooser button data to the data structure.
-     *
-     * @param stdClass $data the current cm data reference
-     * @param renderer_base $output typically, the renderer that's calling this function
-     */
-    protected function add_actvitychooserbutton_data(stdClass &$data, renderer_base $output): void {
-        $activitychooserbutton = new \core_course\output\activitychooserbutton($this->section, $this->mod);
-        $data->activitychooserbutton = $activitychooserbutton->export_for_template($output);
     }
 
     /**

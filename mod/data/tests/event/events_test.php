@@ -37,14 +37,13 @@ class events_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
     /**
      * Test the field created event.
      */
-    public function test_field_created(): void {
+    public function test_field_created() {
         $this->setAdminUser();
 
         // Create a course we are going to add a data module to.
@@ -79,7 +78,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the field updated event.
      */
-    public function test_field_updated(): void {
+    public function test_field_updated() {
         $this->setAdminUser();
 
         // Create a course we are going to add a data module to.
@@ -115,7 +114,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the field deleted event.
      */
-    public function test_field_deleted(): void {
+    public function test_field_deleted() {
         $this->setAdminUser();
 
         // Create a course we are going to add a data module to.
@@ -151,7 +150,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the record created event.
      */
-    public function test_record_created(): void {
+    public function test_record_created() {
         // Create a course we are going to add a data module to.
         $course = $this->getDataGenerator()->create_course();
 
@@ -180,7 +179,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for updating a record, so the unit test will simply create
      * and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_record_updated(): void {
+    public function test_record_updated() {
         // Create a course we are going to add a data module to.
         $course = $this->getDataGenerator()->create_course();
 
@@ -216,7 +215,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the record deleted event.
      */
-    public function test_record_deleted(): void {
+    public function test_record_deleted() {
         global $DB;
 
         // Create a course we are going to add a data module to.
@@ -267,7 +266,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for viewing templates, so the unit test will simply create
      * and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_template_viewed(): void {
+    public function test_template_viewed() {
         // Create a course we are going to add a data module to.
         $course = $this->getDataGenerator()->create_course();
 
@@ -305,7 +304,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for updating a template, so the unit test will simply create
      * and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_template_updated(): void {
+    public function test_template_updated() {
         // Create a course we are going to add a data module to.
         $course = $this->getDataGenerator()->create_course();
 
@@ -342,7 +341,7 @@ class events_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public static function preset_importer_provider(): array {
+    public function preset_importer_provider(): array {
         // Image gallery preset is: ['title' => 'text', 'description' => 'textarea', 'image' => 'picture'];
 
         $titlefield = new \stdClass();
@@ -411,7 +410,7 @@ class events_test extends \advanced_testcase {
         array $currentfields,
         array $newfields,
         array $expected
-    ): void {
+    ) {
 
         global $USER;
 

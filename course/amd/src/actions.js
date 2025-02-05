@@ -37,7 +37,6 @@ define(
         'core/log',
         'core_courseformat/courseeditor',
         'core/event_dispatcher',
-        'core/local/inplace_editable/events',
         'core_course/events'
     ],
     function(
@@ -55,7 +54,6 @@ define(
         log,
         editor,
         EventDispatcher,
-        InplaceEditableEvents,
         CourseEvents
     ) {
 
@@ -65,7 +63,7 @@ define(
         const componentActions = [
             'moveSection', 'moveCm', 'addSection', 'deleteSection', 'cmDelete', 'cmDuplicate', 'sectionHide', 'sectionShow',
             'cmHide', 'cmShow', 'cmStealth', 'sectionHighlight', 'sectionUnhighlight', 'cmMoveRight', 'cmMoveLeft',
-            'cmNoGroups', 'cmVisibleGroups', 'cmSeparateGroups', 'addModule',
+            'cmNoGroups', 'cmVisibleGroups', 'cmSeparateGroups',
         ];
 
         // The course reactive instance.
@@ -87,7 +85,6 @@ define(
             TOGGLE: '.toggle-display,.dropdown-toggle',
             SECTIONLI: 'li.section',
             SECTIONACTIONMENU: '.section_action_menu',
-            SECTIONACTIONMENUTRIGGER: '.section-actions',
             SECTIONITEM: '[data-for="section_title"]',
             ADDSECTIONS: '.changenumsections [data-add-sections]',
             SECTIONBADGES: '[data-region="sectionbadges"]',
@@ -338,7 +335,7 @@ define(
                 methodname: 'core_course_edit_module',
                 args: {id: cmid,
                     action: action,
-                    sectionreturn: target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : null
+                    sectionreturn: target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : 0
                 }
             }], true);
 
@@ -697,7 +694,7 @@ define(
          */
         var editSection = function(sectionElement, sectionid, target, courseformat) {
             var action = target.attr('data-action'),
-                sectionreturn = target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : null;
+                sectionreturn = target.attr('data-sectionreturn') ? target.attr('data-sectionreturn') : 0;
 
             // Filter direct component handled actions.
             if (courseeditor.supportComponents && componentActions.includes(action)) {
@@ -960,16 +957,16 @@ define(
                     }
                 });
 
-                // Add a handler for section action menu.
-                $('body').on('click keypress',
-                            SELECTOR.SECTIONACTIONMENUTRIGGER + '[data-sectionid] ' +
+                // Add a handler for section show/hide actions.
+                $('body').on('click keypress', SELECTOR.SECTIONLI + ' ' +
+                            SELECTOR.SECTIONACTIONMENU + '[data-sectionid] ' +
                             'a[data-action]', function(e) {
                     if (e.type === 'keypress' && e.keyCode !== 13) {
                         return;
                     }
                     var actionItem = $(this),
                         sectionElement = actionItem.closest(SELECTOR.SECTIONLI),
-                        sectionId = actionItem.closest(SELECTOR.SECTIONACTIONMENUTRIGGER).attr('data-sectionid');
+                        sectionId = actionItem.closest(SELECTOR.SECTIONACTIONMENU).attr('data-sectionid');
 
                     if (actionItem.attr('data-action') === 'permalink') {
                         e.preventDefault();
@@ -997,21 +994,18 @@ define(
 
                 // The section and activity names are edited using inplace editable.
                 // The "update" jQuery event must be captured in order to update the course state.
-                $('body').on(InplaceEditableEvents.eventTypes.elementUpdated,
-                        `${SELECTOR.SECTIONITEM} [data-inplaceeditable]`, function(e) {
-                    if (e.detail.ajaxreturn.itemid) {
+                $('body').on('updated', `${SELECTOR.SECTIONLI} ${SELECTOR.SECTIONITEM} [data-inplaceeditable]`, function(e) {
+                    if (e.ajaxreturn && e.ajaxreturn.itemid) {
                         const state = courseeditor.state;
-                        const section = state.section.get(e.detail.ajaxreturn.itemid);
+                        const section = state.section.get(e.ajaxreturn.itemid);
                         if (section !== undefined) {
-                            courseeditor.dispatch('sectionState', [e.detail.ajaxreturn.itemid]);
+                            courseeditor.dispatch('sectionState', [e.ajaxreturn.itemid]);
                         }
                     }
                 });
-
-                $('body').on(InplaceEditableEvents.eventTypes.elementUpdated,
-                        `${SELECTOR.ACTIVITYLI} [data-itemtype="activityname"][data-inplaceeditable]`, function(e) {
-                    if (e.detail.ajaxreturn.itemid) {
-                        courseeditor.dispatch('cmState', [e.detail.ajaxreturn.itemid]);
+                $('body').on('updated', `${SELECTOR.ACTIVITYLI} [data-inplaceeditable]`, function(e) {
+                    if (e.ajaxreturn && e.ajaxreturn.itemid) {
+                        courseeditor.dispatch('cmState', [e.ajaxreturn.itemid]);
                     }
                 });
 

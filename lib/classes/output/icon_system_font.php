@@ -25,6 +25,8 @@
 
 namespace core\output;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Class allowing different systems for mapping and rendering icons.
  *
@@ -39,4 +41,6 @@ namespace core\output;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class icon_system_font extends icon_system {
+
 }
+

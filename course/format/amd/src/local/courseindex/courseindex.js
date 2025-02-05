@@ -300,9 +300,6 @@ export default class Component extends BaseComponent {
     _refreshSectionCmlist({element}) {
         const cmlist = element.cmlist ?? [];
         const listparent = this.getElement(this.selectors.SECTION_CMLIST, element.id);
-        if (!listparent) {
-            return;
-        }
         this._fixOrder(listparent, cmlist, this.cms);
     }
 
@@ -310,10 +307,10 @@ export default class Component extends BaseComponent {
      * Refresh the section list.
      *
      * @param {object} param
-     * @param {Object} param.state
+     * @param {Object} param.element
      */
-    _refreshCourseSectionlist({state}) {
-        const sectionlist = this.reactive.getExporter().listedSectionIds(state);
+    _refreshCourseSectionlist({element}) {
+        const sectionlist = element.sectionlist ?? [];
         this._fixOrder(this.element, sectionlist, this.sections);
     }
 
@@ -341,7 +338,7 @@ export default class Component extends BaseComponent {
             const item = allitems[itemid];
             // Get the current element at that position.
             const currentitem = container.children[index];
-            if (currentitem === undefined && item != undefined) {
+            if (currentitem === undefined) {
                 container.append(item);
                 return;
             }

@@ -24,7 +24,6 @@
  */
 
 use mod_quiz\access_manager;
-use mod_quiz\output\list_of_attempts;
 use mod_quiz\output\renderer;
 use mod_quiz\output\view_page;
 use mod_quiz\quiz_attempt;
@@ -68,8 +67,6 @@ quiz_view($quiz, $course, $cm, $context);
 
 // Initialize $PAGE, compute blocks.
 $PAGE->set_url('/mod/quiz/view.php', ['id' => $cm->id]);
-// On the quiz view page, the browser back/forwards buttons should force a reload.
-$PAGE->set_cacheable(false);
 
 // Create view object which collects all the information the renderer will need.
 $viewobj = new view_page();
@@ -98,20 +95,10 @@ if ($unfinishedattempt = quiz_get_user_attempt_unfinished($quiz->id, $USER->id))
 }
 $numattempts = count($attempts);
 
-$gradeitemmarks = $quizobj->get_grade_calculator()->compute_grade_item_totals_for_attempts(
-    array_column($attempts, 'uniqueid'));
-
 $viewobj->attempts = $attempts;
 $viewobj->attemptobjs = [];
 foreach ($attempts as $attempt) {
-    $attemptobj = new quiz_attempt($attempt, $quiz, $cm, $course, false);
-    $attemptobj->set_grade_item_totals($gradeitemmarks[$attempt->uniqueid]);
-    $viewobj->attemptobjs[] = $attemptobj;
-
-}
-$viewobj->attemptslist = new list_of_attempts($timenow);
-foreach (array_reverse($viewobj->attemptobjs) as $attemptobj) {
-    $viewobj->attemptslist->add_attempt($attemptobj);
+    $viewobj->attemptobjs[] = new quiz_attempt($attempt, $quiz, $cm, $course, false);
 }
 
 // Work out the final grade, checking whether it was overridden in the gradebook.

@@ -5,11 +5,10 @@
 }
 
 @mixin toast-variant($color) {
-    $color-value: map-get($theme-colors, $color);
-    background-color: rgba(shift-color($color-value, $alert-bg-scale), .95);
-    color: shift-color($color-value, $alert-color-scale);
+    background-color: rgba(theme-color-level($color, $alert-bg-level), .95);
+    color: theme-color-level($color, $alert-color-level);
     .toast-header {
-        color: shift-color($color-value, $alert-color-scale);
+        color: theme-color-level($color, $alert-color-level);
     }
 }
 
@@ -44,7 +43,7 @@
         }
     }
 
-    .btn-close {
+    .close {
         color: inherit;
     }
 }

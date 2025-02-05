@@ -41,6 +41,10 @@ use mod_quiz\quiz_settings;
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+require_once($CFG->dirroot . '/mod/quiz/lib.php');
+require_once($CFG->dirroot . '/course/lib.php');
+require_once($CFG->dirroot . '/question/engine/bank.php');
+
 
 /**
  * Quiz external functions
@@ -412,9 +416,6 @@ class mod_quiz_external extends external_api {
         // Update quiz with override information.
         $quiz = quiz_update_effective_access($quiz, $params['userid']);
         $attempts = quiz_get_user_attempts($quiz->id, $user->id, $params['status'], $params['includepreviews']);
-        $quizobj = new quiz_settings($quiz, $cm, $course);
-        $gradeitemmarks = $quizobj->get_grade_calculator()->compute_grade_item_totals_for_attempts(
-                array_column($attempts, 'uniqueid'));
         $attemptresponse = [];
         foreach ($attempts as $attempt) {
             $reviewoptions = quiz_get_review_options($quiz, $attempt, $context);
@@ -422,15 +423,6 @@ class mod_quiz_external extends external_api {
                     ($reviewoptions->marks < question_display_options::MARK_AND_MAX || $attempt->state != quiz_attempt::FINISHED)) {
                 // Blank the mark if the teacher does not allow it.
                 $attempt->sumgrades = null;
-            } else if (isset($gradeitemmarks[$attempt->uniqueid])) {
-                $attempt->gradeitemmarks = [];
-                foreach ($gradeitemmarks[$attempt->uniqueid] as $gradeitem) {
-                    $attempt->gradeitemmarks[] = [
-                        'name' => \core_external\util::format_string($gradeitem->name, $context),
-                        'grade' => $gradeitem->grade,
-                        'maxgrade' => $gradeitem->maxgrade,
-                    ];
-                }
             }
             $attemptresponse[] = $attempt;
         }
@@ -471,13 +463,6 @@ class mod_quiz_external extends external_api {
                 'timecheckstate' => new external_value(PARAM_INT, 'Next time quiz cron should check attempt for
                                                         state changes.  NULL means never check.', VALUE_OPTIONAL),
                 'sumgrades' => new external_value(PARAM_FLOAT, 'Total marks for this attempt.', VALUE_OPTIONAL),
-                'gradeitemmarks' => new external_multiple_structure(
-                    new external_single_structure([
-                        'name' => new external_value(PARAM_RAW, 'The name of this grade item.'),
-                        'grade' => new external_value(PARAM_FLOAT, 'The grade this attempt earned for this item.'),
-                        'maxgrade' => new external_value(PARAM_FLOAT, 'The total this grade is out of.'),
-                    ], 'The grade for each grade item.'),
-                'If the quiz has additional grades set up, the mark for each grade for this attempt.', VALUE_OPTIONAL),
                 'gradednotificationsenttime' => new external_value(PARAM_INT,
                     'Time when the student was notified that manual grading of their attempt was complete.', VALUE_OPTIONAL),
             ]
@@ -952,13 +937,10 @@ class mod_quiz_external extends external_api {
                 'hasautosavedstep' => new external_value(PARAM_BOOL, 'whether this question attempt has autosaved data',
                                                             VALUE_OPTIONAL),
                 'flagged' => new external_value(PARAM_BOOL, 'whether the question is flagged or not'),
-                'state' => new external_value(PARAM_ALPHA, 'the state where the question is in terms of correctness.
+                'state' => new external_value(PARAM_ALPHA, 'the state where the question is in.
                     It will not be returned if the user cannot see it due to the quiz display correctness settings.',
                     VALUE_OPTIONAL),
-                'stateclass' => new external_value(PARAM_NOTAGS,
-                    'A machine-readable class name for the state that this question attempt is in, as returned by question_usage_by_activity::get_question_state_class().
-                    Always returned.', VALUE_OPTIONAL),
-                'status' => new external_value(PARAM_RAW, 'Human readable state of the question.', VALUE_OPTIONAL),
+                'status' => new external_value(PARAM_RAW, 'current formatted state of the question', VALUE_OPTIONAL),
                 'blockedbyprevious' => new external_value(PARAM_BOOL, 'whether the question is blocked by the previous question',
                     VALUE_OPTIONAL),
                 'mark' => new external_value(PARAM_RAW, 'the mark awarded.
@@ -992,18 +974,41 @@ class mod_quiz_external extends external_api {
             $qattempt = $attemptobj->get_question_attempt($slot);
             $questiondef = $qattempt->get_question(true);
 
+            // Get response files (for questions like essay that allows attachments).
+            $responsefileareas = [];
+            foreach (question_bank::get_qtype($qtype)->response_file_areas() as $area) {
+                if ($files = $attemptobj->get_question_attempt($slot)->get_last_qt_files($area, $contextid)) {
+                    $responsefileareas[$area]['area'] = $area;
+                    $responsefileareas[$area]['files'] = [];
+
+                    foreach ($files as $file) {
+                        $responsefileareas[$area]['files'][] = [
+                            'filename' => $file->get_filename(),
+                            'fileurl' => $qattempt->get_response_file_url($file),
+                            'filesize' => $file->get_filesize(),
+                            'filepath' => $file->get_filepath(),
+                            'mimetype' => $file->get_mimetype(),
+                            'timemodified' => $file->get_timemodified(),
+                        ];
+                    }
+                }
+            }
+
             // Check display settings for question.
             $settings = $questiondef->get_question_definition_for_external_rendering($qattempt, $displayoptions);
 
-            // Navigation information.
             $question = [
                 'slot' => $slot,
+                'type' => $qtype,
                 'page' => $attemptobj->get_question_page($slot),
                 'questionnumber' => $attemptobj->get_question_number($slot),
                 'flagged' => $attemptobj->is_question_flagged($slot),
+                'html' => $attemptobj->render_question($slot, $review, $renderer) . $PAGE->requires->get_end_code(),
+                'responsefileareas' => $responsefileareas,
                 'sequencecheck' => $qattempt->get_sequence_check_count(),
                 'lastactiontime' => $qattempt->get_last_step()->get_timecreated(),
                 'hasautosavedstep' => $qattempt->has_autosaved_step(),
+                'settings' => !empty($settings) ? json_encode($settings) : null,
             ];
 
             if ($question['questionnumber'] === (string) (int) $question['questionnumber']) {
@@ -1015,8 +1020,6 @@ class mod_quiz_external extends external_api {
                 if ($showcorrectness) {
                     $question['state'] = (string) $attemptobj->get_question_state($slot);
                 }
-                // The stateclass is used for CSS classes but also for the lang strings.
-                $question['stateclass'] = $attemptobj->get_question_state_class($slot, $displayoptions->correctness);
                 $question['status'] = $attemptobj->get_question_status($slot, $displayoptions->correctness);
                 $question['blockedbyprevious'] = $attemptobj->is_blocked_by_previous_question($slot);
             }
@@ -1026,44 +1029,9 @@ class mod_quiz_external extends external_api {
             if ($displayoptions->marks >= question_display_options::MARK_AND_MAX) {
                 $question['mark'] = $attemptobj->get_question_mark($slot);
             }
-
-            // Check access. This is needed especially when sequential navigation is enforced. To prevent the student see "future" questions.
-            $haveaccess = $attemptobj->check_page_access($attemptobj->get_question_page($slot), false);
-            if (!$haveaccess) {
-                $question['type'] = '';
-                $question['html'] = '';
+            if ($attemptobj->check_page_access($attemptobj->get_question_page($slot), false)) {
+                $questions[] = $question;
             }
-
-            // For visited pages/questions it is ok to keep data the user already saw.
-            $questionalreadyseen = $attemptobj->get_currentpage() >= $attemptobj->get_question_page($slot);
-
-            // Information when only the user has access to the question at any moment (free navigation) or already seen.
-            if ($haveaccess || $questionalreadyseen) {
-                // Get response files (for questions like essay that allows attachments).
-                $responsefileareas = [];
-                foreach (question_bank::get_qtype($qtype)->response_file_areas() as $area) {
-                    if ($files = $attemptobj->get_question_attempt($slot)->get_last_qt_files($area, $contextid)) {
-                        $responsefileareas[$area]['area'] = $area;
-                        $responsefileareas[$area]['files'] = [];
-
-                        foreach ($files as $file) {
-                            $responsefileareas[$area]['files'][] = [
-                                'filename' => $file->get_filename(),
-                                'fileurl' => $qattempt->get_response_file_url($file),
-                                'filesize' => $file->get_filesize(),
-                                'filepath' => $file->get_filepath(),
-                                'mimetype' => $file->get_mimetype(),
-                                'timemodified' => $file->get_timemodified(),
-                            ];
-                        }
-                    }
-                }
-                $question['type'] = $qtype;
-                $question['html'] = $attemptobj->render_question($slot, $review, $renderer) . $PAGE->requires->get_end_code();
-                $question['responsefileareas'] = $responsefileareas;
-                $question['settings'] = !empty($settings) ? json_encode($settings) : null;
-            }
-            $questions[] = $question;
         }
         return $questions;
     }
@@ -1201,12 +1169,6 @@ class mod_quiz_external extends external_api {
         $result['warnings'] = $warnings;
         $result['questions'] = self::get_attempt_questions_data($attemptobj, false, 'all');
 
-        if ($attemptobj->get_state() == quiz_attempt::IN_PROGRESS && $attemptobj->get_quiz()->navmethod == 'free') {
-            // Only count the unanswered question if the navigation method is set to free.
-            $result['totalunanswered'] = $attemptobj->get_number_of_unanswered_questions();
-        }
-
-
         return $result;
     }
 
@@ -1220,7 +1182,6 @@ class mod_quiz_external extends external_api {
         return new external_single_structure(
             [
                 'questions' => new external_multiple_structure(self::question_structure()),
-                'totalunanswered' => new external_value(PARAM_INT, 'Total unanswered questions.', VALUE_OPTIONAL),
                 'warnings' => new external_warnings(),
             ]
         );
@@ -1474,6 +1435,7 @@ class mod_quiz_external extends external_api {
      * @since Moodle 3.1
      */
     public static function get_attempt_review($attemptid, $page = -1) {
+        global $PAGE;
 
         $warnings = [];
 
@@ -1483,7 +1445,7 @@ class mod_quiz_external extends external_api {
         ];
         $params = self::validate_parameters(self::get_attempt_review_parameters(), $params);
 
-        [$attemptobj, $displayoptions] = self::validate_attempt_review($params);
+        list($attemptobj, $displayoptions) = self::validate_attempt_review($params);
 
         if ($params['page'] !== -1) {
             $page = $attemptobj->force_page_number_into_range($params['page']);
@@ -1522,22 +1484,6 @@ class mod_quiz_external extends external_api {
                 'title' => get_string('feedback', 'quiz'),
                 'content' => $feedback,
             ];
-        }
-
-        if (!has_capability('mod/quiz:viewreports', $attemptobj->get_context()) &&
-                ($displayoptions->marks < question_display_options::MARK_AND_MAX ||
-                        $attemptobj->get_attempt()->state != quiz_attempt::FINISHED)) {
-            // Blank the mark if the teacher does not allow it.
-            $result['attempt']->sumgrades = null;
-        } else {
-            $result['attempt']->gradeitemmarks = [];
-            foreach ($attemptobj->get_grade_item_totals() as $gradeitem) {
-                $result['attempt']->gradeitemmarks[] = [
-                    'name' => \core_external\util::format_string($gradeitem->name, $attemptobj->get_context()),
-                    'grade' => $gradeitem->grade,
-                    'maxgrade' => $gradeitem->maxgrade,
-                ];
-            }
         }
 
         $result['grade'] = $grade;
@@ -2089,4 +2035,763 @@ class mod_quiz_external extends external_api {
         );
     }
 
+    //Added by Tamar
+    public static function get_quiz_questions_parameters() {
+        return new external_function_parameters(
+            [
+                'quizid' => new external_value(PARAM_INT, 'The ID of the quiz')
+            ]
+        );
+    }
+    
+
+    /**
+     * Returns a list of questions for a given quiz by leveraging the question_references table.
+     *
+     * @param int $quizid The ID of the quiz
+     * @return array An array containing 'questions' and 'warnings'
+     * @throws moodle_exception if quiz structure is invalid or quiz not found
+     */
+    public static function get_quiz_questions($quizid) {
+        global $DB, $USER;
+
+        // Validate the parameters.
+        $params = self::validate_parameters(
+            self::get_quiz_questions_parameters(),
+            array('quizid' => $quizid)
+        );
+
+        // Validate the quiz instance and retrieve related data.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($quizid);
+
+        // Check if the user has the capability to view the quiz.
+        require_capability('mod/quiz:view', $context);
+
+        // Initialize the result arrays.
+        $questions = [];
+        $warnings = [];
+
+        // Fetch all quiz_slots for the given quiz.
+        $slots = $DB->get_records('quiz_slots', ['quizid' => $quizid], 'slot');
+
+        if (!$slots) {
+            return [
+                'questions' => $questions,
+                'warnings'  => $warnings
+            ];
+        }
+
+        foreach ($slots as $slot) {
+            // Get the questionbankentryid from mdl_question_references.
+            $questionreference = $DB->get_record('question_references', [
+                'itemid' => $slot->id,
+                'component' => 'mod_quiz',
+                'questionarea' => 'slot'
+            ]);
+
+            if (!$questionreference) {
+                $warnings[] = [
+                    'item'        => 'slot',
+                    'itemid'      => $slot->slot,
+                    'warningcode' => 'missingreference',
+                    'message'     => 'No question reference found for slot ' . $slot->slot
+                ];
+                continue;
+            }
+
+            // Get the questionid from mdl_question_versions using the questionbankentryid.
+            $questionversion = $DB->get_record('question_versions', [
+                'questionbankentryid' => $questionreference->questionbankentryid
+            ]);
+
+            if (!$questionversion) {
+                $warnings[] = [
+                    'item'        => 'slot',
+                    'itemid'      => $slot->slot,
+                    'warningcode' => 'missingversion',
+                    'message'     => 'No question version found for slot ' . $slot->slot
+                ];
+                continue;
+            }
+
+            $questionid = $questionversion->questionid;
+
+            // Fetch the question details.
+            $question = $DB->get_record('question', ['id' => $questionid], '*');
+
+            if ($question) {
+                $questions[] = [
+                    'slot'         => $slot->slot,
+                    'questionid'   => $question->id,
+                    'name'         => $question->name,
+                    'questiontext' => $question->questiontext,
+                    'qtype'        => $question->qtype,
+                    // Add other necessary fields here.
+                ];
+            } else {
+                $warnings[] = [
+                    'item'        => 'slot',
+                    'itemid'      => $slot->slot,
+                    'warningcode' => 'invalidquestion',
+                    'message'     => 'Invalid question associated with slot ' . $slot->slot
+                ];
+            }
+        }
+
+        return [
+            'questions' => $questions,
+            'warnings'  => $warnings
+        ];
+    }
+        
+    public static function get_quiz_questions_returns() {
+        return new external_single_structure(
+            [
+                'questions' => new external_multiple_structure(
+                    new external_single_structure(
+                        [
+                            'slot'         => new external_value(PARAM_INT, 'The slot number'),
+                            'questionid'   => new external_value(PARAM_INT, 'The ID of the question'),
+                            'name'         => new external_value(PARAM_RAW, 'The name of the question'),
+                            'questiontext' => new external_value(PARAM_RAW, 'The text of the question'),
+                            'qtype'        => new external_value(PARAM_ALPHA, 'The type of the question')
+                        ]
+                    )
+                ),
+                'warnings' => new external_warnings(),
+            ]
+        );
+    }
+
+
+    public static function create_quiz_parameters() {
+        return new external_function_parameters([
+            'courseid'    => new external_value(PARAM_INT, 'ID of the course'),
+            'section'     => new external_value(PARAM_INT, 'Section number to add the quiz'),
+            'name'        => new external_value(PARAM_TEXT, 'Name of the new quiz'),
+            'intro'       => new external_value(PARAM_RAW, 'Quiz introduction', VALUE_DEFAULT, ''),
+            // Add more quiz-specific parameters as needed.
+        ]);
+    }
+
+    public static function create_quiz($courseid, $section, $name, $intro = '') {
+        global $DB, $USER;
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::create_quiz_parameters(), [
+            'courseid' => $courseid,
+            'section'  => $section,
+            'name'     => $name,
+            'intro'    => $intro,
+        ]);
+
+        // Validate context and capability.
+        $coursecontext = context_course::instance($params['courseid']);
+        self::validate_context($coursecontext);
+        require_capability('moodle/course:manageactivities', $coursecontext);
+
+        $module = $DB->get_record('modules', array('name' => 'quiz'), '*', MUST_EXIST);
+        // Get module info.
+        $course = get_course($params['courseid']);
+        $sectioninfo = $DB->get_record('course_sections', array('course' => $params['courseid'], 'section' => $section));
+        if (!$sectioninfo) {
+            // Create section if needed.
+            $sectioninfo = course_create_section($course, $section);
+        }
+        
+        // Create course module entry.
+        $cm = new stdClass();
+        $cm->course = $course->id;
+        $cm->module = $module->id;
+        $cm->instance = 0;
+        $cm->section = $sectioninfo->id;
+        $cm->visible = 1;
+        // ... set other course module defaults.
+        $cm->id = add_course_module($cm);
+
+        // Prepare new quiz record.
+        $quiz = new stdClass();
+        $quiz->course = $params['courseid'];
+        $quiz->name = $params['name'];
+        $quiz->intro = $params['intro'];
+        $quiz->quizpassword = '';
+        $quiz->introformat = FORMAT_HTML;
+        $quiz->timeopen = 0;
+        $quiz->timeclose = 0;
+        $quiz->timecreated = time();
+        $quiz->timemodified = time();
+        $quiz->coursemodule = $cm->id;
+        $quiz->preferredbehaviour = 'deferredfeedback';
+        $quiz->grade = 100.00000;
+        // ... set other default quiz settings as needed.
+
+        // // Insert quiz into database.
+        $quiz->id = quiz_add_instance($quiz);
+        if (empty($quiz->id)) {
+            throw new moodle_exception('Quiz creation failed: no ID returned.');
+        }
+
+        // Add module to section.
+        course_add_cm_to_section($course, $cm->id, $sectioninfo->id);
+        rebuild_course_cache($course->id);
+
+        return ['status' => 'success', 'quizid' => $quiz->id, 'cmid' => $cm->id];
+    }
+
+    public static function create_quiz_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'quizid' => new external_value(PARAM_INT, 'ID of the newly created quiz'),
+            'cmid'   => new external_value(PARAM_INT, 'Course module id of the new quiz'),
+        ]);
+    }
+
+    public static function create_question_in_quiz_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'The ID of the existing quiz'),
+            //'categoryid' => new external_value(PARAM_INT, 'The question category ID to place the question in'),
+            'qtype' => new external_value(PARAM_ALPHANUMEXT, 'Question type, e.g. shortanswer, multichoice, etc.'),
+            'name' => new external_value(PARAM_TEXT, 'Question name'),
+            'questiontext' => new external_value(PARAM_RAW, 'The text of the question'),
+            'defaultmark' => new external_value(PARAM_FLOAT, 'Default mark for the question', VALUE_DEFAULT, 1.0),
+            // Add question-type–specific parameters if needed, e.g. answers for multiple-choice, etc.
+        ]);
+    }
+
+    // public static function create_question_in_quiz($quizid, $categoryid, $qtype, $name, $questiontext, $defaultmark = 1.0) {
+    //     global $DB, $CFG, $USER;
+
+    //     // Validate parameters.
+    //     $params = self::validate_parameters(
+    //         self::create_question_in_quiz_parameters(),
+    //         [
+    //             'quizid'       => $quizid,
+    //             'categoryid'   => $categoryid,
+    //             'qtype'        => $qtype,
+    //             'name'         => $name,
+    //             'questiontext' => $questiontext,
+    //             'defaultmark'  => $defaultmark
+    //         ]
+    //     );
+
+    //     // Ensure the quiz exists.
+    //     $quiz = $DB->get_record('quiz', ['id' => $params['quizid']], '*', MUST_EXIST);
+
+    //     // Validate context and capability.
+    //     $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
+    //     $coursecontext = context_course::instance($course->id);
+    //     self::validate_context($coursecontext);
+    //     require_capability('moodle/question:add', $coursecontext);
+
+    //     // Confirm the category exists.
+    //     $category = $DB->get_record('question_categories', ['id' => $params['categoryid']], '*', MUST_EXIST);
+
+    //     // Prepare question data for the 'question' table.
+    //     $questiondata = new stdClass();
+    //     $questiondata->category               = $category->id;
+    //     $questiondata->name                   = $params['name'];
+    //     $questiondata->questiontext           = $params['questiontext'];
+    //     $questiondata->questiontextformat     = FORMAT_HTML;
+    //     $questiondata->generalfeedback        = '';
+    //     $questiondata->generalfeedbackformat  = FORMAT_HTML;
+    //     $questiondata->defaultmark            = $params['defaultmark'];
+    //     $questiondata->qtype                  = $qtype;
+    //     $questiondata->parent                 = 0;
+    //     $questiondata->stamp                  = '';
+    //     $questiondata->version                = 1;
+    //     $questiondata->timecreated            = time();
+    //     $questiondata->timemodified           = time();
+    //     $questiondata->createdby              = $USER->id;
+    //     $questiondata->modifiedby             = $USER->id;
+
+    //     // Insert into question table.
+    //     $questionid = $DB->insert_record('question', $questiondata);
+    //     if (!$questionid) {
+    //         throw new moodle_exception('Failed to create question record in {question} table.');
+    //     }
+
+    //     // Insert into question_bank_entries based on your version's columns.
+    //     $qbentry = new stdClass();
+    //     $qbentry->questioncategoryid = $category->id;  
+    //     $qbentry->idnumber           = '';
+    //     $qbentry->ownerid            = $USER->id;      
+
+    //     $qbentryid = $DB->insert_record('question_bank_entries', $qbentry);
+    //     if (!$qbentryid) {
+    //         throw new moodle_exception('Failed to create record in question_bank_entries.');
+    //     }
+
+    //     // Insert into question_versions to link question + bank entry.
+    //     $qversion = new stdClass();
+    //     $qversion->questionid          = $questionid;
+    //     $qversion->questionbankentryid = $qbentryid;
+    //     $qversion->version             = 1;
+
+    //     $DB->insert_record('question_versions', $qversion);
+
+    //     // [*] If this is a shortanswer question, insert a record in qtype_shortanswer_options.
+    //     if ($qtype === 'shortanswer') {
+    //         // For shortanswer, Moodle expects a record in qtype_shortanswer_options.
+    //         //   - questionid  (bigint) = your new question ID
+    //         //   - usecase     (int)    = 0 for case-insensitive, 1 for case-sensitive
+    //         // You can add more columns if your version has them.
+    //         $shortansweropts = new stdClass();
+    //         $shortansweropts->questionid = $questionid;
+    //         $shortansweropts->usecase    = 0; // Or 1 if you want case-sensitive
+    //         // Insert other fields if your table includes them (like answers, etc).
+    //         $DB->insert_record('qtype_shortanswer_options', $shortansweropts);
+    //     }
+
+    //     // If other question types require their own sub-tables, insert them similarly here.
+
+    //     // Retrieve the quiz cmid and add the question to the quiz
+    //     $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+    //     $quiz->cmid = $cm->id;
+
+    //     $pagenumber = 1;
+    //     quiz_add_quiz_question($questionid, $quiz, $pagenumber);
+
+
+    //     $slotrecord = $DB->get_record_sql(
+    //         "SELECT * FROM {quiz_slots} WHERE quizid = :quizid
+    //         ORDER BY id DESC
+    //         LIMIT 1",
+    //         ['quizid' => $quiz->id]
+    //     );
+        
+    //     $newslot = null;
+    //     if ($slotrecord) {
+    //         $newslot = $slotrecord->slot;
+    //     } else {
+    //         debugging("No quiz slot record found for quizid {$quiz->id}", DEBUG_DEVELOPER);
+    //     }
+        
+
+    //     quiz_update_sumgrades($quiz);
+    //     quiz_save_best_grade($quiz, $USER->id);
+
+    //     // Return success.
+    //     return [
+    //         'status'        => 'success',
+    //         'questionid'    => $questionid,
+    //         'quizid'        => $quiz->id,
+    //         'slot'          => $newslot,
+    //         'questionadded' => true
+    //     ];
+    // }
+
+
+    /**
+     * Create a question in a quiz with an optional category ID.
+     *
+     * @param int      $quizid       The ID of the quiz.
+     * @param string   $qtype        The question type (e.g., 'shortanswer').
+     * @param string   $name         The name of the question.
+     * @param string   $questiontext The text of the question.
+     * @param float    $defaultmark  The default mark for the question.
+     * @param int|null $categoryid   (Optional) The ID of the question category.
+     * @return array Result of the operation.
+     * @throws moodle_exception If any database operation fails or capabilities are missing.
+     */
+    public static function create_question_in_quiz(
+        int $quizid,
+        string $qtype,
+        string $name,
+        string $questiontext,
+        float $defaultmark = 1.0
+    ) {
+        global $DB, $CFG, $USER;
+        $categoryid = 0;
+        // Validate parameters.
+        $params = self::validate_parameters(
+            self::create_question_in_quiz_parameters(),
+            [
+                'quizid'       => $quizid,
+                'qtype'        => $qtype,
+                'name'         => $name,
+                'questiontext' => $questiontext,
+                'defaultmark'  => $defaultmark,
+            ]
+        );
+
+        // Ensure the quiz exists.
+        $quiz = $DB->get_record('quiz', ['id' => $params['quizid']], '*', MUST_EXIST);
+
+        // Validate context and capability.
+        $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
+        $coursecontext = context_course::instance($course->id);
+        self::validate_context($coursecontext);
+        require_capability('moodle/question:add', $coursecontext);
+
+        // Determine category: use provided one or fetch/create default.
+        $categoryid = self::get_or_create_default_category($course->id, $coursecontext);
+
+        // Confirm the category exists.
+        $category = $DB->get_record('question_categories', ['id' => $categoryid], '*', MUST_EXIST);
+
+        // Prepare question data for the 'question' table.
+        $questiondata = new stdClass();
+        $questiondata->category               = $category->id;
+        $questiondata->name                   = $params['name'];
+        $questiondata->questiontext           = $params['questiontext'];
+        $questiondata->questiontextformat     = FORMAT_HTML;
+        $questiondata->generalfeedback        = '';
+        $questiondata->generalfeedbackformat  = FORMAT_HTML;
+        $questiondata->defaultmark            = $params['defaultmark'];
+        $questiondata->qtype                  = $qtype;
+        $questiondata->parent                 = 0;
+        $questiondata->stamp                  = '';
+        $questiondata->version                = 1;
+        $questiondata->timecreated            = time();
+        $questiondata->timemodified           = time();
+        $questiondata->createdby              = $USER->id;
+        $questiondata->modifiedby             = $USER->id;
+
+        // Insert into question table.
+        $questionid = $DB->insert_record('question', $questiondata);
+        if (!$questionid) {
+            throw new moodle_exception('Failed to create question record in {question} table.');
+        }
+
+        // Insert into question_bank_entries.
+        $qbentry = new stdClass();
+        $qbentry->questioncategoryid = $category->id;  
+        $qbentry->idnumber = (string)$questionid;
+        $qbentry->ownerid            = $USER->id;      
+
+        $qbentryid = $DB->insert_record('question_bank_entries', $qbentry);
+        if (!$qbentryid) {
+            throw new moodle_exception('Failed to create record in question_bank_entries.');
+        }
+
+        // Link question and bank entry.
+        $qversion = new stdClass();
+        $qversion->questionid          = $questionid;
+        $qversion->questionbankentryid = $qbentryid;
+        $qversion->version             = 1;
+        $DB->insert_record('question_versions', $qversion);
+
+        // Specific handling for shortanswer type.
+        if ($qtype === 'shortanswer') {
+            $shortansweropts = new stdClass();
+            $shortansweropts->questionid = $questionid;
+            $shortansweropts->usecase    = 0;
+            $DB->insert_record('qtype_shortanswer_options', $shortansweropts);
+        }
+
+        // Retrieve the quiz cmid and add the question to the quiz.
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
+        $quiz->cmid = $cm->id;
+        $pagenumber = 1;
+        quiz_add_quiz_question($questionid, $quiz, $pagenumber);
+
+        $slotrecord = $DB->get_record_sql(
+            "SELECT * FROM {quiz_slots} WHERE quizid = :quizid ORDER BY id DESC LIMIT 1",
+            ['quizid' => $quiz->id]
+        );
+
+        $newslot = null;
+        if ($slotrecord) {
+            $newslot = $slotrecord->slot;
+        } else {
+            debugging("No quiz slot record found for quizid {$quiz->id}", DEBUG_DEVELOPER);
+        }
+
+        quiz_update_sumgrades($quiz);
+        quiz_save_best_grade($quiz, $USER->id);
+
+        return [
+            'status'        => 'success',
+            'questionid'    => $questionid,
+            'quizid'        => $quiz->id,
+            'slot'          => $newslot,
+            'questionadded' => true
+        ];
+    }
+
+    /**
+     * Retrieve or create the default question category for a course.
+     *
+     * @param int            $courseid       The ID of the course.
+     * @param context_course $coursecontext  The context of the course.
+     * @return int The ID of the default question category.
+     * @throws moodle_exception If category creation fails.
+     */
+    protected static function get_or_create_default_category($courseid, $coursecontext) {
+        global $DB;
+
+        $category = $DB->get_record('question_categories', [
+            'contextid' => $coursecontext->id,
+            'parent'    => 0,
+            'name'      => 'Default'
+        ]);
+
+        if ($category) {
+            return $category->id;
+        }
+
+        $newcategory = new stdClass();
+        $newcategory->contextid  = $coursecontext->id;
+        $newcategory->name       = 'Default';
+        $newcategory->info       = '';
+        $newcategory->infoformat = FORMAT_HTML;
+        $newcategory->parent     = 0;
+        $newcategory->sortorder  = 999;
+
+        $newcategoryid = $DB->insert_record('question_categories', $newcategory);
+        if (!$newcategoryid) {
+            throw new moodle_exception('Failed to create default question category.');
+        }
+
+        return $newcategoryid;
+    }
+
+
+    public static function create_question_in_quiz_returns() {
+        return new external_single_structure([
+            'status'        => new external_value(PARAM_TEXT, 'Status of the operation'),
+            'questionid'    => new external_value(PARAM_INT, 'ID of the newly created question'),
+            'quizid'        => new external_value(PARAM_INT, 'ID of the quiz to which the question was added'),
+            'slot'          => new external_value(PARAM_INT, 'Slot'),
+            'questionadded' => new external_value(PARAM_BOOL, 'True if the question was successfully added'),
+        ]);
+    }
+
+
+
+    public static function update_question_grade_parameters() {
+        return new external_function_parameters([
+            'quizid'     => new external_value(PARAM_INT, 'Quiz instance ID'),
+            'userid'     => new external_value(PARAM_INT, 'User ID whose attempt will be updated'),
+            'questionid' => new external_value(PARAM_INT, 'Question ID to update'),
+            'grade'      => new external_value(PARAM_FLOAT, 'Grade as a fraction (0.0 to 1.0)'),
+            'maxmark'    => new external_value(PARAM_FLOAT, 'Max Grade'),
+            'comment'    => new external_value(PARAM_RAW, 'Optional comment', VALUE_DEFAULT, '')
+        ]);
+    }
+    
+    public static function update_question_grade_returns() {
+        return new external_single_structure([
+            'status'   => new external_value(PARAM_TEXT, 'Status of the operation'),
+            'warnings' => new external_warnings()
+        ]);
+    }
+
+    public static function update_question_grade($quizid, $userid = 0, $questionid, $grade, $maxmark, $comment = '') {
+        global $DB, $USER, $CFG;
+    
+        // Validate incoming parameters.
+        $params = self::validate_parameters(self::update_question_grade_parameters(), [
+            'quizid'     => $quizid,
+            'userid'     => $userid,
+            'questionid' => $questionid,
+            'grade'      => $grade,
+            'maxmark'    => $maxmark,
+            'comment'    => $comment
+        ]);
+    
+        // Validate context for the quiz.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+    
+        // Ensure the caller has grading capability.
+        require_capability('mod/quiz:grade', $context);
+
+        // Default value for userid.
+        if (empty($params['userid'])) {
+            $params['userid'] = $USER->id;
+        }
+    
+        // 1. Retrieve the question attempt ID for given quiz, user, and question.
+        $sql_qa = "SELECT qa.id AS questionattemptid
+                   FROM {question_attempts} qa
+                   JOIN {quiz_attempts} quiza ON quiza.uniqueid = qa.questionusageid
+                   WHERE quiza.quiz = :quizid AND quiza.userid = :userid AND qa.questionid = :questionid";
+        $qa_record = $DB->get_record_sql($sql_qa, [
+            'quizid'     => $params['quizid'],
+            'userid'     => $params['userid'],
+            'questionid' => $params['questionid']
+        ]);
+        if (!$qa_record) {
+            throw new moodle_exception('questionattemptnotfound', 'error', '', null, 'No matching question attempt found.');
+        }
+        $questionattemptid = $qa_record->questionattemptid;
+    
+        // 2. Determine the next sequence number.
+        $maxseq = $DB->get_field_sql(
+            "SELECT COALESCE(MAX(sequencenumber),0) FROM {question_attempt_steps} WHERE questionattemptid = ?",
+            [$questionattemptid]
+        );
+        $nextseq = $maxseq + 1;
+    
+        // 3. Decide on the state based on the grade fraction.
+        $state = ($grade === 1.0) ? 'gradedright'
+               : (($grade === 0.0) ? 'gradedwrong' : 'mangrpartial');
+        $timestamp = time();
+    
+        // 4. Insert a new attempt step and get the new step ID.
+        $step = new stdClass();
+        $step->questionattemptid = $questionattemptid;
+        $step->sequencenumber    = $nextseq;
+        $step->state             = $state;
+        $step->fraction          = $grade/$maxmark;
+        $step->timecreated       = $timestamp;
+        $step->userid            = $USER->id;
+        $newstepid = $DB->insert_record('question_attempt_steps', $step, true);
+    
+        // 5. Insert related step data.
+        $datapairs = [
+            '-comment'       => $params['comment'],
+            '-mark'          => $grade,
+            '-commentformat' => 1,
+            '-maxmark'       => $maxmark
+        ];
+    
+        foreach ($datapairs as $name => $value) {
+            $data = new stdClass();
+            $data->attemptstepid = $newstepid;
+            $data->name          = $name;
+            $data->value         = $value;
+            $DB->insert_record('question_attempt_step_data', $data);
+        }
+    
+        // // 6. Recalculate overall quiz grades.
+        // require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+        // if ($quiz = $DB->get_record('quiz', ['id' => $params['quizid']])) {
+        //     quiz_update_sumgrades($quiz);
+        //     quiz_save_best_grade($quiz, $params['userid']);
+        // }
+    
+        return [
+            'status'   => 'success',
+            'warnings' => []
+        ];
+    }
+    
+        /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function regrade_attempt_parameters() {
+        return new external_function_parameters(array(
+            'quizid'    => new external_value(PARAM_INT, 'ID of the quiz'),
+            'attemptid' => new external_value(PARAM_INT, 'ID of the quiz attempt'),
+            'userid'    => new external_value(PARAM_INT, 'ID of the user'),
+        ));
+    }
+
+    /**
+     * Regrade a specific quiz attempt for a specific user.
+     *
+     * @param int $quizid
+     * @param int $attemptid
+     * @param int $userid
+     * @return array Result of the regrade operation.
+     */
+    public static function regrade_attempt($quizid, $attemptid, $userid) {
+        global $DB;
+    
+        // Validate parameters and context.
+        $params = self::validate_parameters(self::regrade_attempt_parameters(), [
+            'quizid'    => $quizid,
+            'attemptid' => $attemptid,
+            'userid'    => $userid,
+        ]);
+    
+        // Check if the attempt exists and is linked to the correct quiz/user.
+        $attempt = $DB->get_record('quiz_attempts', [
+            'id'      => $params['attemptid'],
+            'quiz'    => $params['quizid'],
+            'userid'  => $params['userid'],
+            'preview' => 0
+        ], '*', MUST_EXIST);
+    
+        // Load course module, quiz, and context.
+        $quiz = $DB->get_record('quiz', ['id' => $params['quizid']], '*', MUST_EXIST);
+        $cm   = get_coursemodule_from_instance('quiz', $quiz->id, $quiz->course, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+    
+        // Capability check: typically 'mod/quiz:regrade' or 'mod/quiz:manage'.
+        require_capability('mod/quiz:regrade', $context);
+    
+        // Increase time if needed for large quizzes.
+        \core_php_time_limit::raise(300);
+    
+        // Load the question usage for this attempt.
+        $quba = \question_engine::load_questions_usage_by_activity($attempt->uniqueid);
+    
+        // We'll do a real regrade (not dry-run).
+        $dryrun = false;
+    
+        // Regrade all question slots.
+        $slots = $quba->get_slots();
+    
+        // Start DB transaction to avoid partial updates if an error occurs.
+        $transaction = $DB->start_delegated_transaction();
+    
+        $finished = ($attempt->state == \mod_quiz\quiz_attempt::FINISHED);
+        $changes = [];
+    
+        foreach ($slots as $slot) {
+            $oldfraction = $quba->get_question_fraction($slot);
+            $quba->regrade_question($slot, $finished);
+            $newfraction = $quba->get_question_fraction($slot);
+    
+            if (abs($oldfraction - $newfraction) > 1e-7) {
+                $changes[$slot] = [
+                    'oldfraction' => $oldfraction,
+                    'newfraction' => $newfraction
+                ];
+            }
+        }
+    
+        // Save updated question usage if not a dry run.
+        if (!$dryrun) {
+            \question_engine::save_questions_usage_by_activity($quba);
+    
+            // Trigger an event for regrading.
+            $event = \mod_quiz\event\attempt_regraded::create([
+                'objectid'      => $attempt->id,
+                'relateduserid' => $attempt->userid,
+                'context'       => $context,
+                'other'         => ['quizid' => $quiz->id],
+            ]);
+            $event->trigger();
+        }
+    
+        // Update final grades in quiz_grades table using the *new* grade calculator API.
+        if (!$dryrun) {
+            // 1. Recompute final grade for this user:
+            $calculator = \mod_quiz\quiz_settings::create($quiz->id)->get_grade_calculator();
+            $calculator->recompute_all_attempt_sumgrades($attempt->userid);
+            // Then recalc final grade for this user.
+            $calculator->recompute_final_grade($attempt->userid);                
+            // 2. Then push that new grade into the Moodle gradebook:
+            quiz_update_grades($quiz, $attempt->userid);
+        }
+    
+        // Commit transaction.
+        $transaction->allow_commit();
+    
+        // Return a basic status or details about changed fractions.
+        return [
+            'status'   => 'Regrade completed',
+            'messages' => 'Any messages'
+        ];
+    }
+    
+
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description
+     */
+    public static function regrade_attempt_returns() {
+        return new external_single_structure([
+            'status'   => new external_value(PARAM_TEXT, 'Status info'),
+            'messages' => new external_value(PARAM_TEXT, 'Any messages'),
+        ]);
+    }
+    
 }

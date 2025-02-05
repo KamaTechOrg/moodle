@@ -24,8 +24,9 @@
  */
 
 $string['aria:dropdowncolumns'] = 'Collapsed columns found';
+$string['clearall'] = 'Clear all';
 $string['clearsearch'] = 'Clear searched users';
-$string['collapsedcolumns'] = 'Collapsed columns <span class="badge rounded-pill bg-primary text-white ms-1" data-collapse="count">{$a}</span>';
+$string['collapsedcolumns'] = 'Collapsed columns <span class="badge badge-pill badge-primary ml-1" data-collapse="count">{$a}</span>';
 $string['editingmode_title'] = 'Editing the grader report';
 $string['eventgradereportviewed'] = 'Grader report viewed';
 $string['grader:manage'] = 'Manage the grader report';

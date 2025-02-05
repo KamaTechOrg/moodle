@@ -36,11 +36,10 @@ namespace booktool_print\event;
 class events_test extends \advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_book_printed(): void {
+    public function test_book_printed() {
         // There is no proper API to call to test the event, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -64,7 +63,7 @@ class events_test extends \advanced_testcase {
     }
 
 
-    public function test_chapter_printed(): void {
+    public function test_chapter_printed() {
         // There is no proper API to call to test the event, so what we are
         // doing here is simply making sure that the events returns the right information.
 

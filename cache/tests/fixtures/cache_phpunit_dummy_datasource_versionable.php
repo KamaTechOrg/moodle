@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-use core_cache\versionable_data_source_interface;
-
 /**
  * A dummy datasource which supports versioning.
  *
@@ -23,9 +21,8 @@ use core_cache\versionable_data_source_interface;
  * @copyright 2021 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cache_phpunit_dummy_datasource_versionable extends cache_phpunit_dummy_datasource implements
-    versionable_data_source_interface
-{
+class cache_phpunit_dummy_datasource_versionable extends cache_phpunit_dummy_datasource
+        implements cache_data_source_versionable {
     /** @var array Data in cache */
     protected $data = [];
 
@@ -38,7 +35,8 @@ class cache_phpunit_dummy_datasource_versionable extends cache_phpunit_dummy_dat
      * @param cache_definition $definition
      * @return cache_phpunit_dummy_datasource New object
      */
-    public static function get_instance_for_cache(cache_definition $definition): cache_phpunit_dummy_datasource_versionable {
+    public static function get_instance_for_cache(cache_definition $definition):
+            cache_phpunit_dummy_datasource_versionable {
         self::$lastinstance = new cache_phpunit_dummy_datasource_versionable();
         return self::$lastinstance;
     }
@@ -83,3 +81,4 @@ class cache_phpunit_dummy_datasource_versionable extends cache_phpunit_dummy_dat
         return $value->data;
     }
 }
+

@@ -59,4 +59,4 @@ Feature: Duplicate assign activity module with permissions
     And I click on "Edit settings" "link" in the "Test assignment name (copy)" activity
     And I navigate to "Permissions" in current page administration
     And I set the field "permissionscapabilitysearch" to "mod/assign:grade"
-    Then "mod/assign:grade" row "Roles with permission" column of "permissions" table should contain "Student"
+    Then "Grade assignmentmod/assign:grade" row "Roles with permission" column of "permissions" table should contain "Student"

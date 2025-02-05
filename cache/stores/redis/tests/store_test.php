@@ -16,8 +16,8 @@
 
 namespace cachestore_redis;
 
-use core_cache\definition;
-use core_cache\store;
+use cache_store;
+use cache_definition;
 use cachestore_redis;
 
 defined('MOODLE_INTERNAL') || die();
@@ -76,8 +76,8 @@ class store_test extends \cachestore_tests {
      */
     protected function create_cachestore_redis(array $extraconfig = [], bool $ttl = false): cachestore_redis {
         if ($ttl) {
-            /** @var definition $definition */
-            $definition = definition::load('core/wibble', [
+            /** @var cache_definition $definition */
+            $definition = cache_definition::load('core/wibble', [
                 'mode' => 1,
                 'simplekeys' => true,
                 'simpledata' => true,
@@ -89,8 +89,8 @@ class store_test extends \cachestore_tests {
                 'sharingoptions' => 15,
             ]);
         } else {
-            /** @var definition $definition */
-            $definition = definition::load_adhoc(store::MODE_APPLICATION, 'cachestore_redis', 'phpunit_test');
+            /** @var cache_definition $definition */
+            $definition = cache_definition::load_adhoc(cache_store::MODE_APPLICATION, 'cachestore_redis', 'phpunit_test');
         }
         $configuration = array_merge(cachestore_redis::unit_test_configuration(), $extraconfig);
         $store = new cachestore_redis('Test', $configuration);
@@ -105,7 +105,7 @@ class store_test extends \cachestore_tests {
         return $store;
     }
 
-    public function test_has(): void {
+    public function test_has() {
         $store = $this->create_cachestore_redis();
 
         $this->assertTrue($store->set('foo', 'bar'));
@@ -113,7 +113,7 @@ class store_test extends \cachestore_tests {
         $this->assertFalse($store->has('bat'));
     }
 
-    public function test_has_any(): void {
+    public function test_has_any() {
         $store = $this->create_cachestore_redis();
 
         $this->assertTrue($store->set('foo', 'bar'));
@@ -121,7 +121,7 @@ class store_test extends \cachestore_tests {
         $this->assertFalse($store->has_any(array('bat', 'baz')));
     }
 
-    public function test_has_all(): void {
+    public function test_has_all() {
         $store = $this->create_cachestore_redis();
 
         $this->assertTrue($store->set('foo', 'bar'));
@@ -130,7 +130,7 @@ class store_test extends \cachestore_tests {
         $this->assertFalse($store->has_all(array('foo', 'bat', 'this')));
     }
 
-    public function test_lock(): void {
+    public function test_lock() {
         $store = $this->create_cachestore_redis();
 
         $this->assertTrue($store->acquire_lock('lock', '123'));
@@ -200,9 +200,9 @@ class store_test extends \cachestore_tests {
         $store = $this->create_cachestore_redis();
 
         $store->set('foo', [1, 2, 3, 4]);
-        $this->assertEquals(store::IO_BYTES_NOT_SUPPORTED, $store->get_last_io_bytes());
+        $this->assertEquals(\cache_store::IO_BYTES_NOT_SUPPORTED, $store->get_last_io_bytes());
         $store->get('foo');
-        $this->assertEquals(store::IO_BYTES_NOT_SUPPORTED, $store->get_last_io_bytes());
+        $this->assertEquals(\cache_store::IO_BYTES_NOT_SUPPORTED, $store->get_last_io_bytes());
     }
 
     /**

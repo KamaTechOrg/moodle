@@ -21,7 +21,6 @@
  * @subpackage course
  * @copyright  2021 Tomo Tsuyuki <tomotsuyuki@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \core_course\task\course_delete_modules
  */
 namespace core_course;
 
@@ -38,7 +37,7 @@ class course_delete_modules_test extends \advanced_testcase {
     /**
      * Test to have a no message for usual process.
      */
-    public function test_delete_module_execution(): void {
+    public function test_delete_module_execution() {
         $this->resetAfterTest();
 
         // Generate test data.
@@ -69,6 +68,8 @@ class course_delete_modules_test extends \advanced_testcase {
 
     /**
      * Test with failed and successful cms
+     *
+     * @covers ::course_delete_modules
      */
     public function test_delete_module_exception(): void {
         global $DB;

@@ -24,7 +24,7 @@ use html_writer;
 use lang_string;
 use stdClass;
 use core_reportbuilder\local\entities\base;
-use core_reportbuilder\local\filters\{boolean_select, date, number, tags};
+use core_reportbuilder\local\filters\{boolean_select, date, tags};
 use core_reportbuilder\local\helpers\format;
 use core_reportbuilder\local\report\{column, filter};
 
@@ -38,15 +38,12 @@ use core_reportbuilder\local\report\{column, filter};
 class tag extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
-        return [
-            'tag',
-            'tag_instance',
-        ];
+    protected function get_default_table_aliases(): array {
+        return ['tag' => 't'];
     }
 
     /**
@@ -178,17 +175,6 @@ class tag extends base {
             ->set_is_sortable(true, ["{$tagalias}.flag"])
             ->add_callback([format::class, 'boolean_as_text']);
 
-        // Flag count.
-        $columns[] = (new column(
-            'flagcount',
-            new lang_string('flagcount', 'core_tag'),
-            $this->get_entity_name()
-        ))
-            ->add_joins($this->get_joins())
-            ->set_type(column::TYPE_INTEGER)
-            ->add_fields("{$tagalias}.flag")
-            ->set_is_sortable(true);
-
         // Time modified.
         $columns[] = (new column(
             'timemodified',
@@ -242,16 +228,6 @@ class tag extends base {
         ))
             ->add_joins($this->get_joins());
 
-        // Flag count.
-        $filters[] = (new filter(
-            number::class,
-            'flagcount',
-            new lang_string('flagcount', 'core_tag'),
-            $this->get_entity_name(),
-            "{$tagalias}.flag"
-        ))
-            ->add_joins($this->get_joins());
-
         // Time modified.
         $filters[] = (new filter(
             date::class,
@@ -269,17 +245,5 @@ class tag extends base {
             ]);
 
         return $filters;
-    }
-
-    /**
-     * Return joins necessary for retrieving tags
-     *
-     * @param string $component
-     * @param string $itemtype
-     * @param string $itemidfield
-     * @return string[]
-     */
-    public function get_tag_joins(string $component, string $itemtype, string $itemidfield): array {
-        return $this->get_tag_joins_for_entity($component, $itemtype, $itemidfield);
     }
 }

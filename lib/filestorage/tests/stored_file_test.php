@@ -33,8 +33,9 @@ class stored_file_test extends advanced_testcase {
     /**
      * Test that the rotate_image() method does not rotate
      * an image that is not supposed to be rotated.
+     * @covers ::rotate_image()
      */
-    public function test_rotate_image_does_not_rotate_image(): void {
+    public function test_rotate_image_does_not_rotate_image() {
         global $CFG;
         $this->resetAfterTest();
 
@@ -61,8 +62,9 @@ class stored_file_test extends advanced_testcase {
     /**
      * Test that the rotate_image() method rotates an image
      * that is supposed to be rotated.
+     * @covers ::rotate_image()
      */
-    public function test_rotate_image_rotates_image(): void {
+    public function test_rotate_image_rotates_image() {
         global $CFG;
         $this->resetAfterTest();
 
@@ -92,6 +94,8 @@ class stored_file_test extends advanced_testcase {
 
     /**
      * Ensure that get_content_file_handle returns a valid file handle.
+     *
+     * @covers ::get_psr_stream
      */
     public function test_get_psr_stream(): void {
         global $CFG;

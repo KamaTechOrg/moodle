@@ -72,8 +72,6 @@ class user extends base {
         $mform->setType("{$this->name}_operator", PARAM_INT);
         $mform->setDefault("{$this->name}_operator", self::USER_ANY);
 
-        // Specific user selection.
-        $valuelabel = get_string('filterfieldvalue', 'core_reportbuilder', $this->get_header());
         $options = [
             'ajax' => 'core_user/form_user_selector',
             'multiple' => true,
@@ -82,7 +80,7 @@ class user extends base {
                 return fullname($user, has_capability('moodle/site:viewfullnames', context_system::instance()));
             }
         ];
-        $mform->addElement('autocomplete', "{$this->name}_value", $valuelabel, [], $options)
+        $mform->addElement('autocomplete', "{$this->name}_value", get_string('user'), [], $options)
             ->setHiddenLabel(true);
         $mform->hideIf("{$this->name}_value", "{$this->name}_operator", 'neq', self::USER_SELECT);
     }
@@ -109,14 +107,8 @@ class user extends base {
                 $params[$paramuserid] = $USER->id;
             break;
             case self::USER_SELECT:
-                [$useridselect, $useridparams] = $DB->get_in_or_equal(
-                    $userids,
-                    SQL_PARAMS_NAMED,
-                    database::generate_param_name('_'),
-                    true,
-                    null,
-                );
-
+                $paramuserid = database::generate_param_name();
+                [$useridselect, $useridparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, "{$paramuserid}_", true, null);
                 $sql = "{$fieldsql} {$useridselect}";
                 $params = array_merge($params, $useridparams);
             break;

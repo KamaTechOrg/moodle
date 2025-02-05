@@ -16,8 +16,10 @@
 
 namespace core\output;
 
-use core\context;
+use context;
+use renderable;
 use stdClass;
+use templatable;
 
 /**
  * The filter renderable class.
@@ -28,6 +30,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class datafilter implements renderable, templatable {
+
     /** @var int None of the following match */
     public const JOINTYPE_NONE = 0;
 
@@ -107,7 +110,7 @@ abstract class datafilter implements renderable, templatable {
             'values' => $values,
             'filteroptions' => $filteroptions,
             'required' => $required,
-            'joinlist' => json_encode($joinlist),
+            'joinlist' => json_encode($joinlist)
         ];
     }
 }

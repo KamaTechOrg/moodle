@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Contains class for displaying a collection.
+ *
+ * @package   core_badges
+ * @copyright 2019 Damyon Wiese
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core_badges\external;
 
 defined('MOODLE_INTERNAL') || die();
@@ -22,7 +30,7 @@ use core\external\exporter;
 use stdClass;
 
 /**
- * Class for displaying a badge collection.
+ * Class for displaying a badge competency.
  *
  * @package   core_badges
  * @copyright 2019 Damyon Wiese
@@ -38,6 +46,15 @@ class collection_exporter extends exporter {
      * @return stdClass
      */
     public static function map_external_data($data, $apiversion) {
+        if ($apiversion == OPEN_BADGES_V1) {
+            $result = new stdClass();
+            $result->entityType = 'BackpackCollection';
+            $result->entityId = $data->groupId;
+            $result->name = $data->name;
+            $result->description = $data->description;
+            $result->assertions = [];
+            return $result;
+        }
         return $data;
     }
 

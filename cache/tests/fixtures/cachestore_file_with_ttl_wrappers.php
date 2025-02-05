@@ -30,7 +30,8 @@ class cachestore_file_with_ttl_wrappers extends cachestore_file {
      * @param array $configuration Configuration
      * @return int Supported features
      */
-    public static function get_supported_features(array $configuration = []) {
+    public static function get_supported_features(array $configuration = array()) {
         return parent::get_supported_features($configuration) - self::SUPPORTS_NATIVE_TTL;
     }
 }
+

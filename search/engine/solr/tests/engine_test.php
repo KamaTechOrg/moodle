@@ -46,7 +46,8 @@ require_once($CFG->dirroot . '/search/engine/solr/tests/fixtures/testable_engine
  *
  * @runTestsInSeparateProcesses
  */
-final class engine_test extends \advanced_testcase {
+class engine_test extends \advanced_testcase {
+
     /**
      * @var \core_search\manager
      */
@@ -63,7 +64,6 @@ final class engine_test extends \advanced_testcase {
     protected $engine = null;
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         set_config('enableglobalsearch', true);
         set_config('searchengine', 'solr');
@@ -138,27 +138,26 @@ final class engine_test extends \advanced_testcase {
             $this->generator->teardown();
             $this->generator = null;
         }
-        parent::tearDown();
     }
 
     /**
      * Simple data provider to allow tests to be run with file indexing on and off.
      */
-    public static function file_indexing_provider(): array {
+    public function file_indexing_provider() {
         return array(
             'file-indexing-on' => array(1),
             'file-indexing-off' => array(0)
         );
     }
 
-    public function test_connection(): void {
+    public function test_connection() {
         $this->assertTrue($this->engine->is_server_ready());
     }
 
     /**
      * Tests that the alternate settings are used when configured.
      */
-    public function test_alternate_settings(): void {
+    public function test_alternate_settings() {
         // Index a couple of things.
         $this->generator->create_record();
         $this->generator->create_record();
@@ -197,7 +196,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * @dataProvider file_indexing_provider
      */
-    public function test_index($fileindexing): void {
+    public function test_index($fileindexing) {
         global $DB;
 
         $this->engine->test_set_config('fileindexing', $fileindexing);
@@ -226,7 +225,7 @@ final class engine_test extends \advanced_testcase {
      *
      * @return void
      */
-    public function test_search($fileindexing): void {
+    public function test_search($fileindexing) {
         global $USER, $DB;
 
         $this->engine->test_set_config('fileindexing', $fileindexing);
@@ -308,7 +307,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * @dataProvider file_indexing_provider
      */
-    public function test_delete($fileindexing): void {
+    public function test_delete($fileindexing) {
         $this->engine->test_set_config('fileindexing', $fileindexing);
 
         $this->generator->create_record();
@@ -328,7 +327,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * @dataProvider file_indexing_provider
      */
-    public function test_alloweduserid($fileindexing): void {
+    public function test_alloweduserid($fileindexing) {
         $this->engine->test_set_config('fileindexing', $fileindexing);
 
         $area = new \core_mocksearch\search\mock_search_area();
@@ -403,7 +402,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * @dataProvider file_indexing_provider
      */
-    public function test_highlight($fileindexing): void {
+    public function test_highlight($fileindexing) {
         global $PAGE;
 
         $this->engine->test_set_config('fileindexing', $fileindexing);
@@ -429,7 +428,7 @@ final class engine_test extends \advanced_testcase {
         $this->assertMatchesRegularExpression($regex, $exported['content']);
     }
 
-    public function test_export_file_for_engine(): void {
+    public function test_export_file_for_engine() {
         // Get area to work with.
         $areaid = \core_search\manager::generate_areaid('core_mocksearch', 'mock_search_area');
         $area = \core_search\manager::get_search_area($areaid);
@@ -452,7 +451,7 @@ final class engine_test extends \advanced_testcase {
         $this->assertEquals(978310800, \search_solr\document::import_time_from_engine($filearray['modified']));
     }
 
-    public function test_index_file(): void {
+    public function test_index_file() {
         // Very simple test.
         $file = $this->generator->create_file();
 
@@ -467,7 +466,7 @@ final class engine_test extends \advanced_testcase {
         $this->assertCount(1, $this->search->search($querydata));
     }
 
-    public function test_reindexing_files(): void {
+    public function test_reindexing_files() {
         // Get area to work with.
         $areaid = \core_search\manager::generate_areaid('core_mocksearch', 'mock_search_area');
         $area = \core_search\manager::get_search_area($areaid);
@@ -562,7 +561,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Test indexing a file we don't consider indexable.
      */
-    public function test_index_filtered_file(): void {
+    public function test_index_filtered_file() {
         // Get area to work with.
         $areaid = \core_search\manager::generate_areaid('core_mocksearch', 'mock_search_area');
         $area = \core_search\manager::get_search_area($areaid);
@@ -615,7 +614,7 @@ final class engine_test extends \advanced_testcase {
         $this->assertCount(1, $this->search->search($querydata));
     }
 
-    public function test_delete_by_id(): void {
+    public function test_delete_by_id() {
         // First get files in the index.
         $file = $this->generator->create_file();
         $record = new \stdClass();
@@ -648,7 +647,7 @@ final class engine_test extends \advanced_testcase {
      *
      * @dataProvider file_indexing_provider
      */
-    public function test_solr_filling($fileindexing): void {
+    public function test_solr_filling($fileindexing) {
         $this->engine->test_set_config('fileindexing', $fileindexing);
 
         $user1 = self::getDataGenerator()->create_user();
@@ -731,7 +730,7 @@ final class engine_test extends \advanced_testcase {
      *
      * @dataProvider file_indexing_provider
      */
-    public function test_get_query_total_count($fileindexing): void {
+    public function test_get_query_total_count($fileindexing) {
         $this->engine->test_set_config('fileindexing', $fileindexing);
 
         $user = self::getDataGenerator()->create_user();
@@ -764,7 +763,7 @@ final class engine_test extends \advanced_testcase {
      *
      * @dataProvider file_indexing_provider
      */
-    public function test_manager_paged_search($fileindexing): void {
+    public function test_manager_paged_search($fileindexing) {
         $this->engine->test_set_config('fileindexing', $fileindexing);
 
         $user = self::getDataGenerator()->create_user();
@@ -798,7 +797,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tests searching for results restricted to context id.
      */
-    public function test_context_restriction(): void {
+    public function test_context_restriction() {
         // Use real search areas.
         $this->search->clear_static();
         $this->search->add_core_search_areas();
@@ -870,7 +869,7 @@ final class engine_test extends \advanced_testcase {
      * Tests searching for results in groups, either by specified group ids or based on user
      * access permissions.
      */
-    public function test_groups(): void {
+    public function test_groups() {
         global $USER;
 
         // Use real search areas.
@@ -974,7 +973,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tests searching for results restricted to specific user id(s).
      */
-    public function test_user_restriction(): void {
+    public function test_user_restriction() {
         // Use real search areas.
         $this->search->clear_static();
         $this->search->add_core_search_areas();
@@ -1048,7 +1047,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tests searching for results containing words in italic text. (This used to fail.)
      */
-    public function test_italics(): void {
+    public function test_italics() {
         global $USER;
 
         // Use real search areas.
@@ -1127,7 +1126,7 @@ final class engine_test extends \advanced_testcase {
      * Tests the get_supported_orders function for contexts where we can only use relevance
      * (system, category).
      */
-    public function test_get_supported_orders_relevance_only(): void {
+    public function test_get_supported_orders_relevance_only() {
         global $DB;
 
         // System or category context: relevance only.
@@ -1145,7 +1144,7 @@ final class engine_test extends \advanced_testcase {
      * Tests the get_supported_orders function for contexts where we support location as well
      * (course, activity, block).
      */
-    public function test_get_supported_orders_relevance_and_location(): void {
+    public function test_get_supported_orders_relevance_and_location() {
         global $DB;
 
         // Test with course context.
@@ -1186,7 +1185,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tests ordering by relevance vs location.
      */
-    public function test_ordering(): void {
+    public function test_ordering() {
         // Create 2 courses and 2 activities.
         $generator = $this->getDataGenerator();
         $course1 = $generator->create_course(['fullname' => 'Course 1']);
@@ -1235,7 +1234,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tests with bogus content (that can be entered into Moodle) to see if it crashes.
      */
-    public function test_bogus_content(): void {
+    public function test_bogus_content() {
         $generator = $this->getDataGenerator();
         $course1 = $generator->create_course(['fullname' => 'Course 1']);
         $course1context = \context_course::instance($course1->id);
@@ -1289,7 +1288,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Tries out deleting data for a context or a course.
      */
-    public function test_deleted_contexts_and_courses(): void {
+    public function test_deleted_contexts_and_courses() {
         // Create some courses and activities.
         $generator = $this->getDataGenerator();
         $course1 = $generator->create_course(['fullname' => 'Course 1']);
@@ -1332,7 +1331,7 @@ final class engine_test extends \advanced_testcase {
     /**
      * Specific test of the add_document_batch function (also used in many other tests).
      */
-    public function test_add_document_batch(): void {
+    public function test_add_document_batch() {
         // Get a default document.
         $area = new \core_mocksearch\search\mock_search_area();
         $record = $this->generator->create_record();
@@ -1375,7 +1374,7 @@ final class engine_test extends \advanced_testcase {
      * Tests the batching logic, specifically the limit to 100 documents per
      * batch, and not batching very large documents.
      */
-    public function test_batching(): void {
+    public function test_batching() {
         $area = new \core_mocksearch\search\mock_search_area();
         $record = $this->generator->create_record();
         $doc = $area->get_document($record);
@@ -1432,7 +1431,7 @@ final class engine_test extends \advanced_testcase {
      * documents if they are bigger than 1MB, and the maximum batch count is 100,
      * so the maximum size batch will be about 100 1MB documents.
      */
-    public function test_add_document_batch_large(): void {
+    public function test_add_document_batch_large() {
         // This test is a bit slow and not that important to run every time...
         if (!PHPUNIT_LONGTEST) {
             $this->markTestSkipped('PHPUNIT_LONGTEST is not defined');

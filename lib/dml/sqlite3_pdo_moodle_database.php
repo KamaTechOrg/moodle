@@ -86,7 +86,7 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
      *
      * @return bool success
      */
-    public function create_database($dbhost, $dbuser, $dbpass, $dbname, ?array $dboptions=null) {
+    public function create_database($dbhost, $dbuser, $dbpass, $dbname, array $dboptions=null) {
         global $CFG;
 
         $this->dbhost = $dbhost;
@@ -329,7 +329,7 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
      * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
      * @return returns success.
      */
-    public function delete_records($table, ?array $conditions=null) {
+    public function delete_records($table, array $conditions=null) {
         if (is_null($conditions)) {
             return $this->execute("DELETE FROM {{$table}}");
         }
@@ -341,10 +341,11 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
      * Returns the proper SQL to do CONCAT between the elements passed
      * Can take many parameters
      *
-     * @param string $elements,...
+     * @param string $element
      * @return string
      */
-    public function sql_concat(...$elements) {
+    public function sql_concat() {
+        $elements = func_get_args();
         return implode('||', $elements);
     }
 

@@ -20,7 +20,6 @@ namespace core_reportbuilder;
 
 use action_menu_filler;
 use coding_exception;
-use core_reportbuilder\exception\report_access_exception;
 use html_writer;
 use stdClass;
 use core\output\checkbox_toggleall;
@@ -127,6 +126,8 @@ abstract class system_report extends base {
     /**
      * Add list of fields that have to be always included in SQL query for actions and row classes
      *
+     * Base fields are only available in system reports because they are not compatible with aggregation
+     *
      * @param string $sql SQL clause for the list of fields that only uses main table or base joins
      */
     final protected function add_base_fields(string $sql): void {
@@ -146,7 +147,7 @@ abstract class system_report extends base {
      * Define toggle all checkbox for the report, required row data should be defined by calling {@see add_base_fields}
      *
      * @param callable $callback Callback to return value/label for each checkbox, implementing the following signature:
-     *      function(stdClass $row): ?array containing value/label pair, or null if the checkbox should not be shown for the row
+     *      function(stdClass $row): array containing value/label pair
      */
     final protected function set_checkbox_toggleall(callable $callback): void {
         $this->checkboxcallback = $callback;
@@ -169,11 +170,7 @@ abstract class system_report extends base {
             $value = '';
             $label = get_string('selectall');
         } else {
-            $checkboxdata = ($this->checkboxcallback)($row);
-            if ($checkboxdata === null) {
-                return null;
-            }
-            [$value, $label] = $checkboxdata;
+            [$value, $label] = ($this->checkboxcallback)($row);
         }
 
         return new checkbox_toggleall('report-select-all', $ismaster, [

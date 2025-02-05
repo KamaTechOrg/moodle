@@ -64,7 +64,7 @@ class analysis_for_question {
      *                    This is the return value from {@link \question_type::get_possible_responses()}
      *                    see that method for fuller documentation.
      */
-    public function __construct(?array $possiblereponses = null) {
+    public function __construct(array $possiblereponses = null) {
         if ($possiblereponses !== null) {
             $this->possibleresponses = $possiblereponses;
         }
@@ -208,13 +208,14 @@ class analysis_for_question {
 
         $transaction = $DB->start_delegated_transaction();
 
-        $analysisids = $DB->get_fieldset(
+        $analysisids = $DB->get_fieldset_select(
             'question_response_analysis',
             'id',
+            'hashcode = ? AND whichtries = ? AND questionid = ?',
             [
-                'hashcode' => $qubaids->get_hash_code(),
-                'whichtries' => $whichtries,
-                'questionid' => $questionid,
+                $qubaids->get_hash_code(),
+                $whichtries,
+                $questionid,
             ]
         );
         if (!empty($analysisids)) {

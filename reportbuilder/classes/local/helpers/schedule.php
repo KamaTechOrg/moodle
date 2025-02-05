@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace core_reportbuilder\local\helpers;
 
 use context_user;
-use core\{clock, di};
 use core_user;
 use invalid_parameter_exception;
 use stdClass;
@@ -44,18 +43,14 @@ class schedule {
      * Create report schedule, calculate when it should be next sent
      *
      * @param stdClass $data
-     * @param int|null $timenow Deprecated since Moodle 4.5 - please use {@see clock} dependency injection
+     * @param int|null $timenow Time to use as comparison against current date (defaults to current time)
      * @return model
      */
     public static function create_schedule(stdClass $data, ?int $timenow = null): model {
-        if ($timenow !== null) {
-            debugging('Passing $timenow is deprecated, please use \core\clock dependency injection', DEBUG_DEVELOPER);
-        }
-
         $data->name = trim($data->name);
 
         $schedule = (new model(0, $data));
-        $schedule->set('timenextsend', self::calculate_next_send_time($schedule));
+        $schedule->set('timenextsend', self::calculate_next_send_time($schedule, $timenow));
 
         return $schedule->create();
     }
@@ -214,7 +209,7 @@ class schedule {
             return false;
         }
 
-        $timenow = di::get(clock::class)->time();
+        $timenow = time();
 
         // Ensure we've reached the initial scheduled start time.
         $timescheduled = $schedule->get('timescheduled');
@@ -236,17 +231,13 @@ class schedule {
      * returned value is after the current date
      *
      * @param model $schedule
-     * @param int|null $timenow Deprecated since Moodle 4.5 - please use {@see clock} dependency injection
+     * @param int|null $timenow Time to use as comparison against current date (defaults to current time)
      * @return int
      */
     public static function calculate_next_send_time(model $schedule, ?int $timenow = null): int {
         global $CFG;
 
-        if ($timenow !== null) {
-            debugging('Passing $timenow is deprecated, please use \core\clock dependency injection', DEBUG_DEVELOPER);
-        }
-
-        $timenow = di::get(clock::class)->time();
+        $timenow = $timenow ?? time();
 
         $recurrence = $schedule->get('recurrence');
         $timescheduled = $schedule->get('timescheduled');
@@ -298,7 +289,8 @@ class schedule {
             // Ensure we don't modify anything in the original model.
             $scheduleclone = new model(0, $schedule->to_record());
 
-            return self::calculate_next_send_time($scheduleclone->set('timescheduled', $timestamp));
+            return self::calculate_next_send_time(
+                $scheduleclone->set('timescheduled', $timestamp), $timenow);
         } else {
             return $timestamp;
         }

@@ -21,54 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Config from 'core/config';
 import {call as fetchMany} from 'core/ajax';
-import Fetch from 'core/fetch';
-
-const checkUserId = (userid) => {
-    if (Number(userid) === 0) {
-        return;
-    }
-    if (Number(userid) === Config.userId) {
-        return;
-    }
-    throw new Error(
-        `Invalid user ID: ${userid}. It is only possible to manage preferences for the current user.`,
-    );
-};
-
-/**
- * Turn the response object into a Proxy object that will log a warning if the saved property is accessed.
- *
- * @param {Object} response
- * @param {Object} preferences The preferences that might be in the response
- * @return {Promise<Proxy>}
- */
-const addLegacySavedProperty = (response, preferences) => {
-    const debugLogger = {
-        get(target, prop, receiver) {
-            if (prop === 'then') {
-                // To proxy a Promise we have to return null when the then key is requested.
-                return null;
-            }
-            if (prop === 'saved') {
-                window.console.warn(
-                    'The saved property is deprecated. Please use the response object directly.',
-                );
-
-                return preferences
-                    .filter((preference) => target.hasOwnProperty(preference.name))
-                    .map((preference) => ({
-                        name: preference.name,
-                        userid: Config.userid,
-                    }));
-            }
-            return Reflect.get(target, prop, receiver);
-        },
-    };
-
-    return Promise.resolve(new Proxy(response, debugLogger));
-};
 
 /**
  * Get single user preference
@@ -77,25 +30,23 @@ const addLegacySavedProperty = (response, preferences) => {
  * @param {Number} userid User ID (defaults to current user)
  * @return {Promise}
  */
-export const getUserPreference = (name, userid = 0) => getUserPreferences(name, userid)
-    .then((response) => response[name]);
+export const getUserPreference = (name, userid = 0) => {
+    return getUserPreferences(name, userid)
+        .then(response => response.preferences[0].value);
+};
 
 /**
  * Get multiple user preferences
  *
  * @param {String|null} name Name of the preference (omit if you want to retrieve all)
  * @param {Number} userid User ID (defaults to current user)
- * @return {Promise<object<string, string>>}
+ * @return {Promise}
  */
 export const getUserPreferences = (name = null, userid = 0) => {
-    checkUserId(userid);
-    const endpoint = ['current', 'preferences'];
-
-    if (name) {
-        endpoint.push(name);
-    }
-
-    return Fetch.performGet('core_user', endpoint.join('/')).then((response) => response.json());
+    return fetchMany([{
+        methodname: 'core_user_get_user_preferences',
+        args: {name, userid}
+    }])[0];
 };
 
 /**
@@ -107,17 +58,7 @@ export const getUserPreferences = (name = null, userid = 0) => {
  * @return {Promise}
  */
 export const setUserPreference = (name, value = null, userid = 0) => {
-    checkUserId(userid);
-    return Fetch.performPost(
-        'core_user',
-        `current/preferences/${name}`,
-        {
-            body: {value},
-        },
-    )
-    // Return the result of the fetch call, and also add in the legacy saved property.
-    .then((response) => response.json())
-    .then((response) => addLegacySavedProperty(response, [{name}]));
+    return setUserPreferences([{name, value, userid}]);
 };
 
 /**
@@ -127,19 +68,10 @@ export const setUserPreference = (name, value = null, userid = 0) => {
  * @return {Promise}
  */
 export const setUserPreferences = (preferences) => {
-    preferences.forEach((preference) => checkUserId(preference.userid));
-    return Fetch.performPost(
-        'core_user',
-        'current/preferences',
-        {
-            body: {
-                preferences: Object.fromEntries (preferences.map((preference) => ([preference.name, preference.value]))),
-            },
-        },
-    )
-    // Return the result of the fetch call, and also add in the legacy saved property.
-    .then((response) => response.json())
-    .then((response) => addLegacySavedProperty(response, preferences));
+    return fetchMany([{
+        methodname: 'core_user_set_user_preferences',
+        args: {preferences}
+    }])[0];
 };
 
 /**

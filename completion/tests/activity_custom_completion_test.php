@@ -48,7 +48,7 @@ class activity_custom_completion_test extends advanced_testcase {
     /**
      * Data provider for test_get_overall_completion_state().
      */
-    public static function overall_completion_state_provider(): array {
+    public function overall_completion_state_provider(): array {
         global $CFG;
         require_once($CFG->libdir . '/completionlib.php');
         return [
@@ -100,7 +100,7 @@ class activity_custom_completion_test extends advanced_testcase {
      * @param int $invokecount Expected invoke count of get_state().
      * @param int $state The expected overall completion state
      */
-    public function test_get_overall_completion_state(array $rules, array $rulestates, int $invokecount, int $state): void {
+    public function test_get_overall_completion_state(array $rules, array $rulestates, int $invokecount, int $state) {
         $stub = $this->setup_mock([
             'get_available_custom_rules',
             'get_state',
@@ -113,14 +113,13 @@ class activity_custom_completion_test extends advanced_testcase {
 
         // Mock activity_custom_completion's get_state() method.
         if ($invokecount > 0) {
-            $stateinvocations = $this->exactly($invokecount);
-            $stub->expects($stateinvocations)
+            $stub->expects($this->exactly($invokecount))
                 ->method('get_state')
-                ->willReturnCallback(function ($rule) use ($stateinvocations, $rules, $rulestates) {
-                    $index = self::getInvocationCount($stateinvocations) - 1;
-                    $this->assertEquals($rules[$index], $rule);
-                    return $rulestates[$index];
-                });
+                ->withConsecutive(
+                    [$rules[0]],
+                    [$rules[1]]
+                )
+                ->willReturn($rulestates[0], $rulestates[1]);
         } else {
             $stub->expects($this->never())
                 ->method('get_state');
@@ -134,7 +133,7 @@ class activity_custom_completion_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public static function validate_rule_provider(): array {
+    public function validate_rule_provider() {
         return [
             'Not defined' => [
                 false, true, coding_exception::class
@@ -156,7 +155,7 @@ class activity_custom_completion_test extends advanced_testcase {
      * @param bool $available is_available()'s mocked return value.
      * @param string|null $expectedexception Expected expectation class name.
      */
-    public function test_validate_rule(bool $defined, bool $available, ?string $expectedexception): void {
+    public function test_validate_rule(bool $defined, bool $available, ?string $expectedexception) {
         $stub = $this->setup_mock([
             'is_defined',
             'is_available'
@@ -181,7 +180,7 @@ class activity_custom_completion_test extends advanced_testcase {
     /**
      * Test for is_available().
      */
-    public function test_is_available(): void {
+    public function test_is_available() {
         $stub = $this->setup_mock([
             'get_available_custom_rules',
         ]);

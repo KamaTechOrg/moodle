@@ -37,14 +37,13 @@ class events_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
     /**
      * Test the course category created event.
      */
-    public function test_course_category_created(): void {
+    public function test_course_category_created() {
         // Trigger and capture the event.
         $sink = $this->redirectEvents();
         $category = $this->getDataGenerator()->create_category();
@@ -62,7 +61,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the course category updated event.
      */
-    public function test_course_category_updated(): void {
+    public function test_course_category_updated() {
         // Create a category.
         $category = $this->getDataGenerator()->create_category();
 
@@ -144,7 +143,7 @@ class events_test extends \advanced_testcase {
      * It's not possible to use the moodle API to simulate the failure of sending
      * an email, so here we simply create the event and trigger it.
      */
-    public function test_email_failed(): void {
+    public function test_email_failed() {
         // Trigger event for failing to send email.
         $event = \core\event\email_failed::create(array(
             'context' => \context_system::instance(),
@@ -171,7 +170,7 @@ class events_test extends \advanced_testcase {
     /**
      * There is no api involved so the best we can do is test legacy data by triggering event manually.
      */
-    public function test_course_user_report_viewed(): void {
+    public function test_course_user_report_viewed() {
 
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
@@ -198,7 +197,7 @@ class events_test extends \advanced_testcase {
     /**
      * There is no api involved so the best we can do is test legacy data by triggering event manually.
      */
-    public function test_course_viewed(): void {
+    public function test_course_viewed() {
 
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
@@ -244,7 +243,7 @@ class events_test extends \advanced_testcase {
         $this->assertNull($restored->get_url());
     }
 
-    public function test_recent_capability_viewed(): void {
+    public function test_recent_capability_viewed() {
         $this->resetAfterTest();
 
         $this->setAdminUser();
@@ -267,7 +266,7 @@ class events_test extends \advanced_testcase {
         $event->get_name();
     }
 
-    public function test_user_profile_viewed(): void {
+    public function test_user_profile_viewed() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -317,7 +316,7 @@ class events_test extends \advanced_testcase {
     /**
      * There is no API associated with this event, so we will just test standard features.
      */
-    public function test_grade_viewed(): void {
+    public function test_grade_viewed() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -348,7 +347,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the database text field content replaced event.
      */
-    public function test_database_text_field_content_replaced(): void {
+    public function test_database_text_field_content_replaced() {
         global $CFG;
 
         require_once($CFG->dirroot . '/lib/adminlib.php');

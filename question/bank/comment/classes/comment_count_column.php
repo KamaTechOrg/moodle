@@ -107,7 +107,7 @@ class comment_count_column extends column_base {
     }
 
     public function get_extra_classes(): array {
-        return ['pe-3'];
+        return ['pr-3'];
     }
 
     public function get_default_width(): int {

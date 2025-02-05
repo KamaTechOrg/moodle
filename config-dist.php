@@ -180,14 +180,6 @@ $CFG->wwwroot   = 'http://example.com/moodle';
 
 $CFG->dataroot  = '/home/example/moodledata';
 
-// Whether the Moodle router is fully configured.
-//
-// From Moodle 4.5 this is set to false.
-// The default value will change in a future release.
-//
-// When not configured on the web server it must be accessed via https://example.com/moodle/r.php
-// When configured the on the web server the 'r.php' may be removed.
-$CFG->routerconfigured = false;
 
 //=========================================================================
 // 4. DATA FILES PERMISSIONS
@@ -336,7 +328,7 @@ $CFG->admin = 'admin';
 //
 //
 // Following settings may be used to select session driver, uncomment only one of the handlers.
-//   Database session handler:
+//   Database session handler (not compatible with MyISAM):
 //      $CFG->session_handler_class = '\core\session\database';
 //      $CFG->session_database_acquire_lock_timeout = 120;
 //
@@ -355,9 +347,7 @@ $CFG->admin = 'admin';
 //
 //   Redis session handler (requires redis server and redis extension):
 //      $CFG->session_handler_class = '\core\session\redis';
-//      $CFG->session_redis_host = '127.0.0.1';  or...              // If there is only one host, use the single Redis connection.
-//      $CFG->session_redis_host = '127.0.0.1:7000,127.0.0.1:7001'; // If there are multiple hosts (separated by a comma),
-//                                                                  // use the Redis cluster connection.
+//      $CFG->session_redis_host = '127.0.0.1';
 //      Use TLS to connect to Redis. An array of SSL context options. Usually:
 //      $CFG->session_redis_encrypt = ['cafile' => '/path/to/ca.crt']; or...
 //      $CFG->session_redis_encrypt = ['verify_peer' => false, 'verify_peer_name' => false];
@@ -729,7 +719,7 @@ $CFG->admin = 'admin';
 //
 // Uninstall plugins from CLI only. This stops admins from uninstalling plugins from the graphical admin
 // user interface, and forces plugins to be uninstalled from the Command Line tool only, found at
-// admin/cli/uninstall_plugins.php.
+// admin/cli/plugin_uninstall.php.
 //
 //      $CFG->uninstallclionly = true;
 //
@@ -781,15 +771,6 @@ $CFG->admin = 'admin';
 // Defaults to 60 minutes.
 //
 //      $CFG->enrolments_sync_interval = 3600
-//
-// Stored progress polling interval
-//
-// Stored progress bars which can be polled for updates via AJAX can be controlled by the
-// `progresspollinterval` config setting, to determine the interval (in seconds) at which the
-// polling should be done and latest update retrieved.
-// If no value is set, then it will default to 5 seconds.
-//
-// $CFG->progresspollinterval = 5;
 
 //=========================================================================
 // 7. SETTINGS FOR DEVELOPMENT SERVERS - not intended for production use!!!
@@ -800,28 +781,6 @@ $CFG->admin = 'admin';
 // @ini_set('display_errors', '1');    // NOT FOR PRODUCTION SERVERS!
 // $CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
 // $CFG->debugdisplay = 1;             // NOT FOR PRODUCTION SERVERS!
-//
-// Display exceptions using the 'pretty' Whoops! utility.
-// This is only used when the following conditions are met:
-// - Composer dependencies are installed
-// - $CFG->debug and $CFG->debugdisplay are set
-// - the request is not a CLI, or AJAX request
-//
-// To further control this, the debug_developer_use_pretty_exceptions setting can be set to false.
-// $CFG->debug_developer_use_pretty_exceptions = true;
-//
-// In many development situations it is desirable to have debugging() calls treated as errors rather than
-// as exceptions.
-// If this property is not specified then it will be true if pretty exceptions are usable.
-// $CFG->debug_developer_debugging_as_error = true;
-//
-// The Whoops! UI can also provide a link to open files in  your preferred editor.
-// You can set your preferred editor by setting:
-// $CFG->debug_developer_editor = 'vscode';
-//
-// See https://github.com/filp/whoops/blob/master/docs/Open%20Files%20In%20An%20Editor.md for more information on
-// supported editors.
-// If your editor is not listed you can provide a callback as documented.
 //
 // You can specify a comma separated list of user ids that that always see
 // debug messages, this overrides the debug flag in $CFG->debug and $CFG->debugdisplay

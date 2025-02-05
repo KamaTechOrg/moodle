@@ -172,12 +172,6 @@ class core_webservice_external extends \core_external\external_api {
             'name' => 'mnet_dispatcher_mode',
             'value' => ($CFG->mnet_dispatcher_mode == 'strict') ? 1 : 0
         );
-        // Competencies.
-        $enablecompetencies = get_config('core_competency', 'enabled');
-        $siteinfo['advancedfeatures'][] = [
-            'name' => 'enablecompetencies',
-            'value' => (!empty($enablecompetencies)) ? 1 : 0,
-        ];
 
         // User can manage own files.
         $siteinfo['usercanmanageownfiles'] = has_capability('moodle/user:manageownfiles', $context);
@@ -194,9 +188,6 @@ class core_webservice_external extends \core_external\external_api {
 
         // User home page.
         $siteinfo['userhomepage'] = get_home_page();
-        if ($siteinfo['userhomepage'] === HOMEPAGE_URL) {
-            $siteinfo['userhomepageurl'] = (string) get_default_home_page_url();
-        }
 
         // Calendar.
         $siteinfo['sitecalendartype'] = $CFG->calendartype;
@@ -216,10 +207,8 @@ class core_webservice_external extends \core_external\external_api {
         $siteinfo['limitconcurrentlogins'] = (int) $CFG->limitconcurrentlogins;
         if (!empty($CFG->limitconcurrentlogins)) {
             // For performance, only when enabled.
-            $siteinfo['usersessionscount'] = count(\core\session\manager::get_sessions_by_userid($USER->id));
+            $siteinfo['usersessionscount'] = $DB->count_records('sessions', ['userid' => $USER->id]);
         }
-
-        $siteinfo['policyagreed'] = $USER->policyagreed;
 
         return $siteinfo;
     }
@@ -283,8 +272,6 @@ class core_webservice_external extends \core_external\external_api {
                 'userhomepage' => new external_value(PARAM_INT,
                                                         'the default home page for the user: 0 for the site home, 1 for dashboard',
                                                         VALUE_OPTIONAL),
-                'userhomepageurl' => new external_value(PARAM_LOCALURL,
-                    'The URL of default home page when userhomepage is 4 (HOMEPAGE_URL).', VALUE_OPTIONAL),
                 'userprivateaccesskey'  => new external_value(PARAM_ALPHANUM, 'Private user access key for fetching files.',
                     VALUE_OPTIONAL),
                 'siteid'  => new external_value(PARAM_INT, 'Site course ID', VALUE_OPTIONAL),
@@ -295,7 +282,6 @@ class core_webservice_external extends \core_external\external_api {
                 'limitconcurrentlogins' => new external_value(PARAM_INT, 'Number of concurrent sessions allowed', VALUE_OPTIONAL),
                 'usersessionscount' => new external_value(PARAM_INT, 'Number of active sessions for current user.
                     Only returned when limitconcurrentlogins is used.', VALUE_OPTIONAL),
-                'policyagreed' => new external_value(PARAM_INT, 'Whether user accepted all the policies.', VALUE_OPTIONAL),
             )
         );
     }

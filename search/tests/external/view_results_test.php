@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 class view_results_test extends \externallib_advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 

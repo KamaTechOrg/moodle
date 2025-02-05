@@ -14,6 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Unit tests for MoodleQuickForm_duration
+ *
+ * Contains test cases for testing MoodleQuickForm_duration
+ *
+ * @package    core_form
+ * @category   test
+ * @copyright  2009 Tim Hunt
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core_form;
 
 use moodleform;
@@ -33,7 +44,6 @@ require_once($CFG->libdir . '/form/duration.php');
  * @category   test
  * @copyright  2009 Tim Hunt
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \MoodleQuickForm_duration
  */
 class duration_test extends \basic_testcase {
 
@@ -44,7 +54,7 @@ class duration_test extends \basic_testcase {
      */
     protected function get_test_form(): MoodleQuickForm {
         $form = new temp_form_duration();
-        return $form->get_form();
+        return $form->getform();
     }
 
     /**
@@ -96,7 +106,7 @@ class duration_test extends \basic_testcase {
      *
      * @return array test cases.
      */
-    public static function seconds_to_unit_cases(): array {
+    public function seconds_to_unit_cases(): array {
         return [
             [[0, MINSECS], 0], // Zero minutes, for a nice default unit.
             [[1, 1], 1],
@@ -125,7 +135,7 @@ class duration_test extends \basic_testcase {
     /**
      * Testcase for testing conversion of seconds to the best possible unit with a non-default default unit.
      */
-    public function test_seconds_to_unit_different_default_unit(): void {
+    public function test_seconds_to_unit_different_default_unit() {
         $mform = $this->get_test_form();
         $element = $mform->addElement('duration', 'testel', null,
                 ['defaultunit' => DAYSECS, 'optional' => false]);
@@ -137,7 +147,7 @@ class duration_test extends \basic_testcase {
      *
      * @return array test cases.
      */
-    public static function export_value_cases(): array {
+    public function export_value_cases(): array {
         return [
             [10, '10', 1],
             [9, '9.3', 1],
@@ -182,47 +192,6 @@ class duration_test extends \basic_testcase {
         $this->assertEquals(['testel' => $expected], $el->exportValue($values, true));
         $this->assertEquals($expected, $el->exportValue($values));
     }
-
-    /**
-     * Test cases for {@see test_validate_submit_value_negative_blocked()}.
-     * @return array[] test cases.
-     */
-    public static function validate_submit_value_cases(): array {
-        return [
-            [false, -10, MINSECS, false],
-            [false, 10, MINSECS, true],
-            [false, 0, MINSECS, true],
-            [true, -10, MINSECS, true],
-            [true, 10, MINSECS, true],
-            [true, 0, MINSECS, true],
-        ];
-    }
-
-    /**
-     * Test for {@see MoodleQuickForm_duration::validateSubmitValue()}.
-     *
-     * @dataProvider validate_submit_value_cases
-     * @param bool $allownegative whether the element should be created to allow negative values.
-     * @param int $number the number submitted.
-     * @param int $unit the unit submitted.
-     * @param bool $isvalid whether this submission is valid.
-     */
-    public function test_validate_submit_value(bool $allownegative, int $number, int $unit, bool $isvalid): void {
-        $form = new temp_form_duration(null, null, 'post', '', null, true);
-        /** @var \MoodleQuickForm_duration $element */
-        $element = $form->get_form()->addElement('duration', 'testel', '', ['allownegative' => $allownegative]);
-
-        $values = ['testel' => ['number' => $number, 'timeunit' => $unit]];
-
-        if ($isvalid) {
-            $this->assertNull($element->validateSubmitValue($values));
-        } else {
-            $this->assertEquals(
-                get_string('err_positiveduration', 'core_form'),
-                $element->validateSubmitValue($values),
-            );
-        }
-    }
 }
 
 /**
@@ -240,7 +209,7 @@ class temp_form_duration extends moodleform {
      * Returns form reference
      * @return MoodleQuickForm
      */
-    public function get_form() {
+    public function getform() {
         $mform = $this->_form;
         // Set submitted flag, to simulate submission.
         $mform->_flagSubmitted = true;

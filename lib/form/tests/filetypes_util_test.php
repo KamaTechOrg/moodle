@@ -14,21 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Provides the {@link core_form\filetypes_util_testcase} class.
+ *
+ * @package     core_form
+ * @category    test
+ * @copyright   2017 David Mudrák <david@moodle.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core_form;
+
+use advanced_testcase;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
 
 /**
  * Test cases for the {@link core_form\filetypes_util} class.
  *
- * @package   core_form
  * @copyright 2017 David Mudrak <david@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers    \core_form\filetypes_util
  */
-final class filetypes_util_test extends \advanced_testcase {
+class filetypes_util_test extends advanced_testcase {
+
     /**
      * Test normalizing list of extensions.
      */
-    public function test_normalize_file_types(): void {
+    public function test_normalize_file_types() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -59,7 +74,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test MIME type formal recognition.
      */
-    public function test_looks_like_mimetype(): void {
+    public function test_looks_like_mimetype() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -77,7 +93,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test getting/checking group.
      */
-    public function test_is_filetype_group(): void {
+    public function test_is_filetype_group() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -94,7 +111,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test describing list of extensions.
      */
-    public function test_describe_file_types(): void {
+    public function test_describe_file_types() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -151,7 +169,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test expanding mime types into extensions.
      */
-    public function test_expand(): void {
+    public function test_expand() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -188,7 +207,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test checking that a type is among others.
      */
-    public function test_is_listed(): void {
+    public function test_is_listed() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -230,7 +250,8 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test getting types not present in a list.
      */
-    public function test_get_not_listed(): void {
+    public function test_get_not_listed() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
@@ -252,15 +273,16 @@ final class filetypes_util_test extends \advanced_testcase {
     /**
      * Test populating the tree for the browser.
      */
-    public function test_data_for_browser(): void {
+    public function test_data_for_browser() {
+
         $this->resetAfterTest(true);
         $util = new filetypes_util();
 
         $data = $util->data_for_browser();
         $this->assertContainsOnly('object', $data);
         foreach ($data as $group) {
-            $this->assertObjectHasProperty('key', $group);
-            $this->assertObjectHasProperty('types', $group);
+            $this->assertObjectHasAttribute('key', $group);
+            $this->assertObjectHasAttribute('types', $group);
             if ($group->key !== '') {
                 $this->assertTrue($group->selectable);
             }
@@ -337,7 +359,7 @@ final class filetypes_util_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function is_allowed_file_type_provider(): array {
+    public function is_allowed_file_type_provider() {
         return [
             'Filetype not in extension list' => [
                 'filename' => 'test.xml',
@@ -389,7 +411,7 @@ final class filetypes_util_test extends \advanced_testcase {
      * @param string $list The space , or ; separated list of types supported
      * @param boolean $expected The expected result. True if the file is allowed, false if not.
      */
-    public function test_is_allowed_file_type($filename, $list, $expected): void {
+    public function test_is_allowed_file_type($filename, $list, $expected) {
         $util = new filetypes_util();
         $this->assertSame($expected, $util->is_allowed_file_type($filename, $list));
     }
@@ -399,7 +421,7 @@ final class filetypes_util_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function get_unknown_file_types_provider(): array {
+    public function get_unknown_file_types_provider() {
         return [
             'Empty list' => [
                 'filetypes' => '',
@@ -458,7 +480,7 @@ final class filetypes_util_test extends \advanced_testcase {
      * @param string $filetypes The filetypes to check
      * @param array $expected The expected result. The list of non existant file types.
      */
-    public function test_get_unknown_file_types($filetypes, $expected): void {
+    public function test_get_unknown_file_types($filetypes, $expected) {
         $util = new filetypes_util();
         $this->assertSame($expected, $util->get_unknown_file_types($filetypes));
     }

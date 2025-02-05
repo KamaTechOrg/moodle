@@ -29,11 +29,10 @@ class gdlib_test extends \basic_testcase {
     private $fixturepath = null;
 
     public function setUp(): void {
-        parent::setUp();
         $this->fixturepath = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR;
     }
 
-    public function test_generate_image_thumbnail(): void {
+    public function test_generate_image_thumbnail() {
         global $CFG;
         require_once($CFG->libdir . '/gdlib.php');
 
@@ -51,7 +50,7 @@ class gdlib_test extends \basic_testcase {
         $this->assertEquals('image/png', $imageinfo['mime']);
     }
 
-    public function test_generate_image_thumbnail_from_string(): void {
+    public function test_generate_image_thumbnail_from_string() {
         global $CFG;
         require_once($CFG->libdir . '/gdlib.php');
 
@@ -78,7 +77,7 @@ class gdlib_test extends \basic_testcase {
         $this->assertEquals('image/png', $imageinfo['mime']);
     }
 
-    public function test_resize_image(): void {
+    public function test_resize_image() {
         global $CFG;
         require_once($CFG->libdir . '/gdlib.php');
 
@@ -109,7 +108,7 @@ class gdlib_test extends \basic_testcase {
         $this->assertEquals('image/png', $imageinfo['mime']);
     }
 
-    public function test_resize_image_from_image(): void {
+    public function test_resize_image_from_image() {
         global $CFG;
         require_once($CFG->libdir . '/gdlib.php');
 

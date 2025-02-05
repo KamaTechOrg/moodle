@@ -1620,28 +1620,8 @@ class restore_section_structure_step extends restore_structure_step {
         $section->course  = $this->get_courseid();
         $section->section = $data->number;
         $section->timemodified = $data->timemodified ?? 0;
-        $section->component = null;
-        $section->itemid = null;
-
-        $secrec = $DB->get_record(
-            'course_sections',
-            ['course' => $this->get_courseid(), 'section' => $data->number, 'component' => null]
-        );
-        $createsection = empty($secrec);
-
-        // Delegated sections are always restored as new sections.
-        if (!empty($data->component)) {
-            $section->itemid = $this->get_delegated_section_mapping($data->component, $data->itemid);
-            // If the delegate component does not set the mapping id, the section must be converted
-            // into a regular section. Otherwise, it won't be accessible.
-            $createsection = $createsection || $section->itemid !== null;
-            $section->component = ($section->itemid !== null) ? $data->component : null;
-            // The section number will be always the last of the course, no matter the case.
-            $section->section = $this->get_last_section_number($this->get_courseid()) + 1;
-
-        }
         // Section doesn't exist, create it with all the info from backup
-        if ($createsection) {
+        if (!$secrec = $DB->get_record('course_sections', ['course' => $this->get_courseid(), 'section' => $data->number])) {
             $section->name = $data->name;
             $section->summary = $data->summary;
             $section->summaryformat = $data->summaryformat;
@@ -1657,10 +1637,6 @@ class restore_section_structure_step extends restore_structure_step {
                             $data, true);
                 }
             }
-
-            // Delegated sections should be always after the normal sections.
-            $this->displace_delegated_sections_after($section->section);
-
             $newitemid = $DB->insert_record('course_sections', $section);
             $section->id = $newitemid;
 
@@ -1831,57 +1807,6 @@ class restore_section_structure_step extends restore_structure_step {
     protected function after_execute() {
         // Add section related files, with 'course_section' itemid to match
         $this->add_related_files('course', 'section', 'course_section');
-    }
-
-    /**
-     * Create a delegate section mapping.
-     *
-     * @param string $component the component name (frankenstyle)
-     * @param int $oldsectionid The old section id.
-     * @return int|null The new section id or null if not found.
-     */
-    protected function get_delegated_section_mapping($component, $oldsectionid): ?int {
-        $result = $this->get_mappingid("course_section::$component", $oldsectionid, null);
-        return $result;
-    }
-
-    /**
-     * Displace delegated sections after the given section number.
-     *
-     * @param int $sectionnum The section number.
-     */
-    protected function displace_delegated_sections_after(int $sectionnum): void {
-        global $DB;
-
-        $sectionstomove = $DB->get_records_select(
-            'course_sections',
-            'course = ? AND component IS NOT NULL',
-            [$this->get_courseid()],
-            'section DESC', 'id, section'
-        );
-        foreach ($sectionstomove as $section) {
-            $sectionnum++;
-            $section->section = $sectionnum;
-            $DB->update_record('course_sections', $section);
-        }
-    }
-
-    /**
-     * Get the last section number in the course.
-     *
-     * @param int $courseid The course id.
-     * @param bool $includedelegated If true, include delegated sections in the count.
-     * @return int The last section number.
-     */
-    protected function get_last_section_number(int $courseid, bool $includedelegated = false): int {
-        global $DB;
-
-        $delegtadefilter = $includedelegated ? '' : ' AND component IS NULL';
-
-        return (int) $DB->get_field_sql(
-            'SELECT max(section) from {course_sections} WHERE course = ?' . $delegtadefilter,
-            [$courseid]
-        );
     }
 }
 
@@ -2098,11 +2023,7 @@ class restore_course_structure_step extends restore_structure_step {
      */
     public function process_customfield($data) {
         $handler = core_course\customfield\course_handler::create();
-        $newid = $handler->restore_instance_data_from_backup($this->task, $data);
-
-        if ($newid) {
-            $handler->restore_define_structure($this, $newid, $data['id']);
-        }
+        $handler->restore_instance_data_from_backup($this->task, $data);
     }
 
     /**
@@ -2112,7 +2033,7 @@ class restore_course_structure_step extends restore_structure_step {
      * @throws base_step_exception
      * @throws dml_exception
      */
-    public function process_course_format_option(array $data): void {
+    public function process_course_format_option(array $data) : void {
         global $DB;
 
         if ($data['sectionid']) {
@@ -4992,17 +4913,6 @@ abstract class restore_activity_structure_step extends restore_structure_step {
         $modulename = $this->task->get_modulename();
         $oldid = $this->task->get_old_activityid();
         $this->set_mapping($modulename, $oldid, $newitemid, true);
-    }
-
-    /**
-     * Create a delegate section mapping.
-     *
-     * @param string $component The component name (frankenstyle)
-     * @param int $olditemid The old section id.
-     * @param int $newitemid The new section id.
-     */
-    protected function set_delegated_section_mapping($component, $olditemid, $newitemid) {
-        $this->set_mapping("course_section::$component", $olditemid, $newitemid);
     }
 }
 

@@ -36,7 +36,6 @@ class online_users_test extends \advanced_testcase {
      * simulate various recent accesses.
      */
     protected function setUp(): void {
-        parent::setUp();
 
         // Generate (simulated) recently logged-in users.
         $generator = $this->getDataGenerator()->get_plugin_generator('block_online_users');
@@ -53,7 +52,7 @@ class online_users_test extends \advanced_testcase {
      * @param int $now Current Unix timestamp
      * @param int $timetoshowusers The time window (in seconds) to check for the latest logged in users
      */
-    public function test_fetcher_course1_group_members(): void {
+    public function test_fetcher_course1_group_members() {
         global $CFG;
 
         $groupid = $this->data['group1']->id;
@@ -92,7 +91,7 @@ class online_users_test extends \advanced_testcase {
      * @param int $now Current Unix timestamp
      * @param int $timetoshowusers The time window (in seconds) to check for the latest logged in users
      */
-    public function test_fetcher_courses(): void {
+    public function test_fetcher_courses() {
 
         global $CFG;
 
@@ -123,7 +122,7 @@ class online_users_test extends \advanced_testcase {
      * @param int $now Current Unix timestamp
      * @param int $timetoshowusers The time window (in seconds) to check for the latest logged in users
      */
-    public function test_fetcher_sitelevel(): void {
+    public function test_fetcher_sitelevel() {
         global $CFG;
 
         $currentgroup = null;
@@ -141,7 +140,7 @@ class online_users_test extends \advanced_testcase {
     /**
      * Check user visibility setting for course group members.
      */
-    public function test_user_visibility_course1_group1_members(): void {
+    public function test_user_visibility_course1_group1_members() {
         global $CFG;
 
         // Enable users to set their visibility to others in the online users block.
@@ -198,7 +197,7 @@ class online_users_test extends \advanced_testcase {
     /**
      * Check user visibility setting at course level.
      */
-    public function test_user_visibility_courses(): void {
+    public function test_user_visibility_courses() {
         global $CFG;
 
         $currentgroup = null;
@@ -254,7 +253,7 @@ class online_users_test extends \advanced_testcase {
     /**
      * Check user visibility setting at site level.
      */
-    public function test_user_visibility_sitelevel(): void {
+    public function test_user_visibility_sitelevel() {
         global $CFG;
 
         $currentgroup = null;

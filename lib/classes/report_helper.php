@@ -17,6 +17,7 @@
 namespace core;
 
 use context_course;
+use moodle_url;
 use stdClass;
 
 /**
@@ -85,18 +86,31 @@ class report_helper {
             echo \html_writer::tag(
                 'div',
                 $options,
-                ['class' => 'tertiary-navigation full-width-bottom-border ms-0 d-flex', 'id' => 'tertiary-navigation']);
+                ['class' => 'tertiary-navigation full-width-bottom-border ml-0 d-flex', 'id' => 'tertiary-navigation']);
         } else {
             echo $OUTPUT->heading($pluginname, 2, 'mb-3');
         }
     }
 
     /**
+     * Save the last selected report in the session
+     *
      * @deprecated since Moodle 4.0
+     * @param int $id The course id
+     * @param moodle_url $url The moodle url
+     * @return void
      */
-    #[\core\attribute\deprecated(null, reason: 'It is no longer used', since: '4.0', final: true)]
-    public static function save_selected_report() {
-        \core\deprecation::emit_deprecation_if_present([self::class, __FUNCTION__]);
+    public static function save_selected_report(int $id, moodle_url $url):void {
+        global $USER;
+
+        debugging('save_selected_report() has been deprecated because it is no longer used and will be '.
+            'removed in future versions of Moodle', DEBUG_DEVELOPER);
+
+        // Last selected report.
+        if (!isset($USER->course_last_report)) {
+            $USER->course_last_report = [];
+        }
+        $USER->course_last_report[$id] = $url;
     }
 
     /**
@@ -119,17 +133,18 @@ class report_helper {
         $course = get_course($courseid);
         $groupmode = groups_get_course_groupmode($course);
         $groupid = $filterparams->groupid ?? 0;
-        $context = context_course::instance($courseid);
-        if ($groupid || ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $context))) {
+        if ($groupmode == SEPARATEGROUPS || $groupid) {
+            $context = context_course::instance($courseid);
             if ($groupid) {
                 $cgroups = [(int) $groupid];
             } else {
-                $cgroups = groups_get_all_groups($courseid, $USER->id);
+                $cgroups = groups_get_all_groups(
+                    $courseid,
+                    has_capability('moodle/site:accessallgroups', $context) ? 0 : $USER->id
+                );
                 $cgroups = array_keys($cgroups);
-                // If you are not in any groups you can still view users without group. This may
-                // perform poorly because it will list all users in the entire system who do not
-                // belong to a group on this course.
-                if (empty($cgroups)) {
+                // If that's the case, limit the users to be in the groups only, defined by the filter.
+                if (has_capability('moodle/site:accessallgroups', $context) || empty($cgroups)) {
                     $cgroups[] = USERSWITHOUTGROUP;
                 }
             }
@@ -156,7 +171,6 @@ class report_helper {
         } else {
             $joins[] = "userid = :userid";
             $params['userid'] = $filterparams->userid;
-            $useridfilter[$filterparams->userid] = true;
         }
 
         return [

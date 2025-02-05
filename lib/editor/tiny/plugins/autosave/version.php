@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2024100700;
-$plugin->requires  = 2024100100;
+$plugin->version   = 2023100901;
+$plugin->requires  = 2023100400;
 $plugin->component = 'tiny_autosave';

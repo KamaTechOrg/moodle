@@ -44,7 +44,6 @@ class notes_test extends core_reportbuilder_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once("{$CFG->dirroot}/notes/lib.php");
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -137,7 +136,7 @@ class notes_test extends core_reportbuilder_testcase {
      *
      * @return array[]
      */
-    public static function datasource_filters_provider(): array {
+    public function datasource_filters_provider(): array {
         return [
             'Filter content' => ['content', 'Cool', 'note:content', [
                 'note:content_operator' => text::IS_EQUAL_TO,

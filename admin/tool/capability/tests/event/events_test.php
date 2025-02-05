@@ -37,7 +37,6 @@ class events_test extends \advanced_testcase {
      * Setup testcase.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->setAdminUser();
         $this->resetAfterTest();
     }
@@ -45,7 +44,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the report viewed event.
      */
-    public function test_report_viewed(): void {
+    public function test_report_viewed() {
         $event = \tool_capability\event\report_viewed::create();
 
         // Trigger and capture the event.

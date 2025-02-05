@@ -35,7 +35,6 @@ class manager_test extends provider_testcase {
 
     public function setUp(): void {
         global $CFG;
-        parent::setUp();
         $this->resetAfterTest();
 
         // Pretend the system is enabled.
@@ -44,7 +43,7 @@ class manager_test extends provider_testcase {
         $CFG->messageinbound_domain = 'example.com';
     }
 
-    public function test_tidy_old_verification_failures(): void {
+    public function test_tidy_old_verification_failures() {
         global $DB;
 
         $now = time();

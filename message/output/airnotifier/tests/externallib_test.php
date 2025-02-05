@@ -42,13 +42,12 @@ class externallib_test extends externallib_advanced_testcase {
     protected function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot . '/message/output/airnotifier/externallib.php');
-        parent::setUp();
     }
 
     /**
      * Test is_system_configured
      */
-    public function test_is_system_configured(): void {
+    public function test_is_system_configured() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -74,7 +73,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test are_notification_preferences_configured
      */
-    public function test_are_notification_preferences_configured(): void {
+    public function test_are_notification_preferences_configured() {
 
         $this->resetAfterTest(true);
 
@@ -122,7 +121,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_user_devices
      */
-    public function test_get_user_devices(): void {
+    public function test_get_user_devices() {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/user/externallib.php');
 
@@ -151,7 +150,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_user_devices permissions
      */
-    public function test_get_user_devices_permissions(): void {
+    public function test_get_user_devices_permissions() {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/user/externallib.php');
 
@@ -168,7 +167,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test enable_device
      */
-    public function test_enable_device(): void {
+    public function test_enable_device() {
         global $USER, $DB;
 
         $this->resetAfterTest(true);

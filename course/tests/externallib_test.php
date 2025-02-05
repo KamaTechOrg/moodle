@@ -47,13 +47,12 @@ final class externallib_test extends externallib_advanced_testcase {
     protected function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot . '/course/externallib.php');
-        parent::setUp();
     }
 
     /**
      * Test create_categories
      */
-    public function test_create_categories(): void {
+    public function test_create_categories() {
 
         global $DB;
 
@@ -131,7 +130,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test delete categories
      */
-    public function test_delete_categories(): void {
+    public function test_delete_categories() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -174,7 +173,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get categories
      */
-    public function test_get_categories(): void {
+    public function test_get_categories() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -305,7 +304,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test update_categories
      */
-    public function test_update_categories(): void {
+    public function test_update_categories() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -368,7 +367,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test update_categories method for moving categories
      */
-    public function test_update_categories_moving(): void {
+    public function test_update_categories_moving() {
         $this->resetAfterTest();
 
         // Create data.
@@ -406,7 +405,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test create_courses numsections
      */
-    public function test_create_course_numsections(): void {
+    public function test_create_course_numsections() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -440,7 +439,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test create_courses
      */
-    public function test_create_courses(): void {
+    public function test_create_courses() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -677,7 +676,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test delete_courses
      */
-    public function test_delete_courses(): void {
+    public function test_delete_courses() {
         global $DB, $USER;
 
         $this->resetAfterTest(true);
@@ -737,7 +736,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_courses
      */
-    public function test_get_courses(): void {
+    public function test_get_courses () {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -892,55 +891,12 @@ final class externallib_test extends externallib_advanced_testcase {
             'value' => userdate(1580389200),
             'valueraw' => 1580389200,
         ], reset($course['customfields']));
-
-        // Set the multilang filter to apply to strings + reset filer caches.
-        filter_set_global_state('multilang', TEXTFILTER_ON);
-        filter_set_applies_to_strings('multilang', true);
-        \filter_manager::reset_caches();
-
-        // Let's create a custom field (number), and test the placeholders/multilang display.
-        /** @var core_customfield_generator $cfgenerator */
-        $cfgenerator = $this->getDataGenerator()->get_plugin_generator('core_customfield');
-        $numberfieldata = [
-            'categoryid' => $fieldcategory->get('id'),
-            'name' => 'Price',
-            'shortname' => 'price',
-            'type' => 'number',
-            'configdata' => [
-                'display' => '{value}',
-                'decimalplaces' => 2,
-            ],
-        ];
-
-        // Create a number custom field with default display template.
-        $numberfield = $cfgenerator->create_field($numberfieldata);
-        $cfgenerator->add_instance_data($numberfield, $newcourse->id, 15);
-
-        // Create a number custom field with multilang display template.
-        $numberfieldata['name'] = 'Price (multilang)';
-        $numberfieldata['shortname'] = 'pricemultilang';
-        $numberfieldata['configdata']['display'] = '<span lang="en" class="multilang">$ {value}</span>'
-            . '<span lang="es" class="multilang">€ {value}</span>';
-        $numberfield1 = $cfgenerator->create_field($numberfieldata);
-        $cfgenerator->add_instance_data($numberfield1, $newcourse->id, 20);
-
-        $courses = external_api::clean_returnvalue(
-            core_course_external::get_courses_returns(),
-            core_course_external::get_courses(['ids' => [$newcourse->id]])
-        );
-
-        $course = reset($courses);
-        $this->assertCount(3, $course['customfields']);
-
-        // Assert the received number custom fields display placeholders correctly with multilang filter when applied.
-        $this->assertEquals('15.00', $course['customfields'][1]['value']);
-        $this->assertEquals('$ 20.00', $course['customfields'][2]['value']);
     }
 
     /**
      * Test get_courses without capability
      */
-    public function test_get_courses_without_capability(): void {
+    public function test_get_courses_without_capability() {
         $this->resetAfterTest(true);
 
         $course1 = $this->getDataGenerator()->create_course();
@@ -966,7 +922,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test search_courses
      */
-    public function test_search_courses(): void {
+    public function test_search_courses () {
 
         global $DB;
 
@@ -1192,7 +1148,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents
      */
-    public function test_get_course_contents(): void {
+    public function test_get_course_contents() {
         global $CFG;
         $this->resetAfterTest(true);
 
@@ -1207,16 +1163,12 @@ final class externallib_test extends externallib_advanced_testcase {
             'showdate' => 1,
         ];
         $resource = self::getDataGenerator()->create_module('resource', $record);
-        $h5pactivity = self::getDataGenerator()->create_module('h5pactivity', ['course' => $course]);
 
         // We first run the test as admin.
         $this->setAdminUser();
         $sections = core_course_external::get_course_contents($course->id, array());
         // We need to execute the return values cleaning process to simulate the web service server.
         $sections = external_api::clean_returnvalue(core_course_external::get_course_contents_returns(), $sections);
-
-        $this->assertEmpty($sections[0]['component']);
-        $this->assertEmpty($sections[0]['itemid']);
 
         $modinfo = get_fast_modinfo($course);
         $testexecuted = 0;
@@ -1233,17 +1185,8 @@ final class externallib_test extends externallib_advanced_testcase {
                 // Afterlink for forums has been removed; it has been moved to the new activity badge content.
                 $this->assertEmpty($module['afterlink']);
                 $this->assertEquals('1 unread post', $module['activitybadge']['badgecontent']);
-                $this->assertEquals('bg-dark text-white', $module['activitybadge']['badgestyle']);
-                $this->assertEquals(
-                    plugin_supports(
-                        'mod',
-                        'forum',
-                        FEATURE_MOD_PURPOSE,
-                        MOD_PURPOSE_OTHER
-                    ), $module['purpose']
-                );
-                $this->assertFalse($module['branded']);
-                $this->assertStringContainsString('trackingtype', $module['customdata']);   // The customdata is JSON encoded.
+                $this->assertEquals('badge-dark', $module['activitybadge']['badgestyle']);
+
                 $testexecuted = $testexecuted + 2;
             } else if ($module['id'] == $labelcm->id and $module['modname'] == 'label') {
                 $cm = $modinfo->cms[$labelcm->id];
@@ -1254,55 +1197,17 @@ final class externallib_test extends externallib_advanced_testcase {
                 $this->assertEquals(context_module::instance($labelcm->id)->id, $module['contextid']);
                 $this->assertTrue($module['noviewlink']);
                 $this->assertNotEmpty($module['description']);  // Label always prints the description.
-                $this->assertEquals(
-                    plugin_supports(
-                        'mod',
-                        'label',
-                        FEATURE_MOD_PURPOSE,
-                        MOD_PURPOSE_OTHER
-                    ), $module['purpose']
-                );
-                $this->assertFalse($module['branded']);
                 $testexecuted = $testexecuted + 1;
             } else if ($module['id'] == $datacm->id and $module['modname'] == 'data') {
                 $this->assertStringContainsString('customcompletionrules', $module['customdata']);
                 $this->assertFalse($module['noviewlink']);
                 $this->assertArrayNotHasKey('description', $module);
-                $this->assertEquals(
-                    plugin_supports(
-                        'mod',
-                        'data',
-                        FEATURE_MOD_PURPOSE,
-                        MOD_PURPOSE_OTHER
-                    ), $module['purpose']
-                );
-                $this->assertFalse($module['branded']);
                 $testexecuted = $testexecuted + 1;
             } else if ($module['instance'] == $resource->id && $module['modname'] == 'resource') {
                 // Resources have both, afterlink for the size and the update date and activitybadge for the file type.
                 $this->assertStringContainsString('32 bytes', $module['afterlink']);
                 $this->assertEquals('TXT', $module['activitybadge']['badgecontent']);
                 $this->assertEquals('badge-none', $module['activitybadge']['badgestyle']);
-                $this->assertEquals(
-                    plugin_supports(
-                        'mod',
-                        'resource',
-                        FEATURE_MOD_PURPOSE,
-                        MOD_PURPOSE_OTHER
-                    ), $module['purpose']
-                );
-                $this->assertFalse($module['branded']);
-                $testexecuted = $testexecuted + 1;
-            } else if ($module['instance'] == $h5pactivity->id && $module['modname'] == 'h5pactivity') {
-                $this->assertEquals(
-                    plugin_supports(
-                        'mod',
-                        'h5pactivity',
-                        FEATURE_MOD_PURPOSE,
-                        MOD_PURPOSE_OTHER
-                    ), $module['purpose']
-                );
-                $this->assertTrue($module['branded']);
                 $testexecuted = $testexecuted + 1;
             }
         }
@@ -1316,10 +1221,10 @@ final class externallib_test extends externallib_advanced_testcase {
         $CFG->forum_allowforcedreadtracking = 0;    // Recover original value.
         forum_tp_count_forum_unread_posts($forumcm, $course, true);    // Reset static cache for further tests.
 
-        $this->assertEquals(7, $testexecuted);
+        $this->assertEquals(6, $testexecuted);
         $this->assertEquals(0, $sections[0]['section']);
 
-        $this->assertCount(8, $sections[0]['modules']);
+        $this->assertCount(7, $sections[0]['modules']);
         $this->assertCount(1, $sections[1]['modules']);
         $this->assertCount(1, $sections[2]['modules']);
         $this->assertCount(1, $sections[3]['modules']); // One module for the section with availability restrictions.
@@ -1345,7 +1250,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents as student
      */
-    public function test_get_course_contents_student(): void {
+    public function test_get_course_contents_student() {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -1393,7 +1298,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents excluding modules
      */
-    public function test_get_course_contents_excluding_modules(): void {
+    public function test_get_course_contents_excluding_modules() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1411,7 +1316,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents excluding contents
      */
-    public function test_get_course_contents_excluding_contents(): void {
+    public function test_get_course_contents_excluding_contents() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1435,7 +1340,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents filtering by section number
      */
-    public function test_get_course_contents_section_number(): void {
+    public function test_get_course_contents_section_number() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1453,7 +1358,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents filtering by cmid
      */
-    public function test_get_course_contents_cmid(): void {
+    public function test_get_course_contents_cmid() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1473,7 +1378,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents filtering by cmid and section
      */
-    public function test_get_course_contents_section_cmid(): void {
+    public function test_get_course_contents_section_cmid() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1495,7 +1400,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents filtering by modname
      */
-    public function test_get_course_contents_modname(): void {
+    public function test_get_course_contents_modname() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1514,7 +1419,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents filtering by modname
      */
-    public function test_get_course_contents_modid(): void {
+    public function test_get_course_contents_modid() {
         $this->resetAfterTest(true);
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1537,7 +1442,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents returns downloadcontent value.
      */
-    public function test_get_course_contents_downloadcontent(): void {
+    public function test_get_course_contents_downloadcontent() {
         $this->resetAfterTest();
 
         list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
@@ -1559,7 +1464,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get course contents completion manual
      */
-    public function test_get_course_contents_completion_manual(): void {
+    public function test_get_course_contents_completion_manual() {
         global $CFG;
         $this->resetAfterTest(true);
 
@@ -1585,7 +1490,6 @@ final class externallib_test extends externallib_advanced_testcase {
         $this->assertFalse($completiondata['isautomatic']);
         $this->assertFalse($completiondata['istrackeduser']);
         $this->assertTrue($completiondata['uservisible']);
-        $this->assertFalse($completiondata['isoverallcomplete']);
 
         // Set activity completed.
         core_completion_external::update_activity_completion_status_manually($forumcm->id, true);
@@ -1596,7 +1500,6 @@ final class externallib_test extends externallib_advanced_testcase {
         $result = external_api::clean_returnvalue(core_course_external::get_course_contents_returns(), $result);
 
         $this->assertEquals(COMPLETION_COMPLETE, $result[0]['modules'][0]["completiondata"]['state']);
-        $this->assertTrue($result[0]['modules'][0]["completiondata"]['isoverallcomplete']);
         $this->assertNotEmpty($result[0]['modules'][0]["completiondata"]['timecompleted']);
         $this->assertEmpty($result[0]['modules'][0]["completiondata"]['overrideby']);
 
@@ -1618,7 +1521,6 @@ final class externallib_test extends externallib_advanced_testcase {
         $this->assertFalse($completiondata['isautomatic']);
         $this->assertFalse($completiondata['istrackeduser']);
         $this->assertTrue($completiondata['uservisible']);
-        $this->assertFalse($completiondata['isoverallcomplete']);
 
         // Disable completion.
         $CFG->enablecompletion = 0;
@@ -1633,7 +1535,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get course contents completion auto
      */
-    public function test_get_course_contents_completion_auto(): void {
+    public function test_get_course_contents_completion_auto() {
         global $CFG;
         $this->resetAfterTest(true);
 
@@ -1669,13 +1571,12 @@ final class externallib_test extends externallib_advanced_testcase {
         $this->assertFalse($completiondata['istrackeduser']);
         $this->assertTrue($completiondata['uservisible']);
         $this->assertCount(1, $completiondata['details']);
-        $this->assertFalse($completiondata['isoverallcomplete']);
     }
 
     /**
      * Test mimetype is returned for resources with showtype set.
      */
-    public function test_get_course_contents_including_mimetype(): void {
+    public function test_get_course_contents_including_mimetype() {
         $this->resetAfterTest(true);
 
         $this->setAdminUser();
@@ -1697,7 +1598,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test contents info is returned.
      */
-    public function test_get_course_contents_contentsinfo(): void {
+    public function test_get_course_contents_contentsinfo() {
         global $USER;
 
         $this->resetAfterTest(true);
@@ -1775,7 +1676,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents when hidden sections are displayed.
      */
-    public function test_get_course_contents_hiddensections(): void {
+    public function test_get_course_contents_hiddensections() {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -1828,7 +1729,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get course contents dates.
      */
-    public function test_get_course_contents_dates(): void {
+    public function test_get_course_contents_dates() {
         $this->resetAfterTest(true);
 
         $this->setAdminUser();
@@ -1881,7 +1782,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_contents for courses with invalid course format.
      */
-    public function test_get_course_contents_invalid_format(): void {
+    public function test_get_course_contents_invalid_format() {
         global $DB;
         $this->resetAfterTest();
 
@@ -1896,57 +1797,9 @@ final class externallib_test extends externallib_advanced_testcase {
     }
 
     /**
-     * Test get_course_contents for courses with sub-sections.
-     *
-     * @covers ::get_course_contents
-     */
-    public function test_get_course_contents_subsections(): void {
-        global $DB, $PAGE;
-        $this->resetAfterTest();
-
-        list($course, $forumcm, $datacm, $pagecm, $labelcm, $urlcm) = $this->prepare_get_course_contents_test();
-
-        // Add subsection.
-        $manager = \core_plugin_manager::resolve_plugininfo_class('mod');
-        $manager::enable_plugin('subsection', 1);
-        $modsubsection = $this->getDataGenerator()->create_module('subsection', ['course' => $course->id, 'section' => 2]);
-
-        // This is needed until MDL-76728 is resolved.
-        $PAGE->set_url('/course/view.php', ['id' => $course->id]);
-
-        $result = core_course_external::get_course_contents($course->id);
-        $result = external_api::clean_returnvalue(core_course_external::get_course_contents_returns(), $result);
-
-        $this->assertCount(5, $result); // We have 4 original sections plus the one created by mod_subsection.
-
-        foreach ($result as $section) {
-
-            if ($section['section'] == 5) { // This is the new section created by modsubsection.
-                $this->assertEquals('mod_subsection', $section['component']);
-                $this->assertEquals($modsubsection->id, $section['itemid']);
-            } else {
-                $this->assertEmpty($section['component']);
-                $this->assertEmpty($section['itemid']);
-            }
-
-            if ($section['section'] == 2) { // This is the section where mod_subsection is.
-                foreach ($section['modules'] as $module) {
-                    if ($module['modname'] == 'subsection') {
-                        $this->assertNotEmpty($module['customdata']);
-                        $customdata = json_decode($module['customdata']);
-                        $lastsection = end($result);
-                        // Customdata contains the section id of the section created by the module.
-                        $this->assertEquals($lastsection['id'], $customdata->sectionid);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Test duplicate_course
      */
-    public function test_duplicate_course(): void {
+    public function test_duplicate_course() {
         $this->resetAfterTest(true);
 
         // Create one course with three modules.
@@ -1992,7 +1845,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test update_courses
      */
-    public function test_update_courses(): void {
+    public function test_update_courses() {
         global $DB, $CFG, $USER, $COURSE;
 
         // Get current $COURSE to be able to restore it later (defaults to $SITE). We need this
@@ -2294,7 +2147,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test delete course_module.
      */
-    public function test_delete_modules(): void {
+    public function test_delete_modules() {
         global $DB;
 
         // Ensure we reset the data after this test.
@@ -2394,7 +2247,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test import_course into an empty course
      */
-    public function test_import_course_empty(): void {
+    public function test_import_course_empty() {
         global $USER;
 
         $this->resetAfterTest(true);
@@ -2441,7 +2294,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test import_course into an filled course
      */
-    public function test_import_course_filled(): void {
+    public function test_import_course_filled() {
         global $USER;
 
         $this->resetAfterTest(true);
@@ -2492,7 +2345,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test import_course with only blocks set to backup
      */
-    public function test_import_course_blocksonly(): void {
+    public function test_import_course_blocksonly() {
         global $USER, $DB;
 
         $this->resetAfterTest(true);
@@ -2533,7 +2386,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test import_course into an filled course, deleting content.
      */
-    public function test_import_course_deletecontent(): void {
+    public function test_import_course_deletecontent() {
         global $USER;
         $this->resetAfterTest(true);
 
@@ -2581,7 +2434,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Ensure import_course handles incorrect deletecontent option correctly.
      */
-    public function test_import_course_invalid_deletecontent_option(): void {
+    public function test_import_course_invalid_deletecontent_option() {
         $this->resetAfterTest(true);
 
         $course1  = self::getDataGenerator()->create_course();
@@ -2596,7 +2449,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test view_course function
      */
-    public function test_view_course(): void {
+    public function test_view_course() {
 
         $this->resetAfterTest();
 
@@ -2633,7 +2486,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_module
      */
-    public function test_get_course_module(): void {
+    public function test_get_course_module() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -2750,7 +2603,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_course_module_by_instance
      */
-    public function test_get_course_module_by_instance(): void {
+    public function test_get_course_module_by_instance() {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -2823,7 +2676,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_user_navigation_options
      */
-    public function test_get_user_navigation_options(): void {
+    public function test_get_user_navigation_options() {
         global $USER;
 
         $this->resetAfterTest();
@@ -2877,7 +2730,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_user_administration_options
      */
-    public function test_get_user_administration_options(): void {
+    public function test_get_user_administration_options() {
         global $USER;
 
         $this->resetAfterTest();
@@ -2944,7 +2797,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_courses_by_fields
      */
-    public function test_get_courses_by_field(): void {
+    public function test_get_courses_by_field() {
         global $DB, $USER;
         $this->resetAfterTest(true);
 
@@ -2952,13 +2805,8 @@ final class externallib_test extends externallib_advanced_testcase {
 
         $category1 = self::getDataGenerator()->create_category(array('name' => 'Cat 1'));
         $category2 = self::getDataGenerator()->create_category(array('parent' => $category1->id));
-        $numsections = 4;
-        $course1 = self::getDataGenerator()->create_course([
-            'category' => $category1->id,
-            'shortname' => 'c1',
-            'format' => 'topics',
-            'numsections' => $numsections,
-        ]);
+        $course1 = self::getDataGenerator()->create_course(
+            array('category' => $category1->id, 'shortname' => 'c1', 'format' => 'topics'));
 
         $fieldcategory = self::getDataGenerator()->create_custom_field_category(['name' => 'Other fields']);
         $customfield = ['shortname' => 'test', 'name' => 'Custom field', 'type' => 'text',
@@ -2976,7 +2824,7 @@ final class externallib_test extends externallib_advanced_testcase {
             'filepath' => '/',
         ];
         $fs = get_file_storage();
-        $fs->create_file_from_pathname($filerecord, self::get_fixture_path('core_course', 'image.jpg'));
+        $fs->create_file_from_pathname($filerecord, __DIR__ . '/fixtures/image.jpg');
         $course2 = self::getDataGenerator()->create_course([
             'visible' => 0,
             'category' => $category2->id,
@@ -3164,20 +3012,6 @@ final class externallib_test extends externallib_advanced_testcase {
         $result = core_course_external::get_courses_by_field('idnumber', 'x');
         $result = external_api::clean_returnvalue(core_course_external::get_courses_by_field_returns(), $result);
         $this->assertCount(0, $result['courses']);
-
-        $existingsections = $DB->get_records('course_sections', ['course' => $course1->id]);
-        $this->assertEquals(count($existingsections), $numsections + 1); // Includes generic section.
-
-        $section = array_shift($existingsections);
-        $result = core_course_external::get_courses_by_field('sectionid', $section->id);
-        $result = external_api::clean_returnvalue(core_course_external::get_courses_by_field_returns(), $result);
-        $this->assertCount(1, $result['courses']);
-        $this->assertEquals($course1->id, $result['courses'][0]['id']);
-
-        // Wrong section.
-        $result = core_course_external::get_courses_by_field('sectionid', 1234);
-        $result = external_api::clean_returnvalue(core_course_external::get_courses_by_field_returns(), $result);
-        $this->assertCount(0, $result['courses']);
     }
 
     /**
@@ -3223,59 +3057,12 @@ final class externallib_test extends externallib_advanced_testcase {
         ], reset($course['customfields']));
     }
 
-    /**
-     * Test retrieving courses by field returning communication tools.
-     * @covers \core_course_external::get_courses_by_field
-     */
-    public function test_get_courses_by_field_communication(): void {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
-        // Create communication tool in course.
-        set_config('enablecommunicationsubsystem', 1);
-
-        $roomname = 'Course chat';
-        $telegramlink = 'https://my.telegram.chat/120';
-        $record = [
-            'selectedcommunication' => 'communication_customlink',
-            'communicationroomname' => $roomname,
-            'customlinkurl' => $telegramlink,
-        ];
-        $course = $this->getDataGenerator()->create_course($record);
-        $communication = \core_communication\api::load_by_instance(
-            context: \core\context\course::instance($course->id),
-            component: 'core_course',
-            instancetype: 'coursecommunication',
-            instanceid: $course->id,
-        );
-
-        $result = external_api::clean_returnvalue(
-            core_course_external::get_courses_by_field_returns(),
-            core_course_external::get_courses_by_field('id', $course->id)
-        );
-
-        $course = reset($result['courses']);
-        $this->assertEquals($roomname, $course['communicationroomname']);
-        $this->assertEquals($telegramlink, $course['communicationroomurl']);
-
-        // Course without comm tools.
-        $course = $this->getDataGenerator()->create_course();
-        $result = external_api::clean_returnvalue(
-            core_course_external::get_courses_by_field_returns(),
-            core_course_external::get_courses_by_field('id', $course->id)
-        );
-
-        $course = reset($result['courses']);
-        $this->assertNotContains('communicationroomname', $course);
-        $this->assertNotContains('communicationroomurl', $course);
-    }
-
-    public function test_get_courses_by_field_invalid_field(): void {
+    public function test_get_courses_by_field_invalid_field() {
         $this->expectException('invalid_parameter_exception');
         $result = core_course_external::get_courses_by_field('zyx', 'x');
     }
 
-    public function test_get_courses_by_field_invalid_courses(): void {
+    public function test_get_courses_by_field_invalid_courses() {
         $result = core_course_external::get_courses_by_field('id', '-1');
         $result = external_api::clean_returnvalue(core_course_external::get_courses_by_field_returns(), $result);
         $this->assertCount(0, $result['courses']);
@@ -3284,7 +3071,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get_courses_by_field_invalid_theme_and_lang
      */
-    public function test_get_courses_by_field_invalid_theme_and_lang(): void {
+    public function test_get_courses_by_field_invalid_theme_and_lang() {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
@@ -3296,31 +3083,15 @@ final class externallib_test extends externallib_advanced_testcase {
     }
 
 
-    public function test_check_updates(): void {
+    public function test_check_updates() {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
         // Create different types of activities.
         $course  = self::getDataGenerator()->create_course();
-        $tocreate = [
-            'assign',
-            'book',
-            'choice',
-            'folder',
-            'forum',
-            'glossary',
-            'imscp',
-            'label',
-            'lesson',
-            'lti',
-            'page',
-            'quiz',
-            'resource',
-            'scorm',
-            'url',
-            'wiki',
-        ];
+        $tocreate = array('assign', 'book', 'choice', 'folder', 'forum', 'glossary', 'imscp', 'label', 'lti', 'page', 'quiz',
+                            'resource', 'scorm', 'survey', 'url', 'wiki');
 
         $modules = array();
         foreach ($tocreate as $modname) {
@@ -3819,7 +3590,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the get_enrolled_courses_by_timeline_classification function.
      *
-     * @dataProvider get_get_enrolled_courses_by_timeline_classification_test_cases
+     * @dataProvider get_get_enrolled_courses_by_timeline_classification_test_cases()
      * @param array $coursedata Courses to create
      * @param string $classification Timeline classification
      * @param int $limit Maximum number of results
@@ -3840,7 +3611,7 @@ final class externallib_test extends externallib_advanced_testcase {
         $expectednextoffset,
         $expectedexception = null,
         $searchvalue = null
-    ): void {
+    ) {
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
 
@@ -3890,7 +3661,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the get_recent_courses function.
      */
-    public function test_get_recent_courses(): void {
+    public function test_get_recent_courses() {
         global $USER, $DB;
 
         $this->resetAfterTest();
@@ -3972,7 +3743,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test get enrolled users by cmid function.
      */
-    public function test_get_enrolled_users_by_cmid(): void {
+    public function test_get_enrolled_users_by_cmid() {
         global $PAGE;
         $this->resetAfterTest(true);
 
@@ -4072,7 +3843,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Verify that content items can be added to user favourites.
      */
-    public function test_add_content_item_to_user_favourites(): void {
+    public function test_add_content_item_to_user_favourites() {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -4110,7 +3881,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Verify that content items can be removed from user favourites.
      */
-    public function test_remove_content_item_from_user_favourites(): void {
+    public function test_remove_content_item_from_user_favourites() {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -4150,7 +3921,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the web service returning course content items for inclusion in activity choosers, etc.
      */
-    public function test_get_course_content_items(): void {
+    public function test_get_course_content_items() {
         $this->resetAfterTest();
 
         $course  = self::getDataGenerator()->create_course();
@@ -4176,7 +3947,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test the web service returning course content items, specifically in case where the user can't manage activities.
      */
-    public function test_get_course_content_items_no_permission_to_manage(): void {
+    public function test_get_course_content_items_no_permission_to_manage() {
         $this->resetAfterTest();
 
         $course  = self::getDataGenerator()->create_course();
@@ -4193,7 +3964,7 @@ final class externallib_test extends externallib_advanced_testcase {
     /**
      * Test toggling the recommendation of an activity.
      */
-    public function test_toggle_activity_recommendation(): void {
+    public function test_toggle_activity_recommendation() {
         global $CFG;
 
         $this->resetAfterTest();

@@ -7,11 +7,6 @@
     font-size: 120%;
 }
 
-.path-mod-workshop .collapsibleregioncaption img {
-    max-width: 16px;
-    max-height: 16px;
-}
-
 .path-mod-workshop div.singlebutton {
     text-align: center;
     margin: 0.75em auto;
@@ -372,9 +367,8 @@
     background-position: top left;
     background-repeat: no-repeat;
     list-style-type: none;
-    min-height: 20px;
-    margin: .2em 0;
-    background-size: 15px;
+    min-height: 16px;
+    margin: .3em 0;
 }
 
 .dir-rtl.path-mod-workshop .userplan dd.phasetasks li {
@@ -681,6 +675,11 @@
 
 .path-mod-workshop .lastmodified {
     line-height: 1.0em;
+}
+
+.path-mod-workshop .nothingfound {
+    font-size: 150%;
+    color: #ff4500;
 }
 
 .path-mod-workshop .workshop-risk-dataloss {

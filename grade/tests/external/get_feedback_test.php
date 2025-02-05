@@ -30,19 +30,19 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @copyright  2023 Kevin Percy <kevin.percy@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 4.2
- * @covers \core_grades\external\get_feedback
  */
 class get_feedback_test extends \externallib_advanced_testcase {
 
     /**
      * Test get_feedback.
      *
+     * @covers ::get_feedback
      * @dataProvider get_feedback_provider
      * @param string|null $feedback The feedback text added for the grade item.
      * @param array $expected The expected feedback data.
      * @return void
      */
-    public function test_get_feedback(?string $feedback, array $expected): void {
+    public function test_get_feedback(?string $feedback, array $expected) {
 
         $this->resetAfterTest(true);
         $course = $this->getDataGenerator()->create_course();
@@ -77,7 +77,7 @@ class get_feedback_test extends \externallib_advanced_testcase {
      *
      * @return array
      */
-    public static function get_feedback_provider(): array {
+    public function get_feedback_provider(): array {
         return [
             'Return when feedback is set.' => [
                 'Test feedback',
@@ -103,6 +103,7 @@ class get_feedback_test extends \externallib_advanced_testcase {
     /**
      * Test get_feedback with invalid requests.
      *
+     * @covers ::get_feedback
      * @dataProvider get_feedback_invalid_request_provider
      * @param string $loggeduserrole The role of the logged user.
      * @param bool $feedbacknotincourse Whether to request a feedback for a grade item which is not a part of the course.
@@ -110,7 +111,7 @@ class get_feedback_test extends \externallib_advanced_testcase {
      * @return void
      */
     public function test_get_feedback_invalid_request(string $loggeduserrole, bool $feedbacknotincourse,
-            array $expectedexception = []): void {
+            array $expectedexception = []) {
 
         $this->resetAfterTest(true);
         // Create a course with a user and a grade item.
@@ -153,7 +154,7 @@ class get_feedback_test extends \externallib_advanced_testcase {
      *
      * @return array
      */
-    public static function get_feedback_invalid_request_provider(): array {
+    public function get_feedback_invalid_request_provider(): array {
         return [
             'Logged user does not have permissions to view feedback.' => [
                 'user',

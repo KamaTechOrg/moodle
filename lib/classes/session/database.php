@@ -14,9 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Database based session handler.
+ *
+ * @package    core
+ * @copyright  2013 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core\session;
 
-use SessionHandlerInterface;
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Database based session handler.
@@ -25,9 +33,8 @@ use SessionHandlerInterface;
  * @copyright  2013 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class database extends handler implements SessionHandlerInterface {
-
-    /** @var int $record session record */
+class database extends handler {
+    /** @var \stdClass $record session record */
     protected $recordid = null;
 
     /** @var \moodle_database $database session database */
@@ -55,48 +62,54 @@ class database extends handler implements SessionHandlerInterface {
         }
     }
 
-    #[\Override]
+    /**
+     * Init session handler.
+     */
     public function init() {
         if (!$this->database->session_lock_supported()) {
             throw new exception('sessionhandlerproblem', 'error', '', null, 'Database does not support session locking');
         }
 
-        $result = session_set_save_handler($this);
+        $result = session_set_save_handler(array($this, 'handler_open'),
+            array($this, 'handler_close'),
+            array($this, 'handler_read'),
+            array($this, 'handler_write'),
+            array($this, 'handler_destroy'),
+            array($this, 'handler_gc'));
         if (!$result) {
             throw new exception('dbsessionhandlerproblem', 'error');
         }
     }
 
-    #[\Override]
+    /**
+     * Check the backend contains data for this session id.
+     *
+     * Note: this is intended to be called from manager::session_exists() only.
+     *
+     * @param string $sid
+     * @return bool true if session found.
+     */
     public function session_exists($sid) {
         // It was already checked in the calling code that the record in sessions table exists.
         return true;
     }
 
-    #[\Override]
-    public function destroy(string $id): bool {
-        if (!$session = $this->database->get_record('sessions', ['sid' => $id], 'id, sid')) {
-            if ($id == session_id()) {
-                $this->recordid = null;
-                $this->lasthash = null;
-            }
-            return true;
-        }
+    /**
+     * Kill all active sessions, the core sessions table is
+     * purged afterwards.
+     */
+    public function kill_all_sessions() {
+        // Nothing to do, the sessions table is cleared from core.
+        return;
+    }
 
-        if ($this->recordid && ($session->id == $this->recordid)) {
-            try {
-                $this->database->release_session_lock($this->recordid);
-            } catch (\Exception $ex) {
-                // Log and ignore any problems.
-                mtrace('Failed to release session lock: '.$ex->getMessage());
-            }
-            $this->recordid = null;
-            $this->lasthash = null;
-        }
-
-        $this->database->delete_records('sessions', ['id' => $session->id]);
-
-        return true;
+    /**
+     * Kill one session, the session record is removed afterwards.
+     * @param string $sid
+     */
+    public function kill_session($sid) {
+        // Nothing to do, the sessions table is purged afterwards.
+        return;
     }
 
     /**
@@ -104,11 +117,11 @@ class database extends handler implements SessionHandlerInterface {
      *
      * {@see http://php.net/manual/en/function.session-set-save-handler.php}
      *
-     * @param string $path
-     * @param string $name
+     * @param string $save_path
+     * @param string $session_name
      * @return bool success
      */
-    public function open(string $path, string $name): bool {
+    public function handler_open($save_path, $session_name) {
         // Note: we use the already open database.
         return true;
     }
@@ -120,7 +133,7 @@ class database extends handler implements SessionHandlerInterface {
      *
      * @return bool success
      */
-    public function close(): bool {
+    public function handler_close() {
         if ($this->recordid) {
             try {
                 $this->database->release_session_lock($this->recordid);
@@ -139,11 +152,11 @@ class database extends handler implements SessionHandlerInterface {
      * {@see http://php.net/manual/en/function.session-set-save-handler.php}
      *
      * @param string $sid
-     * @return string|false
+     * @return string
      */
-    public function read(string $sid): string|false {
+    public function handler_read($sid) {
         try {
-            if (!$record = $this->database->get_record('sessions', ['sid' => $sid])) {
+            if (!$record = $this->database->get_record('sessions', array('sid'=>$sid), 'id')) {
                 // Let's cheat and skip locking if this is the first access,
                 // do not create the record here, let the manager do it after session init.
                 $this->failed = false;
@@ -208,18 +221,17 @@ class database extends handler implements SessionHandlerInterface {
      * NOTE: Do not write to output or throw any exceptions!
      *       Hopefully the next page is going to display nice error or it recovers...
      *
-     * @param string $id
-     * @param string $data
+     * @param string $sid
+     * @param string $session_data
      * @return bool success
      */
-    public function write(string $id, string $data): bool {
+    public function handler_write($sid, $session_data) {
         if ($this->failed) {
             // Do not write anything back - we failed to start the session properly.
             return false;
         }
 
-        // There might be some binary mess.
-        $sessdata = base64_encode($data);
+        $sessdata = base64_encode($session_data); // There might be some binary mess :-(
         $hash = sha1($sessdata);
 
         if ($hash === $this->lasthash) {
@@ -228,20 +240,66 @@ class database extends handler implements SessionHandlerInterface {
 
         try {
             if ($this->recordid) {
-                $this->database->set_field('sessions', 'sessdata', $sessdata, ['id' => $this->recordid]);
+                $this->database->set_field('sessions', 'sessdata', $sessdata, array('id'=>$this->recordid));
             } else {
                 // This happens in the first request when session record was just created in manager.
-                $this->database->set_field('sessions', 'sessdata', $sessdata, ['sid' => $id]);
+                $this->database->set_field('sessions', 'sessdata', $sessdata, array('sid'=>$sid));
             }
         } catch (\Exception $ex) {
             // Do not rethrow exceptions here, this should not happen.
-            // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
-            error_log(
-                "Unknown exception when writing database session data : {$id} - " . $ex->getMessage(),
-            );
+            error_log('Unknown exception when writing database session data : '.$sid.' - '.$ex->getMessage());
         }
 
         return true;
     }
 
+    /**
+     * Destroy session handler.
+     *
+     * {@see http://php.net/manual/en/function.session-set-save-handler.php}
+     *
+     * @param string $sid
+     * @return bool success
+     */
+    public function handler_destroy($sid) {
+        if (!$session = $this->database->get_record('sessions', array('sid'=>$sid), 'id, sid')) {
+            if ($sid == session_id()) {
+                $this->recordid = null;
+                $this->lasthash = null;
+            }
+            return true;
+        }
+
+        if ($this->recordid and $session->id == $this->recordid) {
+            try {
+                $this->database->release_session_lock($this->recordid);
+            } catch (\Exception $ex) {
+                // Ignore problems.
+            }
+            $this->recordid = null;
+            $this->lasthash = null;
+        }
+
+        $this->database->delete_records('sessions', array('id'=>$session->id));
+
+        return true;
+    }
+
+    /**
+     * GC session handler.
+     *
+     * {@see http://php.net/manual/en/function.session-set-save-handler.php}
+     *
+     * @param int $ignored_maxlifetime moodle uses special timeout rules
+     * @return bool success
+     */
+    public function handler_gc($ignored_maxlifetime) {
+        // This should do something only if cron is not running properly...
+        if (!$stalelifetime = ini_get('session.gc_maxlifetime')) {
+            return true;
+        }
+        $params = array('purgebefore' => (time() - $stalelifetime));
+        $this->database->delete_records_select('sessions', 'userid = 0 AND timemodified < :purgebefore', $params);
+        return true;
+    }
 }

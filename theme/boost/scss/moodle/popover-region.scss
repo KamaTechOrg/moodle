@@ -178,6 +178,11 @@ $content-header-footer-height: $region-header-height + $region-footer-height;
         .icon {
             font-weight: bolder;
         }
+        .notification-image {
+            .icon {
+                font-weight: 400;
+            }
+        }
     }
 }
 

@@ -53,7 +53,6 @@ class provider_test extends \core_privacy\tests\provider_testcase {
      * Setup function. Will create a user.
      */
     protected function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
@@ -72,7 +71,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test getting the context for the user ID related to this plugin.
      */
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
         global $CFG;
 
         // When there are no policies or agreements context list is empty.
@@ -107,7 +106,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test getting the user IDs within the context related to this plugin.
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
         global $CFG;
         $component = 'tool_policy';
 
@@ -186,7 +185,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertCount(0, $userlist);
     }
 
-    public function test_export_agreements(): void {
+    public function test_export_agreements() {
         global $CFG;
 
         $otheruser = $this->getDataGenerator()->create_user();
@@ -247,7 +246,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertEquals(strip_tags($policy2->get('content')), strip_tags($datauser->content));
     }
 
-    public function test_export_agreements_for_other(): void {
+    public function test_export_agreements_for_other() {
         global $CFG;
 
         $managercontext = \context_user::instance($this->manager->id);
@@ -306,7 +305,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertEquals(strip_tags($policy2->get('content')), strip_tags($datauser->content));
     }
 
-    public function test_export_created_policies(): void {
+    public function test_export_created_policies() {
         global $CFG;
 
         // Create policies and agree to them as manager.

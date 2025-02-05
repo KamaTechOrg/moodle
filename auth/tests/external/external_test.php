@@ -55,7 +55,6 @@ class external_test extends externallib_advanced_testcase {
      */
     public function setUp(): void {
         global $CFG;
-        parent::setUp();
 
         $this->resetAfterTest(true);
         $CFG->registerauth = 'email';
@@ -76,7 +75,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test confirm_user
      */
-    public function test_confirm_user(): void {
+    public function test_confirm_user() {
         global $DB;
 
         $username = 'pepe';
@@ -116,7 +115,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test age digital consent not enabled.
      */
-    public function test_age_digital_consent_verification_is_not_enabled(): void {
+    public function test_age_digital_consent_verification_is_not_enabled() {
         global $CFG;
 
         $CFG->agedigitalconsentverification = 0;
@@ -129,7 +128,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test age digital consent is enabled.
      */
-    public function test_age_digital_consent_verification_is_enabled(): void {
+    public function test_age_digital_consent_verification_is_enabled() {
         global $CFG;
 
         $CFG->agedigitalconsentverification = 1;
@@ -142,7 +141,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test resend_confirmation_email.
      */
-    public function test_resend_confirmation_email(): void {
+    public function test_resend_confirmation_email() {
         global $DB;
 
         $username = 'pepe';
@@ -168,7 +167,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test resend_confirmation_email invalid username.
      */
-    public function test_resend_confirmation_email_invalid_username(): void {
+    public function test_resend_confirmation_email_invalid_username() {
 
         $username = 'pepe';
         $password = 'abcdefAª.ªª!!3';
@@ -191,7 +190,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test resend_confirmation_email invalid password.
      */
-    public function test_resend_confirmation_email_invalid_password(): void {
+    public function test_resend_confirmation_email_invalid_password() {
 
         $username = 'pepe';
         $password = 'abcdefAª.ªª!!3';
@@ -214,7 +213,7 @@ class external_test extends externallib_advanced_testcase {
     /**
      * Test resend_confirmation_email already confirmed user.
      */
-    public function test_resend_confirmation_email_already_confirmed_user(): void {
+    public function test_resend_confirmation_email_already_confirmed_user() {
         global $DB;
 
         $username = 'pepe';

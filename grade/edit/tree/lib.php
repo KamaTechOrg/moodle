@@ -101,10 +101,10 @@ class grade_edit_tree {
 
         $object = $element['object'];
         $eid    = $element['eid'];
-        $name = grade_helper::get_element_header($element, true, false, true, false, true);
-        $icon = grade_helper::get_element_icon($element);
-        $type = grade_helper::get_element_type_string($element);
-        $strippedname = grade_helper::get_element_header($element, false, false, false);
+        $name = $this->gtree->get_element_header($element, true, false, true, false, true);
+        $icon = $this->gtree->get_element_icon($element);
+        $type = $this->gtree->get_element_type_string($element);
+        $strippedname = $this->gtree->get_element_header($element, false, false, false);
         $is_category_item = false;
         if ($element['type'] == 'categoryitem' || $element['type'] == 'courseitem') {
             $is_category_item = true;
@@ -370,7 +370,7 @@ class grade_edit_tree {
                             'moveaction' => $moveaction,
                             'itemtype' => $object->itemtype,
                             'icon' => $icon,
-                            'type' => $type,
+                            'type' => $type
                         ]
                     );
                 }
@@ -748,7 +748,7 @@ abstract class grade_edit_tree_column {
         }
     }
 
-    abstract public function get_header_cell();
+    public abstract function get_header_cell();
 
     public function get_category_cell($category, $levelclass, $params) {
         $cell = clone($this->categorycell);
@@ -865,7 +865,7 @@ class grade_edit_tree_column_name extends grade_edit_tree_column {
             throw new Exception('Array key (name, level or element) missing from 2nd param of grade_edit_tree_column_name::get_item_cell($item, $params)');
         }
 
-        $itemicon = \html_writer::div($params['icon'], 'me-1');
+        $itemicon = \html_writer::div($params['icon'], 'mr-1');
         $itemtype = \html_writer::span($params['type'], 'd-block text-uppercase small dimmed_text');
         $itemtitle = html_writer::div($params['name'], 'rowtitle');
         $content = \html_writer::div($itemtype . $itemtitle);

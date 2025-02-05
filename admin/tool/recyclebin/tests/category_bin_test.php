@@ -39,7 +39,6 @@ class category_bin_test extends \advanced_testcase {
      * Setup for each test.
      */
     protected function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -52,7 +51,7 @@ class category_bin_test extends \advanced_testcase {
     /**
      * Check that our hook is called when a course is deleted.
      */
-    public function test_pre_course_delete_hook(): void {
+    public function test_pre_course_delete_hook() {
         global $DB;
 
         // This simulates a temporary course being cleaned up by a course restore.
@@ -77,7 +76,7 @@ class category_bin_test extends \advanced_testcase {
     /**
      * Check that our hook is called when a course is deleted.
      */
-    public function test_pre_course_category_delete_hook(): void {
+    public function test_pre_course_category_delete_hook() {
         global $DB;
 
         // Should have nothing in the recycle bin.
@@ -99,7 +98,7 @@ class category_bin_test extends \advanced_testcase {
     /**
      * Test that we can restore recycle bin items.
      */
-    public function test_restore(): void {
+    public function test_restore() {
         global $DB;
 
         delete_course($this->course, false);
@@ -117,7 +116,7 @@ class category_bin_test extends \advanced_testcase {
     /**
      * Test that we can delete recycle bin items.
      */
-    public function test_delete(): void {
+    public function test_delete() {
         global $DB;
 
         delete_course($this->course, false);
@@ -135,7 +134,7 @@ class category_bin_test extends \advanced_testcase {
     /**
      * Test the cleanup task.
      */
-    public function test_cleanup_task(): void {
+    public function test_cleanup_task() {
         global $DB;
 
         // Set the expiry to 1 week.
@@ -176,7 +175,7 @@ class category_bin_test extends \advanced_testcase {
      * Used to verify that recycle bin is immune to various settings. Provides plugin, name, value for
      * direct usage with set_config()
      */
-    public static function recycle_bin_settings_provider(): array {
+    public function recycle_bin_settings_provider() {
         return [
             'backup/backup_auto_storage moodle' => [[
                 (object)['plugin' => 'backup', 'name' => 'backup_auto_storage', 'value' => 0],
@@ -205,7 +204,7 @@ class category_bin_test extends \advanced_testcase {
      * @dataProvider recycle_bin_settings_provider
      * @param array $settings array of plugin, name, value stdClass().
      */
-    public function test_course_restore_with_userdata($settings): void {
+    public function test_course_restore_with_userdata($settings) {
         global $DB;
 
         // Force configuration changes from provider.
@@ -249,7 +248,7 @@ class category_bin_test extends \advanced_testcase {
      * @dataProvider recycle_bin_settings_provider
      * @param array $settings array of plugin, name, value stdClass().
      */
-    public function test_course_restore_without_userdata($settings): void {
+    public function test_course_restore_without_userdata($settings) {
         global $DB;
 
         // Force configuration changes from provider.

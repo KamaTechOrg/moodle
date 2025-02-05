@@ -47,7 +47,6 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
      * Setup required for all tests.
      */
     protected function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest(true);
         $this->imsplugin = enrol_get_plugin('imsenterprise');
         $this->set_test_config();
@@ -274,7 +273,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * Add new users, courses and enrolments
      */
-    public function test_users_are_enroled_on_courses(): void {
+    public function test_users_are_enroled_on_courses() {
         global $DB;
 
         $prevnuserenrolments = $DB->count_records('user_enrolments');
@@ -302,7 +301,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * Check that the unenrol actions are completely ignored when "unenrol" setting is disabled
      */
-    public function test_no_action_when_unenrol_disabled(): void {
+    public function test_no_action_when_unenrol_disabled() {
         global $DB;
 
         $prevnuserenrolments = $DB->count_records('user_enrolments');
@@ -361,7 +360,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * When a user has existing roles and enrolments, they are unaffected by IMS instructions for other courses
      */
-    public function test_existing_roles_and_enrolments_unaffected(): void {
+    public function test_existing_roles_and_enrolments_unaffected() {
 
         global $DB;
 
@@ -446,7 +445,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * Enrolments alone are disabled
      */
-    public function test_disable_enrolments_only(): void {
+    public function test_disable_enrolments_only() {
 
         global $DB;
 
@@ -523,7 +522,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * Enrolments are disabled but retained) and roles removed
      */
-    public function test_disable_enrolments_and_remove_roles(): void {
+    public function test_disable_enrolments_and_remove_roles() {
 
         global $DB;
 
@@ -601,7 +600,7 @@ class imsenterprise_unenrol_test extends \advanced_testcase {
     /**
      * Enrolments and roles are deleted for specified user
      */
-    public function test_delete_roles_and_enrolments(): void {
+    public function test_delete_roles_and_enrolments() {
 
         global $DB;
 

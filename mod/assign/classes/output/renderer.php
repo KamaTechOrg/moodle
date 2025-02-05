@@ -675,8 +675,7 @@ class renderer extends \plugin_renderer_base {
             $this->add_table_row_tuple($t, $cell1content, $cell2content);
         }
 
-        // If multiple attempts are allowed.
-        if ($status->maxattempts > 1 || $status->maxattempts == ASSIGN_UNLIMITED_ATTEMPTS) {
+        if ($status->attemptreopenmethod != ASSIGN_ATTEMPT_REOPEN_METHOD_NONE) {
             $currentattempt = 1;
             if (!$status->teamsubmissionenabled) {
                 if ($status->submission) {
@@ -1060,7 +1059,7 @@ class renderer extends \plugin_renderer_base {
             $link = '';
             if ($showviewlink) {
                 $previewstr = get_string('viewsubmission', 'assign');
-                $icon = $this->output->pix_icon('t/viewdetails', $previewstr);
+                $icon = $this->output->pix_icon('t/preview', $previewstr);
 
                 $expandstr = get_string('viewfull', 'assign');
                 $expandicon = $this->output->pix_icon('t/switch_plus', $expandstr);
@@ -1131,7 +1130,24 @@ class renderer extends \plugin_renderer_base {
         $o .= $this->output->box_start('boxaligncenter gradingtable position-relative');
 
         $this->page->requires->js_init_call('M.mod_assign.init_grading_table', array());
-        $o .= $this->flexible_table($table, $table->get_rows_per_page(), false);
+        $this->page->requires->string_for_js('nousersselected', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmgrantextension', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmlock', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmremovesubmission', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmreverttodraft', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmunlock', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmaddattempt', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmdownloadselected', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmsetmarkingworkflowstate', 'assign');
+        $this->page->requires->string_for_js('batchoperationconfirmsetmarkingallocation', 'assign');
+        $this->page->requires->string_for_js('editaction', 'assign');
+        foreach ($table->plugingradingbatchoperations as $plugin => $operations) {
+            foreach ($operations as $operation => $description) {
+                $this->page->requires->string_for_js('batchoperationconfirm' . $operation,
+                                                     'assignfeedback_' . $plugin);
+            }
+        }
+        $o .= $this->flexible_table($table, $table->get_rows_per_page(), true);
         $o .= $this->output->box_end();
 
         return $o;
@@ -1160,7 +1176,7 @@ class renderer extends \plugin_renderer_base {
             $link = '';
             if ($showviewlink) {
                 $previewstr = get_string('viewfeedback', 'assign');
-                $icon = $this->output->pix_icon('t/viewdetails', $previewstr);
+                $icon = $this->output->pix_icon('t/preview', $previewstr);
 
                 $expandstr = get_string('viewfull', 'assign');
                 $expandicon = $this->output->pix_icon('t/switch_plus', $expandstr);

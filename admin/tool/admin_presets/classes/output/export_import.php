@@ -43,13 +43,11 @@ class export_import implements renderable, templatable {
     public function export_for_template(renderer_base $output): stdClass {
         $context = new stdClass();
         $exportlink = new \moodle_url('/admin/tool/admin_presets/index.php', ['action' => 'export']);
-        $exportbutton = new \single_button($exportlink, get_string('actionexport', 'tool_admin_presets'), 'get',
-            \single_button::BUTTON_PRIMARY);
+        $exportbutton = new \single_button($exportlink, get_string('actionexport', 'tool_admin_presets'), 'get');
         $context->export = $exportbutton->export_for_template($output);
 
         $importlink = new \moodle_url('/admin/tool/admin_presets/index.php', ['action' => 'import']);
-        $importbutton = new \single_button($importlink, get_string('actionimport', 'tool_admin_presets'), 'get',
-            \single_button::BUTTON_PRIMARY);
+        $importbutton = new \single_button($importlink, get_string('actionimport', 'tool_admin_presets'), 'get');
         $context->import = $importbutton->export_for_template($output);
         return $context;
     }

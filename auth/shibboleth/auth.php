@@ -298,11 +298,11 @@ class auth_plugin_shibboleth extends auth_plugin_base {
             return $result;
         }
 
-        $context = \core\context\system::instance();
+        $url = new moodle_url('/auth/shibboleth/index.php');
 
         if ($config->auth_logo) {
             $iconurl = moodle_url::make_pluginfile_url(
-                $context->id,
+                context_system::instance()->id,
                 'auth_shibboleth',
                 'logo',
                 null,
@@ -312,12 +312,7 @@ class auth_plugin_shibboleth extends auth_plugin_base {
             $iconurl = null;
         }
 
-        $result[] = [
-            'url' => new moodle_url('/auth/shibboleth/index.php'),
-            'iconurl' => $iconurl,
-            'name' => format_string($config->login_name ?? '', options: ['context' => $context]),
-        ];
-
+        $result[] = ['url' => $url, 'iconurl' => $iconurl, 'name' => $config->login_name];
         return $result;
     }
 }

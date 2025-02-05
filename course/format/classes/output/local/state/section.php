@@ -83,15 +83,12 @@ class section implements renderable {
             'rawtitle' => $section->name,
             'cmlist' => [],
             'visible' => !empty($section->visible),
-            'sectionurl' => course_get_url($course, $section->section, ['navigation' => true])->out(),
+            'sectionurl' => course_get_url($course, $section->section)->out(),
             'current' => $format->is_section_current($section),
             'indexcollapsed' => $indexcollapsed,
             'contentcollapsed' => $contentcollapsed,
             'hasrestrictions' => $this->get_has_restrictions(),
             'bulkeditable' => $this->is_bulk_editable(),
-            'component' => $section->component,
-            'itemid' => $section->itemid,
-            'parentsectionid' => $section->get_component_instance()?->get_parent_section()?->id,
         ];
 
         if (empty($modinfo->sections[$section->section])) {

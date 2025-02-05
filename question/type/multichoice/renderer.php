@@ -44,24 +44,24 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
      *
      * @return string HTML output.
      */
-    abstract protected function after_choices(question_attempt $qa, question_display_options $options);
+    protected abstract function after_choices(question_attempt $qa, question_display_options $options);
 
-    abstract protected function get_input_type();
+    protected abstract function get_input_type();
 
-    abstract protected function get_input_name(question_attempt $qa, $value);
+    protected abstract function get_input_name(question_attempt $qa, $value);
 
-    abstract protected function get_input_value($value);
+    protected abstract function get_input_value($value);
 
-    abstract protected function get_input_id(question_attempt $qa, $value);
+    protected abstract function get_input_id(question_attempt $qa, $value);
 
     /**
      * Whether a choice should be considered right, wrong or partially right.
      * @param question_answer $ans representing one of the choices.
      * @return float 1.0, 0.0 or something in between, respectively.
      */
-    abstract protected function is_right(question_answer $ans);
+    protected abstract function is_right(question_answer $ans);
 
-    abstract protected function prompt();
+    protected abstract function prompt();
 
     public function formulation_and_controls(question_attempt $qa,
             question_display_options $options) {
@@ -110,7 +110,7 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
                         $this->number_in_style($value, $question->answernumbering), 'answernumber');
             }
             $choicetext = $question->format_text($ans->answer, $ans->answerformat, $qa, 'question', 'answer', $ansid);
-            $choice = html_writer::div($choicetext, 'flex-fill ms-1');
+            $choice = html_writer::div($choicetext, 'flex-fill ml-1');
 
             $radiobuttons[] = $hidden . html_writer::empty_tag('input', $inputattributes) .
                     html_writer::div($choicenumber . $choice, 'd-flex w-auto', [
@@ -135,7 +135,7 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
                 // Font awesome icons are actually characters(text) with special glyphs,
                 // so the icons cannot be aligned correctly even if the parent div wrapper is using align-items: flex-start.
                 // To make the Font awesome icons follow align-items: flex-start, we need to wrap them inside a span tag.
-                $feedbackimg[] = html_writer::span($this->feedback_image($this->is_right($ans)), 'ms-1');
+                $feedbackimg[] = html_writer::span($this->feedback_image($this->is_right($ans)), 'ml-1');
                 $class .= ' ' . $this->feedback_class($this->is_right($ans));
             } else {
                 $feedbackimg[] = '';
@@ -333,7 +333,7 @@ class qtype_multichoice_single_renderer extends qtype_multichoice_renderer_base 
         // Adds an hidden radio that will be checked to give the impression the choice has been cleared.
         $clearchoiceradio = html_writer::empty_tag('input', $clearchoiceradioattrs);
         $clearchoice = html_writer::link('#', get_string('clearchoice', 'qtype_multichoice'),
-            ['tabindex' => $linktabindex, 'role' => 'button', 'class' => 'btn btn-link ms-3 mt-n1']);
+            ['tabindex' => $linktabindex, 'role' => 'button', 'class' => 'btn btn-link ml-3 mt-n1']);
         $clearchoiceradio .= html_writer::label($clearchoice, $clearchoiceid);
 
         // Now wrap the radio and label inside a div.

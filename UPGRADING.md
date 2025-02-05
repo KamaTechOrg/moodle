@@ -6,12 +6,15 @@ More detailed information on key changes can be found in the [Developer update n
 
 The format of this change log follows the advice given at [Keep a CHANGELOG](https://keepachangelog.com).
 
-## 4.5.1
+## 5.0dev
 
 ### core
 
 #### Added
 
+- The `core/sortable_list` Javascript module now emits native events, removing the jQuery dependency from calling code that wants to listen for the events. Backwards compatibility with existing code using jQuery is preserved
+
+  For more information see [MDL-72293](https://tracker.moodle.org/browse/MDL-72293)
 - `\core\output\activity_header` now uses the `is_title_allowed()` method when setting the title in the constructor.
 
   This method has been improved to give priority to the 'notitle' option in the theme config for the current page layout, over the top-level option in the theme.
@@ -20,9 +23,28 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
   This prevents display of the title in all layouts except `secure`.
 
   For more information see [MDL-75610](https://tracker.moodle.org/browse/MDL-75610)
+- A new core\ip_utils::normalize_internet_address() method is created to sanitize an IP address, a range of IP addresses, a domain name or a wildcard domain matching pattern.
+
+  Moodle previously allowed entries such as 192.168. or .moodle.org for certain variables (eg: $CFG->proxybypass). Since MDL-74289, these formats are no longer allowed. This method converts this informations into an authorized format. For example, 192.168. becomes 192.168.0.0/16 and .moodle.org becomes *.moodle.org.
+
+  Also a new core\ip_utils::normalize_internet_address_list() method is created. Based on core\ip_utils::normalize_internet_address(), this method normalizes a string containing a series of Internet addresses.
+
+  For more information see [MDL-79121](https://tracker.moodle.org/browse/MDL-79121)
+- The deprecated implementation in course/view.php, which uses the extern_server_course function to handle routing between internal and external courses, can be improved by utilizing the Hook API. This enhancement is essential for a project involving multiple universities, as the Hook API provides a more generalized and flexible approach to route users to external courses from within other plugins.
+
+  For more information see [MDL-83473](https://tracker.moodle.org/browse/MDL-83473)
+- New generic collapsable section output added. Use core\output\local\collapsable_section or include the core/local/collapsable_section template to use it. See the full documentation in the component library.
+
+  For more information see [MDL-83869](https://tracker.moodle.org/browse/MDL-83869)
 
 #### Changed
 
+- The {user_preferences}.value database field is now TEXT instead of CHAR. This means that any queries with a condition on this field in a WHERE or JOIN statement will need updating to use `$DB->sql_compare_text()`. See the `$newusers` query in `\core\task\send_new_users_password_task::execute` for an example.
+
+  For more information see [MDL-46739](https://tracker.moodle.org/browse/MDL-46739)
+- The `core_renderer::tag_list` function now has a new parameter named `displaylink`. When `displaylink` is set to `true`, the tag name will be displayed as a clickable hyperlink. Otherwise, it will be rendered as plain text.
+
+  For more information see [MDL-75075](https://tracker.moodle.org/browse/MDL-75075)
 - All uses of the following PHPUnit methods have been removed as these methods are
   deprecated upstream without direct replacement:
 
@@ -33,14 +55,179 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
   Any plugin using these methods must update their uses.
 
   For more information see [MDL-81308](https://tracker.moodle.org/browse/MDL-81308)
+- The Moodle subplugins.json format has been updated to accept a new `subplugintypes` object.
+
+  This should have the same format as the current `plugintypes` format, except that the paths should be relative to the _plugin_ root instead of the Moodle document root.
+
+  Both options can co-exist, but if both are present they must be kept in-sync.
+
+  ```json
+  {
+      "subplugintypes": {
+          "tiny": "plugins"
+      },
+      "plugintypes": {
+          "tiny": "lib/editor/tiny/plugins"
+      }
+  }
+  ```
+
+  For more information see [MDL-83705](https://tracker.moodle.org/browse/MDL-83705)
+- The behat/gherkin has been updated to 4.11.0 which introduces a breaking change where backslashes in feature files need to be escaped.
+
+  For more information see [MDL-83848](https://tracker.moodle.org/browse/MDL-83848)
+- The following test classes have been moved into autoloadable locations:
+
+  | Old location | New classname |
+  | --- | --- |
+  | `\core\tests\route_testcase` | `\core\tests\router\route_testcase` |
+  | `\core\router\mocking_route_loader` | `\core\tests\router\mocking_route_loader` |
+
+  For more information see [MDL-83968](https://tracker.moodle.org/browse/MDL-83968)
+
+#### Deprecated
+
+- The methods `want_read_slave` and `perf_get_reads_slave` in `lib/dml/moodle_database.php` have been deprecated in favour of renamed versions that substitute `slave` for `replica`.
+
+  For more information see [MDL-71257](https://tracker.moodle.org/browse/MDL-71257)
+- The trait `moodle_read_slave_trait` has been deprecated in favour of a functionally identical version called `moodle_read_replica_trait`. The renamed trait substitutes the terminology of `slave` with `replica`, and `master` with `primary`.
+
+  For more information see [MDL-71257](https://tracker.moodle.org/browse/MDL-71257)
+- question_make_default_categories()
+
+  No longer creates a default category in either CONTEXT_SYSTEM, CONTEXT_COURSE, or CONTEXT_COURSECAT.
+  Superceded by question_get_default_category which can optionally create one if it does not exist.
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- question_delete_course()
+
+  No replacement. Course contexts no longer hold question categories.
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- question_delete_course_category()
+
+  Course category contexts no longer hold question categories.
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- The 'core_renderer::sr_text()' function has been deprecated, use 'core_renderer::visually_hidden_text()' instead.
+
+  For more information see [MDL-81825](https://tracker.moodle.org/browse/MDL-81825)
+
+#### Removed
+
+- moodle_process_email() has been deprecated with the removal of the unused and non-functioning admin/process_email.php.
+
+  For more information see [MDL-61232](https://tracker.moodle.org/browse/MDL-61232)
+- The method `site_registration_form::add_select_with_email()` has been finally deprecated and will now throw an exception if called.
+
+  For more information see [MDL-71472](https://tracker.moodle.org/browse/MDL-71472)
+- Final deprecation of methods `task_base::is_blocking` and `task_base::set_blocking`.
+
+  For more information see [MDL-81509](https://tracker.moodle.org/browse/MDL-81509)
+- Oracle support has been removed in LMS, with the exception of report builder which will be handled in a separate issue (MDL-80173).
+
+  For more information see [MDL-83172](https://tracker.moodle.org/browse/MDL-83172)
+- Support for `subplugins.php` files has been removed. All subplugin metadata must be created in a `subplugins.json` file.
+
+  For more information see [MDL-83703](https://tracker.moodle.org/browse/MDL-83703)
+- set_alignment(), set_constraint() and do_not_enhance() functions have been fully removed from action_menu class.
+
+  For more information see [MDL-83765](https://tracker.moodle.org/browse/MDL-83765)
+
+### core_adminpresets
+
+#### Removed
+
+- Remove chat and survey from Adminpresets.
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+
+### core_ai
+
+#### Deprecated
+
+- The ai_provider_management_table has been refactored to inherit from flexible_table instead of plugin_management_table. As a result the methods get_plugintype and get_action_url are now unused and have been deprecated in the class.
+
+  For more information see [MDL-82922](https://tracker.moodle.org/browse/MDL-82922)
+
+### core_analytics
+
+#### Removed
+
+- Remove chat and survey from core_analytics.
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+
+### core_backup
+
+#### Removed
+
+- Remove all MODE_HUB related code.
+
+  For more information see [MDL-66873](https://tracker.moodle.org/browse/MDL-66873)
+
+### core_completion
+
+#### Added
+
+- The method `count_modules_completed` now delegate the logic to count the completed modules to the DBMS improving the performance of the method.
+
+  For more information see [MDL-83917](https://tracker.moodle.org/browse/MDL-83917)
+
+### core_course
+
+#### Deprecated
+
+- The core_course_edit_module and core_course_edit_section external functions are now deprecated. Use core_courseformat_update_course instead
+
+  For more information see [MDL-82342](https://tracker.moodle.org/browse/MDL-82342)
+- The core_course_get_module external function is now deprecated. Use fragment API using component core_courseformat and fragment cmitem instead
+
+  For more information see [MDL-82342](https://tracker.moodle.org/browse/MDL-82342)
+- The course_format_ajax_support function is now deprecated. Use course_get_format($course)->supports_ajax() instead.
+
+  For more information see [MDL-82351](https://tracker.moodle.org/browse/MDL-82351)
+- course_get_cm_edit_actions is now deprecated. Formats should extend core_courseformat\output\local\content\cm\controlmenu instead.
+
+  For more information see [MDL-83527](https://tracker.moodle.org/browse/MDL-83527)
 
 ### core_courseformat
 
 #### Added
 
+- A new core_courseformat\base::get_generic_section_name method is created to know how a specific format name the sections. This method is also used by plugins to know how to name the sections instead of using using a direct get_string on "sectionnamer" that may not exists.
+
+  For more information see [MDL-82349](https://tracker.moodle.org/browse/MDL-82349)
+- A new course/format/update.php url is added as a non-ajax alternative to the core_courseformat_course_update webservice
+
+  For more information see [MDL-82767](https://tracker.moodle.org/browse/MDL-82767)
 - Add core_courseformat\base::invalidate_all_session_caches to reset course editor cache for all users when course is changed. This method can be used as an alternative to core_courseformat\base::session_cache_reset for resetting the cache for the current user  in case the change in the course should be reflected for all users.
 
   For more information see [MDL-83185](https://tracker.moodle.org/browse/MDL-83185)
+
+#### Changed
+
+- From now on, deleting an activity without Ajax will be consistent with deleting an activity using Ajax. This ensures that all activity deletions will use the recycle bin and avoid code duplication. If your format uses the old non-Ajax method to bypass the recycle bin it won't work anymore as the non-Ajax deletions are now handled in course/format/update.php.
+
+  For more information see [MDL-82767](https://tracker.moodle.org/browse/MDL-82767)
+
+#### Deprecated
+
+- All course editing YUI modules are now deprecated. All course formats not using components must migrate before 6.0. Follow the devdocs guide https://moodledev.io/docs/5.0/apis/plugintypes/format/migration to know how to proceed.
+
+  For more information see [MDL-82341](https://tracker.moodle.org/browse/MDL-82341)
+- The core_courseformat\base::get_non_ajax_cm_action_url is now deprecated. Use get_update_url instead.
+
+  For more information see [MDL-82767](https://tracker.moodle.org/browse/MDL-82767)
+- Many get actions from course/view.php and course/mod.php are now deprecated. Use the new course/format/update.php instead to replace all direct edit urls  in your code. The affected actions are: indent, duplicate, hide, show, stealth, delete, groupmode and marker (highlight). The course/format/updates.php uses the same parameters as the core_courseformat_course_update webservice
+
+  For more information see [MDL-82767](https://tracker.moodle.org/browse/MDL-82767)
+- Deprecate the use of element ID selectors in favor of querySelector for Reactive component initialisation. We will use '#id' instead of 'id' for example.
+
+  For more information see [MDL-83339](https://tracker.moodle.org/browse/MDL-83339)
+- Using arrays to define course menu items is deprecated. All course formats that extend the section or activity control menus (format_NAME\output\courseformat\content\section\controlmenu or format_NAME\output\courseformat\cm\section\controlmenu) should return standard action_menu_link objects instead.
+
+  For more information see [MDL-83527](https://tracker.moodle.org/browse/MDL-83527)
 
 ### core_enrol
 
@@ -60,18 +247,197 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
 
   For more information see [MDL-83641](https://tracker.moodle.org/browse/MDL-83641)
 
+### core_grades
+
+#### Removed
+
+- Final deprecation of
+    grade_structure::get_element_type_string(),
+    grade_structure::get_element_header(),
+    grade_structure::get_element_icon(),
+    grade_structure::get_activity_link()
+
+  For more information see [MDL-79907](https://tracker.moodle.org/browse/MDL-79907)
+
+### core_question
+
+#### Added
+
+- The `get_bulk_actions()` method on the base `plugin_features_base` class has been changed to allow a qbank view object to be passed through. This is nullable and therefore optional for qbank plugins which don't need to do so.
+
+  For more information see [MDL-79281](https://tracker.moodle.org/browse/MDL-79281)
+
+#### Changed
+
+- The definition of the abstract `core_question\local\bank\condition` class has changed to make it clearer which methods are required  in child classes.
+  The `get_filter_class` method is no longer declared as abstract, and will return `null` by default to use the base  `core/datafilter/filtertype` class. If you have defined this method to return `null` in your own class, it will continue to work, but it is no longer necessary.
+  `build_query_from_filter` and `get_condition_key` are now declared as abstract, since all filter condition classes must define these  (as well as existing abstract methods) to function. Again, exsiting child classes will continue to work if they did before, as they  already needed these methods.
+
+  For more information see [MDL-83859](https://tracker.moodle.org/browse/MDL-83859)
+
+#### Deprecated
+
+- question_type::generate_test
+
+  No replacement, not used anywhere in core.
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- Deprecated method `mod_quiz\question\bank\qbank_helper::get_version_options` in favour of `core_question\local\bank\version_options::get_version_options` so that the method is in core rather than a module, and can safely be used from anywhere as required.
+
+  For more information see [MDL-77713](https://tracker.moodle.org/browse/MDL-77713)
+- Behat steps `behat_qbank_comment::i_should_see_on_the_column` and `behat_qbank_comment::i_click_on_the_row_containing` have been deprecated in favour of the new component named selectors, `qbank_comment > Comment count link` and `qbank_comment > Comment count text` which can be used with the standard `should exist` and `I click on` steps to replace the custom steps.
+
+  For more information see [MDL-79122](https://tracker.moodle.org/browse/MDL-79122)
+
 ### core_reportbuilder
+
+#### Added
+
+- New `get_deprecated_tables` method in base entity, to be overridden when an entity no longer uses a table (due to column/filter re-factoring, etc) in order to avoid breaking third-party reports
+
+  For more information see [MDL-78118](https://tracker.moodle.org/browse/MDL-78118)
+- The base aggregation class has a new `column_groupby` method, to be implemented in aggregation types to determime whether report tables should group by the fields of the aggregated column
+
+  For more information see [MDL-83361](https://tracker.moodle.org/browse/MDL-83361)
+- There is a new `date` aggregation type, that can be applied in custom and system reports
+
+  For more information see [MDL-83361](https://tracker.moodle.org/browse/MDL-83361)
+- The `core_reportbuilder_testcase` class has been moved to new autoloaded `core_reportbuilder\tests\core_reportbuilder_testcase` location, affected tests no longer have to manually require `/reportbuilder/tests/helpers.php`
+
+  For more information see [MDL-84000](https://tracker.moodle.org/browse/MDL-84000)
 
 #### Changed
 
 - The `get_active_conditions` method of the base report class has a new `$checkavailable` parameter to determine whether to check the returned conditions availability
 
   For more information see [MDL-82809](https://tracker.moodle.org/browse/MDL-82809)
+- Report table instances no longer populate the `countsql` and `countparams` class properties. Instead calling code can access `totalrows` to obtain the same value, rather than manually counting via the prior properties
+
+  For more information see [MDL-83718](https://tracker.moodle.org/browse/MDL-83718)
+
+#### Removed
+
+- The following deprecated report entity elements have been removed:
+
+  - `comment:context`
+  - `comment:contexturl`
+  - `enrolment:method` (plus enrolment formatter `enrolment_name` method)
+  - 'enrolment:role`
+  - `file:context`
+  - `file:contexturl`
+  - `instance:context` (tag)
+  - `instance:contexturl` (tag)
+
+  Use of the `context` table is also deprecated in the `file` and `instance` (tag) entities
+
+  For more information see [MDL-78118](https://tracker.moodle.org/browse/MDL-78118)
+- Final removal of support for `get_default_table_aliases` method. Entities must now implement `get_default_tables`, which is now abstract, to define the tables they use
+
+  For more information see [MDL-80430](https://tracker.moodle.org/browse/MDL-80430)
+
+### core_tag
+
+#### Changed
+
+- The `core_tag\taglist` class now includes a new property called `displaylink`, which has a default value of `true`. When `displaylink` is set to `true`, the tag name will be displayed as a clickable hyperlink. If `displaylink` is set to `false`, the tag name will be rendered as plain text instead.
+
+  For more information see [MDL-75075](https://tracker.moodle.org/browse/MDL-75075)
+
+### block_site_main_menu
+
+#### Removed
+
+- 'Activity' selector in site_main_menu block has been deleted.
+
+  For more information see [MDL-83733](https://tracker.moodle.org/browse/MDL-83733)
+
+### block_social_activities
+
+#### Removed
+
+- 'Activity' selector in social_activities block has been deleted.
+
+  For more information see [MDL-83733](https://tracker.moodle.org/browse/MDL-83733)
+
+### format_topics
+
+#### Deprecated
+
+- In format topics, the section controlmenu class deprecates the get_course_url method. This may affect formats extending the topics format and adding extra items to the section menu. Use $this->format->get_update_url instead.
+
+  For more information see [MDL-82767](https://tracker.moodle.org/browse/MDL-82767)
+- The get_highlight_control in the section controlmenu class is now deprecated. Use get_section_highlight_item instead
+
+  For more information see [MDL-83527](https://tracker.moodle.org/browse/MDL-83527)
+
+### gradereport_grader
+
+#### Deprecated
+
+- The method `gradereport_grader::get_right_avg_row()` has been finally deprecated and will now throw an exception if called.
+
+  For more information see [MDL-78890](https://tracker.moodle.org/browse/MDL-78890)
+
+### mod
+
+#### Removed
+
+- Remove mod_survey for Moodle 5.0
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+- Remove mod_chat from Moodle 5.0
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+
+### mod_assign
+
+#### Fixed
+
+- The unit test for the privacy provider has been marked as final.
+
+  A number of core tests had been incorrectly configured to extend this test
+  but should instead be extending `\mod_assign\tests\provider_testcase`.
+
+  Any community plugins extending the `\mod_assign\privacy\provider_test` test
+  class should be updated to extend `\mod_assign\tests\provider_testcase` instead.
+
+  For more information see [MDL-81520](https://tracker.moodle.org/browse/MDL-81520)
+
+### mod_feedback
+
+#### Added
+
+- Added new `mod_feedback_questions_reorder` external function
+
+  For more information see [MDL-81745](https://tracker.moodle.org/browse/MDL-81745)
+
+#### Deprecated
+
+- The 'mode' parameter has been deprecated from 'edit_template_action_bar' and 'templates_table' contructors.
+
+  For more information see [MDL-81744](https://tracker.moodle.org/browse/MDL-81744)
+
+#### Removed
+
+- The 'use_template' template has been removed as it is not needed anymore.
+
+  For more information see [MDL-81744](https://tracker.moodle.org/browse/MDL-81744)
+
+### mod_h5pactivity
+
+#### Changed
+
+- The external function get_user_attempts now returns the total number of attempts.
+
+  For more information see [MDL-82775](https://tracker.moodle.org/browse/MDL-82775)
 
 ### mod_quiz
 
 #### Changed
 
+- The `quiz_question_tostring` method now includes a new boolean parameter, `displaytaglink`. This parameter specifies whether the tag name in the question bank should be displayed as a clickable hyperlink (`true`) or as plain text (`false`).
+
+  For more information see [MDL-75075](https://tracker.moodle.org/browse/MDL-75075)
 - The `\mod_quiz\attempt_walkthrough_from_csv_test` unit test has been marked as final and should not be extended by other tests.
 
   All shared functionality has been moved to a new autoloadable test-case:
@@ -81,6 +447,106 @@ The format of this change log follows the advice given at [Keep a CHANGELOG](htt
   Both the existing instance property and the new static method can co-exist.
 
   For more information see [MDL-81521](https://tracker.moodle.org/browse/MDL-81521)
+
+### qbank_bulkmove
+
+#### Deprecated
+
+- qbank_bulkmove/helper::get_displaydata
+
+  Superceded by a modal and webservice, see qbank_bulkmove/modal_question_bank_bulkmove and core_question_external\move_questions
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- qbank_bulkmove\output\renderer::render_bulk_move_form
+
+  Superceded by qbank_bulkmove\output\bulk_move
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+
+### theme_boost
+
+#### Changed
+
+- From now on, themes can customise the activity icon colours using simple CSS variables. The new variables are $activity-icon-administration-bg, $activity-icon-assessment-bg, $activity-icon-collaboration-bg, $activity-icon-communication-bg, $activity-icon-content-bg, $activity-icon-interactivecontent-bg. All previous `$activity-icon-*-filter` elements can be removed, as they are no longer in use.
+
+  For more information see [MDL-83725](https://tracker.moodle.org/browse/MDL-83725)
+
+#### Removed
+
+- Remove chat and survey styles. Important note: the styles have been moved to the plugins as CSS files (and not SCSS) so themes might now need to override the mod_chat and mod_survey styles specifically as css does not have any definition for primary, gray and other colors accessible in the original scss version.
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+
+### tool_admin_presets
+
+#### Deprecated
+
+- behat_admin_presets::following_in_the_should_download_between_and_bytes is deprecated. Use: the following element should download a file that:
+
+  For more information see [MDL-83035](https://tracker.moodle.org/browse/MDL-83035)
+
+### tool_behat
+
+#### Added
+
+- New Behat step `\behat_general::the_url_should_match()` has been added to allow checking the current URL. You can use it to check whether a user has been redirected to the expected location.
+  e.g. `And the url should match "/mod/forum/view\.php\?id=[0-9]+"`
+
+  For more information see [MDL-83617](https://tracker.moodle.org/browse/MDL-83617)
+
+### tool_brickfield
+
+#### Deprecated
+
+- tool_brickfield\local\areas\core_question\answerbase::find_system_areas
+
+  No replacement. System context no longer a valid context to assign a question category
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+- tool_brickfield\local\areas\core_question\base::find_system_areas
+
+  No replacement. System context no longer a valid context to assign a question category
+
+  For more information see [MDL-71378](https://tracker.moodle.org/browse/MDL-71378)
+
+#### Removed
+
+- Remove chat and survey support from tool_brickfield.
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
+
+### tool_lp
+
+#### Deprecated
+
+- behat_tool_lp_data_generators::the_following_lp_exist is deprecated. Use the following "core_competency > [competency|framework|plan...]" exist:
+
+  For more information see [MDL-82866](https://tracker.moodle.org/browse/MDL-82866)
+
+### tool_mfa
+
+#### Added
+
+- The new factor management table uses `plugin_management_table`, so not only the functions that changed, but the file needs to be moved from `admin/tool/mfa/classes/local/admin_setting_managemfa.php` to `admin/tool/mfa/classes/table/admin_setting_managemfa.php`
+
+  For more information see [MDL-83516](https://tracker.moodle.org/browse/MDL-83516)
+- Introduce the new language string `settings:shortdescription`, which is mandatory for each factor.
+
+  For more information see [MDL-83516](https://tracker.moodle.org/browse/MDL-83516)
+
+#### Deprecated
+
+- The two language strings in the tool_mfa plugin, namely `inputrequired` and `setuprequired`, are deprecated.
+
+  For more information see [MDL-83516](https://tracker.moodle.org/browse/MDL-83516)
+
+### tool_mobile
+
+#### Removed
+
+- Remove chat and survey support from tool_mobile.
+
+  For more information see [MDL-82457](https://tracker.moodle.org/browse/MDL-82457)
 
 ## 4.5
 

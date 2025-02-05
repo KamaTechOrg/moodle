@@ -38,10 +38,7 @@ if (!$plugin) {
 }
 
 require_login($course);
-
-if (!has_any_capability(['enrol/' . $type . ':config', 'moodle/course:editcoursewelcomemessage'], $context)) {
-    throw new \moodle_exception('nopermissiontoaccesspage', 'error');
-}
+require_capability('enrol/' . $type . ':config', $context);
 
 $url = new moodle_url('/enrol/editinstance.php', ['courseid' => $course->id, 'id' => $instanceid, 'type' => $type]);
 $PAGE->set_url($url);

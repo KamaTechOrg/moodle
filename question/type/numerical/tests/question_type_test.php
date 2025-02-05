@@ -43,13 +43,11 @@ class question_type_test extends \advanced_testcase {
     protected $qtype;
 
     protected function setUp(): void {
-        parent::setUp();
         $this->qtype = new qtype_numerical();
     }
 
     protected function tearDown(): void {
         $this->qtype = null;
-        parent::tearDown();
     }
 
     protected function get_test_question_data() {
@@ -82,20 +80,20 @@ class question_type_test extends \advanced_testcase {
         return $q;
     }
 
-    public function test_name(): void {
+    public function test_name() {
         $this->assertEquals($this->qtype->name(), 'numerical');
     }
 
-    public function test_can_analyse_responses(): void {
+    public function test_can_analyse_responses() {
         $this->assertTrue($this->qtype->can_analyse_responses());
     }
 
-    public function test_get_random_guess_score(): void {
+    public function test_get_random_guess_score() {
         $q = $this->get_test_question_data();
         $this->assertEquals(0.1, $this->qtype->get_random_guess_score($q));
     }
 
-    public function test_get_possible_responses(): void {
+    public function test_get_possible_responses() {
         $q = $this->get_test_question_data();
 
         $this->assertEquals(array(
@@ -107,7 +105,7 @@ class question_type_test extends \advanced_testcase {
         ), $this->qtype->get_possible_responses($q));
     }
 
-    public function test_get_possible_responses_no_star(): void {
+    public function test_get_possible_responses_no_star() {
         $q = $this->get_test_question_data();
         unset($q->options->answers[14]);
 
@@ -121,7 +119,7 @@ class question_type_test extends \advanced_testcase {
         ), $this->qtype->get_possible_responses($q));
     }
 
-    public function test_question_saving_pi(): void {
+    public function test_question_saving_pi() {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
@@ -167,7 +165,7 @@ class question_type_test extends \advanced_testcase {
         }
     }
 
-    public function test_is_valid_number(): void {
+    public function test_is_valid_number() {
         $this->assertTrue(qtype_numerical::is_valid_number('1,001'));
         $this->assertTrue(qtype_numerical::is_valid_number('1.001'));
         $this->assertTrue(qtype_numerical::is_valid_number('1'));

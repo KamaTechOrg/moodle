@@ -40,13 +40,12 @@ class role_external_test extends \externallib_advanced_testcase {
     protected function setUp(): void {
         global $CFG;
         require_once($CFG->dirroot . '/enrol/externallib.php');
-        parent::setUp();
     }
 
     /**
      * Test assign_roles
      */
-    public function test_assign_roles(): void {
+    public function test_assign_roles() {
         global $USER;
 
         $this->resetAfterTest(true);
@@ -95,7 +94,7 @@ class role_external_test extends \externallib_advanced_testcase {
     /**
      * Test unassign_roles
      */
-    public function test_unassign_roles(): void {
+    public function test_unassign_roles() {
         global $USER;
 
         $this->resetAfterTest(true);

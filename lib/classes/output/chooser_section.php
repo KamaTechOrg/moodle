@@ -23,9 +23,13 @@
  */
 
 namespace core\output;
+defined('MOODLE_INTERNAL') || die();
 
 use lang_string;
+use renderer_base;
+use renderable;
 use stdClass;
+use templatable;
 
 /**
  * The chooser_section renderable class.
@@ -35,6 +39,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class chooser_section implements renderable, templatable {
+
     /** @var string $id An identifier for the section. */
     public $id;
     /** @var lang_string $label The label of the section. */
@@ -65,9 +70,10 @@ class chooser_section implements renderable, templatable {
         $data = new stdClass();
         $data->id = $this->id;
         $data->label = (string) $this->label;
-        $data->items = array_map(function ($item) use ($output) {
+        $data->items = array_map(function($item) use ($output) {
             return $item->export_for_template($output);
         }, array_values($this->items));
         return $data;
     }
+
 }

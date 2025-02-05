@@ -32,7 +32,6 @@ use core_reportbuilder\local\report\filter;
 use html_writer;
 use lang_string;
 use stdClass;
-use theme_config;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -51,16 +50,16 @@ require_once($CFG->dirroot . '/course/lib.php');
 class course extends base {
 
     /**
-     * Database tables that this entity uses
+     * Database tables that this entity uses and their default aliases.
      *
-     * @return string[]
+     * @return array
      */
-    protected function get_default_tables(): array {
+    protected function get_default_table_aliases(): array {
         return [
-            'course',
-            'context',
-            'tag_instance',
-            'tag',
+            'course' => 'c',
+            'context' => 'cctx',
+            'tag_instance' => 'cti',
+            'tag' => 'ct',
         ];
     }
 
@@ -74,27 +73,30 @@ class course extends base {
     }
 
     /**
-     * Initialise the entity
+     * Get custom fields helper
+     *
+     * @return custom_fields
+     */
+    protected function get_custom_fields(): custom_fields {
+        $customfields = new custom_fields($this->get_table_alias('course') . '.id', $this->get_entity_name(),
+            'core_course', 'course');
+        $customfields->add_joins($this->get_joins());
+        return $customfields;
+    }
+
+    /**
+     * Initialise the entity, adding all course and custom course fields
      *
      * @return base
      */
     public function initialise(): base {
-        $tablealias = $this->get_table_alias('course');
-
-        $customfields = (new custom_fields(
-            "{$tablealias}.id",
-            $this->get_entity_name(),
-            'core_course',
-            'course',
-        ))
-            ->add_joins($this->get_joins());
+        $customfields = $this->get_custom_fields();
 
         $columns = array_merge($this->get_all_columns(), $customfields->get_columns());
         foreach ($columns as $column) {
             $this->add_column($column);
         }
 
-        // All the filters defined by the entity can also be used as conditions.
         $filters = array_merge($this->get_all_filters(), $customfields->get_filters());
         foreach ($filters as $filter) {
             $this
@@ -138,11 +140,9 @@ class course extends base {
             'groupmodeforce' => new lang_string('groupmodeforce', 'group'),
             'lang' => new lang_string('forcelanguage'),
             'calendartype' => new lang_string('forcecalendartype', 'calendar'),
-            'theme' => new lang_string('theme'),
+            'theme' => new lang_string('forcetheme'),
             'enablecompletion' => new lang_string('enablecompletion', 'completion'),
             'downloadcontent' => new lang_string('downloadcoursecontent', 'course'),
-            'timecreated' => new lang_string('timecreated', 'core_reportbuilder'),
-            'timemodified' => new lang_string('timemodified', 'core_reportbuilder'),
         ];
     }
 
@@ -177,8 +177,6 @@ class course extends base {
                 break;
             case 'startdate':
             case 'enddate':
-            case 'timecreated':
-            case 'timemodified':
                 $fieldtype = column::TYPE_TIMESTAMP;
                 break;
             case 'summary':
@@ -409,10 +407,16 @@ class course extends base {
      * @return array
      */
     public static function get_options_for_theme(): array {
-        return array_map(
-            fn(theme_config $theme) => $theme->get_theme_name(),
-            get_list_of_themes(),
-        );
+        $options = [];
+
+        $themeobjects = get_list_of_themes();
+        foreach ($themeobjects as $key => $theme) {
+            if (empty($theme->hidefromselector)) {
+                $options[$key] = get_string('pluginname', "theme_{$theme->name}");
+            }
+        }
+
+        return $options;
     }
 
     /**
@@ -446,14 +450,13 @@ class course extends base {
             return format::userdate($value, $row);
         }
 
-        if ($this->get_course_field_type($fieldname) === column::TYPE_BOOLEAN) {
-            return format::boolean_as_text($value);
-        }
-
-        // If the column has corresponding filter, determine the value from its options.
         $options = $this->get_options_for($fieldname);
         if ($options !== null && array_key_exists($value, $options)) {
             return $options[$value];
+        }
+
+        if ($this->get_course_field_type($fieldname) === column::TYPE_BOOLEAN) {
+            return format::boolean_as_text($value);
         }
 
         if (in_array($fieldname, ['fullname', 'shortname'])) {

@@ -31,11 +31,10 @@ Feature: Teacher can enable anonymous submissions for an assignment
     Then "blindmarking" "select" should not exist
     And I press "Cancel"
     And I am on the "Assign 1" "assign activity" page
-    And I navigate to "Submissions" in current page administration
+    And I click on "View all submissions" "link"
     # Confirm that Participant [n] is displayed instead of Student One - student name is hidden
     And I should not see "Student One" in the "Participant" "table_row"
-    And I click on "Grade actions" "actionmenu" in the "Participant" "table_row"
-    And I choose "Grade" in the open action menu
+    And I click on "Grade" "link" in the "Participant" "table_row"
     And I set the field "Grade out of 100" to "70"
     And I press "Save changes"
     And I am on the "Assign 1" "assign activity" page

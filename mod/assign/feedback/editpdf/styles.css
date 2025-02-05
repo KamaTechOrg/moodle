@@ -298,6 +298,10 @@ ul.assignfeedback_editpdf_menu {
     border-radius: 4px;
 }
 
+.assignfeedback_editpdf_menu li img {
+    height: auto;
+}
+
 .assignfeedback_editpdf_menu li button {
     margin: 0;
     background: none;
@@ -315,7 +319,7 @@ ul.assignfeedback_editpdf_menu {
 }
 
 .assignfeedback_editpdf_widget .commentdrawable img {
-    margin: 0 5px;
+    padding: 1px;
 }
 
 .assignfeedback_editpdf_widget .commentdrawable a {
@@ -323,8 +327,11 @@ ul.assignfeedback_editpdf_menu {
     position: relative;
     left: -17px;
     top: 2px;
-    height: 16px;
-    width: 16px;
+    height: 14px;
+    background-color: white;
+    border-left: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    line-height: 14px;
 }
 
 .assignfeedback_editpdf_widget .commentdrawable textarea {

@@ -44,7 +44,6 @@ class externallib_test extends externallib_advanced_testcase {
      */
     protected function setUp(): void {
         global $CFG;
-        parent::setUp();
 
         $this->resetAfterTest(true);
 
@@ -59,7 +58,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test getting course copy progress.
      */
-    public function test_get_copy_progress(): void {
+    public function test_get_copy_progress() {
         global $USER;
 
         $this->setAdminUser();
@@ -125,7 +124,7 @@ class externallib_test extends externallib_advanced_testcase {
     /**
      * Test ajax submission of course copy process.
      */
-    public function test_submit_copy_form(): void {
+    public function test_submit_copy_form() {
         global $DB;
 
         $this->setAdminUser();

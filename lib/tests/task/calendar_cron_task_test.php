@@ -34,14 +34,13 @@ class calendar_cron_task_test extends \advanced_testcase {
      * Tests set up
      */
     protected function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
     /**
      * Test calendar cron task with a working subscription URL.
      */
-    public function test_cron_working_url(): void {
+    public function test_cron_working_url() {
         // ICal URL from external test repo.
         $subscriptionurl = $this->getExternalTestFileUrl('/ical.ics');
 
@@ -65,7 +64,7 @@ class calendar_cron_task_test extends \advanced_testcase {
     /**
      * Test calendar cron task with a broken subscription URL.
      */
-    public function test_cron_broken_url(): void {
+    public function test_cron_broken_url() {
         $subscription = new \stdClass();
         $subscription->eventtype = 'site';
         $subscription->name = 'test';

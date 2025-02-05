@@ -76,28 +76,14 @@ class header implements named_templatable, renderable {
             'id' => $section->id,
         ];
 
-        $data->editing = $format->show_editor();
-
-        if ($course->id == SITEID) {
-            $data->title = $output->section_title_without_link($section, $course);
-            $data->sitehome = true;
-        } else {
-            if (is_null($format->get_sectionid()) || $format->get_sectionid() != $section->id) {
-                // All sections are displayed.
-                if (!$data->editing) {
-                    $data->title = $output->section_title($section, $course);
-                } else {
-                    $data->title = $output->section_title_without_link($section, $course);
-                }
-            } else {
-                // Only one section is displayed.
-                $data->displayonesection = true;
-                $data->title = $output->section_title_without_link($section, $course);
-            }
-        }
+        $data->title = $output->section_title_without_link($section, $course);
 
         $coursedisplay = $format->get_course_display();
-        $data->headerdisplaymultipage = ($coursedisplay == COURSE_DISPLAY_MULTIPAGE);
+        $data->headerdisplaymultipage = false;
+        if ($coursedisplay == COURSE_DISPLAY_MULTIPAGE) {
+            $data->headerdisplaymultipage = true;
+            $data->title = $output->section_title($section, $course);
+        }
 
         if ($section->section > $format->get_last_section_number()) {
             // Stealth sections (orphaned) has special title.
@@ -108,18 +94,23 @@ class header implements named_templatable, renderable {
             $data->ishidden = true;
         }
 
-        if (!$data->editing && $section->uservisible) {
-            $data->url = course_get_url($course, $section->section, ['navigation' => true]);
+        if ($course->id == SITEID) {
+            $data->sitehome = true;
+        }
+
+        $data->editing = $format->show_editor();
+
+        if (!$format->show_editor() && $coursedisplay == COURSE_DISPLAY_MULTIPAGE && empty($data->issinglesection)) {
+            if ($section->uservisible) {
+                $data->url = course_get_url($course, $section->section);
+            }
         }
         $data->name = get_section_name($course, $section);
         $data->selecttext = $format->get_format_string('selectsection', $data->name);
 
-        if (!$format->get_sectionnum() && !$section->is_delegated()) {
+        if (!$format->get_section_number()) {
             $data->sectionbulk = true;
         }
-
-        // Delegated sections in main course page need to have h4 tag, h3 otherwise.
-        $data->headinglevel = ($section->is_delegated() && is_null($format->get_sectionid())) ? 4 : 3;
 
         return $data;
     }

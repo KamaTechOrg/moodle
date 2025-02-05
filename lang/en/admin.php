@@ -75,7 +75,9 @@ $string['alternativefullnameformat_desc'] = 'This defines how names are shown to
 $string['always'] = 'Always';
 $string['appearance'] = 'Appearance';
 $string['aspellpath'] = 'Path to aspell';
-$string['asyncbackupdisabled'] = 'Your site is currently configured to use synchronous backups. Asynchronous backups provide a better user experience, allowing users to do other operations while a backup or restore is in progress. Asynchronous backups are enabled for all sites from Moodle 4.5 LTS. Synchronous backups will be removed from Moodle LMS the version after 4.5 LTS.';
+$string['asyncbackupdisabled'] = 'Your site is currently configured to use synchronous backups. Asynchronous backups provide a better user experience.
+Asynchronous backups will be enabled for all sites from Moodle LMS 4.5 LTS.
+Synchronous backups will be removed from Moodle LMS the version after 4.5 LTS';
 $string['authentication'] = 'Authentication';
 $string['authpreventaccountcreation'] = 'Prevent account creation when authenticating';
 $string['authpreventaccountcreation_help'] = 'When a user authenticates, an account on the site is automatically created if it doesn\'t yet exist. If an external database, such as LDAP, is used for authentication, but you wish to restrict access to the site to users with an existing account only, then this option should be enabled. New accounts will need to be created manually or via the upload users feature. Note that this setting doesn\'t apply to MNet authentication.';
@@ -284,11 +286,10 @@ $string['configfrontpageloggedin'] = 'The items selected above will be displayed
 $string['configfullnamedisplay'] = 'This defines how names are shown when they are displayed in full. The default value, "language", leaves it to the string "fullnamedisplay" in the current language pack to decide. Some languages have different name display conventions.
 
 For most mono-lingual sites the most efficient setting is "firstname lastname", but you may choose to hide last names altogether. Placeholders that can be used are: firstname, lastname, firstnamephonetic, lastnamephonetic, middlename, and alternatename.';
-$string['configgeoipfile'] = 'Location of GeoIP City binary data file. This file is not part of Moodle distribution and must be obtained separately from <a href="https://www.maxmind.com/">MaxMind</a>. You can either buy a commercial version or use the free version. You\'ll need to register to download the City database file, which you can do at <a href="https://dev.maxmind.com/geoip/geoip2/geolite2/" >https://dev.maxmind.com/geoip/geoip2/geolite2/</a>. Once you\'ve registered and downloaded the file, extract it into "{$a}" directory on your server.';
+$string['configgeoipfile'] = 'Location of GeoLite2 City binary data file. This file is not part of Moodle distribution and must be obtained separately from <a href="https://www.maxmind.com/">MaxMind</a>. You can either buy a commercial version or use the free version. You\'ll need to register to download the City database file, which you can do at <a href="https://dev.maxmind.com/geoip/geoip2/geolite2/" >https://dev.maxmind.com/geoip/geoip2/geolite2/</a>. Once you\'ve registered and downloaded the file, extract it into "{$a}" directory on your server.';
 $string['configgetremoteaddrconf'] = 'If your server is behind a reverse proxy, you can use this setting to specify which HTTP headers can be trusted to contain the remote IP address. The headers are read in order, using the first one that is available.';
 $string['configgradebookroles'] = 'This setting allows you to control who appears on the gradebook.  Users need to have at least one of these roles in a course to be shown in the gradebook for that course.';
 $string['configgradeexport'] = 'Choose which gradebook export formats are your primary methods for exporting grades.  Chosen plugins will then set and use a "last exported" field for every grade.  For example, this might result in exported records being identified as being "new" or "updated".  If you are not sure about this then leave everything unchecked.';
-$string['configgradeexportdefault'] = 'Choose which gradebook export format is your default method for exporting grades.';
 $string['confighiddenuserfields'] = 'Select which user information fields you wish to hide from other users other than course teachers/admins. This will increase student privacy. Hold CTRL key to select multiple fields.';
 $string['configidnumber'] = 'This option specifies whether (a) Users are not be asked for an ID number at all, (b) Users are asked for an ID number but can leave it blank or (c) Users are asked for an ID Number and cannot leave it blank. If given the User\'s ID number is displayed in their Profile.';
 $string['configintro'] = 'On this page you can specify a number of configuration variables that help make Moodle work properly on your server.  Don\'t worry too much about it - the defaults will usually work fine and you can always come back to this page later and change these settings.';
@@ -321,6 +322,8 @@ $string['configminpasswordlength'] = 'Passwords must be at least these many char
 $string['configminpasswordlower'] = 'Passwords must have at least these many lower case letters.';
 $string['configminpasswordnonalphanum'] = 'Passwords must have at least these many non-alphanumeric characters.';
 $string['configminpasswordupper'] = 'Passwords must have at least these many upper case letters.';
+$string['configmycoursesperpage'] = 'Maximum number of courses to display in any list of a user\'s own courses';
+$string['configmymoodleredirect'] = 'This setting forces redirects to /my on login for non-admins and replaces the top level site navigation with /my';
 $string['configmypagelocked'] = 'This setting prevents the default page from being edited by any non-admins';
 $string['confignavcourselimit'] = 'Limits the number of courses shown to the user in the navigation.';
 $string['confignavshowallcourses'] = 'This setting determines whether users who are enrolled in courses can see Courses (listing all courses) in the navigation, in addition to My courses (listing courses in which they are enrolled).';
@@ -383,6 +386,7 @@ $string['configsitemailcharset'] = 'This setting specifies the default charset f
 $string['configsitemaxcategorydepth'] = 'Maximum category depth';
 $string['configsitemaxcategorydepthhelp'] = 'This specifies the maximum depth of child categories expanded when displaying categories or combo list. Deeper level categories will appear as links and user can expand them with AJAX request.';
 $string['configslasharguments'] = '\'Slash arguments\' (using <em>PATH_INFO</em>) is required for SCORM packages and multiple-file resources to display correctly. If your web server doesn\'t support \'slash arguments\' and you are unable to configure it, this setting can be disabled, though it will result in things not working.<br />Note: The use of \'slash arguments\' will be required in future versions of Moodle.';
+$string['configsmartpix'] = 'With this on, icons are served through a PHP script that searches the current theme, then all parent themes, then the Moodle /pix folder. This reduces the need to duplicate image files within themes, but has a slight performance cost.';
 $string['configsmtpauthtype'] = 'This sets the authentication type to use on SMTP server.';
 $string['configsmtpoauthservice'] = 'Select the OAuth 2 service that is configured to talk to the SMTP server. If the service doesn\'t exist yet, you will need to create it. Note that you need to set the SMTP Auth Type to XOAUTH2.';
 $string['configsmtphosts'] = 'Give the full name of one or more local SMTP servers that Moodle should use to send mail (eg \'mail.a.com\' or \'mail.a.com;mail.b.com\'). To specify a non-default port (i.e other than port 25), you can use the [server]:[port] syntax (eg \'mail.a.com:587\'). For secure connections, port 465 is usually used with SSL, port 587 is usually used with TLS, specify security protocol below if required. If you leave this field blank, Moodle will use the PHP default method of sending mail.';
@@ -417,7 +421,6 @@ $string['configvisiblecourses'] = 'Display courses in hidden categories normally
 $string['configwarning'] = 'Be careful modifying these settings - strange values could cause problems.';
 $string['configyuicomboloading'] = 'This options enables combined file loading optimisation for YUI libraries. This setting should be enabled on production sites for performance reasons.';
 $string['confirmation'] = 'Confirmation';
-$string['confirmationpending'] = 'Confirmation pending';
 $string['confirmcontextlock'] = '{$a->contextname} is currently unfrozen. Freezing it will make it read-only and prevent users from making changes. Are you sure you wish to continue?';
 $string['confirmcontextunlock'] = '{$a->contextname} is currently frozen. Unfreezing it will allow users to make changes. Are you sure you wish to continue?';
 $string['confirmdeletecomments'] = 'Are you sure you want to delete the selected comment(s)?';
@@ -518,7 +521,6 @@ $string['defaultuserroleid'] = 'Default role for all users';
 $string['deleteincompleteusers'] = 'Delete incomplete users after';
 $string['deleteunconfirmed'] = 'Delete not fully setup users after';
 $string['deleteuser'] = 'Delete user';
-$string['deleteduserx'] = 'Deleted user {$a}';
 $string['density'] = 'Density';
 $string['denyemailaddresses'] = 'Denied email domains';
 $string['devlibdirpresent'] = 'Directories with development libraries, especially <em>/vendor</em> and <em>/node_modules</em>, should not be present on public sites. See the <a href="{$a->moreinfourl}">security overview report</a> for more details.';
@@ -688,13 +690,7 @@ $string['fullnamedisplay'] = 'Full name format';
 $string['fullnamedisplayprivate'] = 'Full name format - private';
 $string['gdrequired'] = 'The GD extension is now required by Moodle for image conversion.';
 $string['generalsettings'] = 'General settings';
-$string['geoipdbedition'] = 'GeoIP Database Edition';
-$string['geoipdbedition_desc'] = 'Select the edition of the GeoIP database to download. Please be aware that using the GeoIP2-City database requires a valid paid license.';
-$string['geoipfile'] = 'GeoIP City DB';
-$string['geoipmaxmindaccid'] = 'MaxMind account ID';
-$string['geoipmaxmindaccid_desc'] = 'The account ID of the account created on the MaxMind API service.';
-$string['geoipmaxmindlicensekey'] = 'MaxMind license key';
-$string['geoipmaxmindlicensekey_desc'] = 'The license key of the account created on the MaxMind API service.';
+$string['geoipfile'] = 'GeoLite2 City MaxMind DB';
 $string['getremoteaddrconf'] = 'Logged IP address source';
 $string['globalsearch'] = 'Global search';
 $string['globalsearchmanage'] = 'Manage global search';
@@ -710,7 +706,6 @@ $string['gradebookroles'] = 'Graded roles';
 $string['gravatardefaulturl'] = 'Gravatar default image URL';
 $string['gravatardefaulturl_help'] = 'Gravatar needs a default image to display if it is unable to find a picture for a given user. Provide a full URL for an image. If you leave this setting empty, Moodle will attempt to use the most appropriate default image for the page you are viewing. Note also that Gravatar has a number of codes which can be used to <a href="https://en.gravatar.com/site/implement/images/#default-image">generate default images</a>.';
 $string['gradeexport'] = 'Primary grade export methods';
-$string['gradeexportdefault'] = 'Default grade export method';
 $string['guestroleid'] = 'Role for guest';
 $string['guestroleid_help'] = 'This role is automatically assigned to the guest user. It is also temporarily assigned to not enrolled users that enter the course via guest enrolment plugin.';
 $string['helpadminseesall'] = 'In the site calendar, do admins see and filter events from all course calendars or just those from courses they are enrolled in? Regardless of the chosen option, admins will always be able to manage events for each course calendar by navigating to the course first, and then accessing the course calendar directly.';
@@ -737,7 +732,7 @@ A callback with a higher priority will be called before one with lower priority.
 $string['hookcallbacknotcallable'] = 'This callback is not callable. This could be because the class or method does not exist, or because the method is not public.';
 $string['hookconfigoverride'] = 'Overridden';
 $string['hookconfigoverride_help'] = 'The definition of this callback has been overridden in the site configuration file, config.php';
-$string['hookdeprecates'] = 'Deprecated callbacks';
+$string['hookdeprecates'] = 'Deprecated lib.php callbacks';
 $string['hookdescription'] = 'Description';
 $string['hookdescriptionmissing'] = 'Hook does not have a description method';
 $string['hookclassmissing'] = 'Hook class not found';
@@ -762,11 +757,6 @@ $string['taskh5pcleanup'] = 'Unused H5P files cleanup';
 $string['iconvrequired'] = 'Installing ICONV extension is required.';
 $string['igbinary322buggyversion'] = 'The php-igbinary extension installed on the site can lead to problems when running with PHP 7.2. You are recommended to either upgrade to php-igbinary 3.2.5 or later, or alternatively to upgrade to PHP 7.3 or later.';
 $string['ignore'] = 'Ignore';
-$string['importantupdates_content'] = '<p>In the next Moodle 5.0, planned for release in April 2025, the Chat and Survey activities will
-be removed from core Moodle. They will be available as plugins in the
-<a href="https://moodle.org/plugins/">Moodle plugins directory</a>.</p>
-<p>If you wish to continue using Chat or Survey in your site, you will be able to install them as plugins before upgrading to Moodle 5.0.</p>';
-$string['importantupdates_title'] = 'Important update about Chat and Survey activities';
 $string['includemoduleuserdata'] = 'Include module user data';
 $string['incompatibleblocks'] = 'Incompatible blocks';
 $string['indexdata'] = 'Index data';
@@ -784,10 +774,10 @@ $string['ipblocked'] = 'This site is not available currently.';
 $string['ipblocker'] = 'IP blocker';
 $string['ipblockersyntax'] = 'Put every entry on one line. Valid entries are either full IP address (such as <b>192.168.10.1</b>) which matches a single host; or partial address (such as <b>192.168</b>) which matches any address starting with those numbers; or CIDR notation (such as <b>231.54.211.0/20</b>); or a range of IP addresses (such as <b>231.3.56.10-20</b>) where the range applies to the last part of the address. Text domain names (like \'example.com\') are not supported. Blank lines, and text following a "#" character are ignored.';
 $string['iplookup'] = 'IP address lookup';
-$string['iplookupgeoplugin'] = 'The <a href="https://www.geoplugin.com">geoPlugin</a> service is currently being used to look up geographical information. For more accurate results we recommend installing a local copy of the MaxMind GeoIP City database.';
-$string['iplookupinfo'] = 'The free online NetGeo server is used to look up IP address locations. The database is not maintained any more though, and may return incorrect data. Installing a local copy of a GeoIP database from MaxMind is recommended.<br />
+$string['iplookupgeoplugin'] = 'The <a href="https://www.geoplugin.com">geoPlugin</a> service is currently being used to look up geographical information. For more accurate results we recommend installing a local copy of the MaxMind GeoLite database.';
+$string['iplookupinfo'] = 'The free online NetGeo server is used to look up IP address locations. The database is not maintained any more though, and may return incorrect data. Installing a local copy of the free GeoLite2 City database from MaxMind is recommended.<br />
 If a Google Maps API V3 key is provided, IP address location is displayed using Google Maps. You need a Google account and to apply for a Google Maps API key. If no Google Maps API V3 key is provided, IP address location is displayed using OpenStreetMap.';
-$string['iplookupmaxmindnote'] = 'This product includes GeoIP City data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.';
+$string['iplookupmaxmindnote'] = 'This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.';
 $string['iscustomadminwarnings'] = 'It has been detected that your site is using a custom admin directory. This feature is no longer supported and will be removed after Moodle 4.2.';
 $string['ishttpswarning'] = 'It has been detected that your site is not secured using HTTPS. It is strongly recommended to migrate your site to HTTPS for increased security and improved integration with other systems.';
 $string['keeptagnamecase'] = 'Keep tag name casing';
@@ -810,6 +800,8 @@ $string['libcurlwarning'] = 'It has been detected that libcurl doesn\'t have CUR
 $string['licensesettings'] = 'Licence settings';
 $string['linkadmincategories'] = 'Link admin categories';
 $string['linkadmincategories_help'] = 'If enabled admin setting categories will be displayed as links in the navigation and will lead to the admin category pages.';
+$string['linkcoursesections'] = 'Always link course sections';
+$string['linkcoursesections_help'] = 'Always try to provide a link for course sections. Course sections are usually only shown as links if the course format displays a single section per page. If this setting is enabled a link will always be provided.';
 $string['loading'] = 'Loading';
 $string['localetext'] = 'Sitewide locale';
 $string['localstringcustomization'] = 'Local string customization';
@@ -818,9 +810,7 @@ $string['locationsettings'] = 'Location settings';
 $string['locked'] = 'Locked';
 $string['lockoutduration'] = 'Account lockout duration';
 $string['lockoutduration_desc'] = 'Locked out account is automatically unlocked after this duration.';
-$string['lockoutemailbody'] = 'Hi {$a->firstname},
-
-Your account with username {$a->username} on server \'{$a->sitename}\'
+$string['lockoutemailbody'] = 'Your account with username {$a->username} on server \'{$a->sitename}\'
 was locked out after multiple invalid login attempts.
 
 To unlock the account immediately go to the following address
@@ -885,7 +875,6 @@ sites. If this is not what you wanted then you should make sure you are updating
 from a STABLE branch of the Moodle code. See Moodle Docs for more details.';
 $string['maxbytes'] = 'Maximum uploaded file size';
 $string['maxconsecutiveidentchars'] = 'Consecutive identical characters';
-$string['maxcharacter'] = '{$a} character maximum';
 $string['maxsizeperdownloadcoursefile'] = 'Maximum size per file';
 $string['maxsizeperdownloadcoursefile_desc'] = 'The maximum size of each file when downloading course content. Files exceeding this size will be omitted from the download.';
 $string['maxeditingtime'] = 'Maximum time to edit posts';
@@ -932,8 +921,10 @@ $string['modsettings'] = 'Manage activities';
 $string['modulesecurity'] = 'Module security';
 $string['mustenablestats'] = 'Statistics have not yet been enabled on this site.';
 $string['mycourses'] = 'My courses';
+$string['mycoursesperpage'] = 'Number of courses';
 $string['mydashboard'] = 'System default dashboard';
 $string['mymoodle'] = 'Dashboard';
+$string['mymoodleredirect'] = 'Force users to use My Moodle';
 $string['mypage'] = 'Default Dashboard page';
 $string['myprofile'] = 'Default profile page';
 $string['mypagelocked'] = 'Lock default page';
@@ -968,8 +959,20 @@ $string['nosupportedlogstore'] = 'No supported logstore found';
 $string['noteunneededblocks'] = 'Note: Blocks set to show will not be listed in the \'Add a block\' menu in a course if they are specified in the theme setting \'Unneeded blocks\'.';
 $string['maxtimelimit'] = 'Maximum time limit';
 $string['maxtimelimit_desc'] = 'To restrict the maximum PHP execution time that Moodle will allow without any output being displayed, enter a value in seconds here. 0 means that Moodle default restrictions are used. If you have a front-end server with its own time limit, set this value lower to receive PHP errors in logs. Does not apply to CLI scripts.';
+$string['moodleapp'] = 'Moodle app';
+$string['moodleapp_help'] = '<p>The free Moodle app enables users to access their courses on mobile devices. Additional app features are available with a Pro or Premium app plan.</p>
+<a href="https://moodle.com/mobile-app">Get the Moodle app</a><br />
+<a href="https://apps.moodle.com">Moodle Apps Portal</a>';
 $string['moodlebrandedapp'] = 'Branded Moodle app';
+$string['moodlebrandedapp_help'] = '<p>The Branded Moodle app has all the functionality of our free mobile app for Moodle combined with your own custom branding.</p>
+<a href="https://moodle.com/branded-app">About the Branded Moodle app</a>';
 $string['moodlebrandedappreference'] = 'Alternatively, get a <a href="https://moodle.com/branded-app/">Branded Moodle app</a> with your own custom branding.';
+$string['moodlepartners'] = 'Moodle Partners';
+$string['moodlepartners_help'] = '<p>Moodle Partners are services providers that are certified by Moodle HQ to provide high quality Moodle services for your organisation\'s online learning environment.</p>
+<a href="https://moodle.com/about-partners/">About our Partners</a><br />
+<a href="https://moodle.com/partners">Find a Partner</a>';
+$string['moodleservices'] = 'Moodle services';
+$string['moodleservices_help'] = 'Make sure you get the best from your Moodle learning environment by using these Moodle services:';
 $string['noreplyaddress'] = 'No-reply address';
 $string['noreplydomain'] = 'No-reply and domain';
 $string['noreplydomaindetail'] = 'Settings for No-reply and configured domains';
@@ -1145,8 +1148,13 @@ $string['recaptchaprivatekey'] = 'ReCAPTCHA secret key';
 $string['recaptchapublickey'] = 'ReCAPTCHA site key';
 $string['register'] = 'Register your site';
 $string['registration'] = 'Registration';
-$string['registrationwarning'] = 'Don\'t miss out on important updates and security alerts.';
-$string['registrationwarningcontactadmin'] = 'This site is not registered. Please ask your administrator to register the site so they don\'t miss out on important updates.';
+$string['registration_help'] = 'By registering:
+
+* You will receive security alerts
+* You can activate mobile app push notifications from your site
+* You are contributing to our Moodle statistics of the worldwide community';
+$string['registrationwarning'] = 'Your site is not yet registered.';
+$string['registrationwarningcontactadmin'] = 'Your site is not yet registered. Please notify your administrator.';
 $string['releasenoteslink'] = 'For information about this version of Moodle, please see the online <a target="_blank" href="{$a}">Release Notes</a>';
 $string['rememberuserlicensepref'] = 'Remember user licence preference';
 $string['rememberuserlicensepref_help'] = 'If enabled, the last licence selected by the user is preselected when uploading a file in the file picker. Otherwise, the default site licence is preselected.';
@@ -1308,12 +1316,12 @@ $string['sitepolicyhandlercore'] = 'Default (core)';
 $string['sitepolicyhandlerplugin'] = '{$a->name} ({$a->component})';
 $string['sitepolicyguest'] = 'Site policy URL for guests';
 $string['sitepolicyguest_help'] = 'The URL of the site policy that all guests must see and agree to before accessing the site. Note that this setting will only have an effect if the site policy handler is set to default (core).';
-$string['sitesectionhelp'] = 'Display a section at the top of the page where you can add custom content.';
+$string['sitesectionhelp'] = 'If selected, a topic section will be displayed on the site home.';
 $string['sixtyfourbitsrequired'] = 'It has been detected that your site is not using a 64-bit PHP version. You are required to upgrade your system (operating system, PHP...) before installing this Moodle version.';
 $string['sixtyfourbitswarning'] = 'It has been detected that your site is not using a 64-bit PHP version. It is recommended that you upgrade your site to ensure future compatibility.';
 $string['slasharguments'] = 'Use slash arguments';
 $string['slashargumentswarning'] = 'It is recommended that the use of slash arguments is enabled. In future it will be required. For more details, see the documentation <a href="https://docs.moodle.org/en/admin/environment/slasharguments">Using slash arguments</a>.';
-$string['smallscreensonly'] = 'Small screens only';
+$string['smartpix'] = 'Smart pix search';
 $string['smtp'] = 'SMTP';
 $string['smtpauthtype'] = 'SMTP Auth Type';
 $string['smtpdetail'] = 'Simple Mail Transfer Protocol (SMTP) settings for sending email.';
@@ -1342,7 +1350,6 @@ $string['stickyblockscourseview'] = 'Course page';
 $string['stickyblocksduplicatenotice'] = 'If any block you add here is already present in a particular page, it will result in a duplicate.<br />Only the pinned block will be non-editable, the duplicate will still be editable.';
 $string['stickyblocksmymoodle'] = 'My Moodle';
 $string['stickyblockspagetype'] = 'Page type to configure';
-$string['storedprogressbarcleanuptask'] = 'Stored progress bar cleanup task';
 $string['strictformsrequired'] = 'Strict validation of required fields';
 $string['stripalltitletags'] = 'Remove HTML tags from all activity names';
 $string['supportandservices'] = 'Support and services';
@@ -1352,7 +1359,6 @@ $string['supportemailsubject'] = 'Site support request - {$a}';
 $string['supportavailability'] = 'Support availability';
 $string['supportname'] = 'Support name';
 $string['supportpage'] = 'Contact site support link';
-$string['swaggerui'] = 'Moodle REST API UI (SwaggerUI)';
 $string['suspenduser'] = 'Suspend user account';
 $string['switchlang'] = 'Switch lang directory';
 $string['systempaths'] = 'System paths';
@@ -1367,8 +1373,6 @@ $string['task_scheduled_max_runtime'] = 'Scheduled task runner lifetime';
 $string['task_scheduled_max_runtime_desc'] = 'The age of a scheduled task runner before it is freed.';
 $string['task_adhoc_concurrency_limit'] = 'Ad hoc task concurrency limit';
 $string['task_adhoc_concurrency_limit_desc'] = 'The number of ad hoc task runners allowed to run concurrently. If the limit is high then scheduled tasks may not run regularly when there are lots of ad hoc tasks. A setting of 0 will disable processing of ad hoc tasks completely.';
-$string['task_adhoc_failed_retention'] = 'Failed ad hoc task retention period';
-$string['task_adhoc_failed_retention_desc'] = 'The maximum period that failed ad hoc tasks should remain in the queue once they have reached their retry limit.';
 $string['task_adhoc_max_runtime'] = 'Ad hoc task runner lifetime';
 $string['task_adhoc_max_runtime_desc'] = 'The age of an ad hoc task runner before it is freed. A low duration is recommended as there is no limit to the number of ad hoc tasks queued. If this number is too high and you have a large ad hoc task queue then scheduled tasks may not be run regularly.';
 $string['task_endtime'] = 'End time';
@@ -1418,6 +1422,7 @@ $string['taskcontextcleanup'] = 'Cleanup contexts';
 $string['entitytasklog'] = 'Task log';
 $string['tasklogging'] = 'Task log configuration';
 $string['taskcreatecontexts'] = 'Create missing contexts';
+$string['taskdeletecachetext'] = 'Delete old text cache records';
 $string['taskdeleteincompleteusers'] = 'Delete incomplete users';
 $string['taskdeleteunconfirmedusers'] = 'Delete unconfirmed users';
 $string['taskeventscron'] = 'Background processing for events';
@@ -1444,7 +1449,6 @@ $string['tasksessioncleanup'] = 'Cleanup old sessions';
 $string['taskstatscron'] = 'Background processing for statistics';
 $string['tasktagcron'] = 'Background processing for tags';
 $string['tasktempfilecleanup'] = 'Delete stale temp files';
-$string['taskupdategeoip2file'] = 'Update GeoIP file';
 $string['tempdatafoldercleanup'] = 'Clean up temporary data files older than';
 $string['templates'] = 'Templates';
 $string['testoutgoingmailconf'] = 'Test outgoing mail configuration';
@@ -1465,12 +1469,8 @@ $string['themedesignermodewarning'] = 'Theme designer mode is enabled. This shou
 $string['themelist'] = 'Theme list';
 $string['themeresetcaches'] = 'Clear theme caches';
 $string['themeselect'] = 'Change theme';
-$string['themeselector'] = 'Themes';
-$string['themesettingsadvanced'] = 'Advanced theme settings';
-$string['themesettingscustom'] = 'Custom theme settings';
-$string['themeeditsettingsname'] = 'Edit theme settings \'{$a}\'';
-$string['themesettingsname'] = 'Theme settings \'{$a}\'';
-$string['themeusagereportname'] = 'Theme usage report \'{$a}\'';
+$string['themeselector'] = 'Theme selector';
+$string['themesettings'] = 'Theme settings';
 $string['therewereerrors'] = 'There were errors in your data';
 $string['thirdpartylibrary'] = 'Library';
 $string['thirdpartylibrarylocation'] = 'Location';
@@ -1590,7 +1590,7 @@ $string['userimagesdisabled'] = 'Profile user images are disabled';
 $string['userlist'] = 'Browse list of users';
 $string['userdefaultpreferences'] = 'User default preferences';
 $string['userfiltersdefault'] = 'Default user filters';
-$string['userfiltersdefault_desc'] = 'Choose the filters you want to display on the \'Bulk user actions\' page. To select multiple filters, hold down the Ctrl key. Filters not selected will still be available via the \'Show more\' link.';
+$string['userfiltersdefault_desc'] = 'Select the filters that should be shown on the \'Browse list of users\' page and on the \'Bulk user actions\' page. Hold down the Ctrl key to select multiple items. Any filters not selected will be available by clicking the \'Show more\' link.';
 $string['usermanagement'] = 'User management';
 $string['userpreference'] = 'User preference';
 $string['userpolicies'] = 'User policies';
@@ -1624,6 +1624,14 @@ $string['cachesessionhelp'] = 'User specific cache that expires when the user\'s
 $string['cacheapplication'] = 'Application cache';
 $string['cacheapplicationhelp'] = 'Cached items are shared among all users and expire by a determined time to live (ttl).';
 
+// Deprecated since Moodle 4.0.
+$string['coursepage'] = 'Course page';
+$string['mediapluginswf'] = 'Enable .swf filter';
+$string['mediapluginswfnote'] = 'As a default security measure, normal users should not be allowed to embed swf flash files.';
+
+// Deprecated since Moodle 4.1.
+$string['multilangforceold'] = 'Force old multilang syntax: &lt;span&gt; without the class="multilang" and &lt;lang&gt;';
+
 // Deprecated since Moodle 4.2.
 $string['blockunprotect'] = 'Unprotect';
 
@@ -1639,28 +1647,3 @@ $string['selectdevice'] = 'Select device';
 $string['selecttheme'] = 'Select theme for {$a} device';
 $string['themenoselected'] = 'No theme selected';
 $string['unsettheme'] = 'Unset theme';
-
-// Deprecated since Moodle 4.4.
-$string['taskdeletecachetext'] = 'Delete old text cache records';
-$string['themesettings'] = 'Theme settings';
-$string['linkcoursesections'] = 'Always link course sections';
-$string['linkcoursesections_help'] = 'Always try to provide a link for course sections. Course sections are usually only shown as links if the course format displays a single section per page. If this setting is enabled a link will always be provided.';
-$string['moodleapp'] = 'Moodle app';
-$string['moodleapp_help'] = '<p>The free Moodle app enables users to access their courses on mobile devices. Additional app features are available with a Pro or Premium app plan.</p>
-<a href="https://moodle.com/mobile-app">Get the Moodle app</a><br />
-<a href="https://apps.moodle.com">Moodle Apps Portal</a>';
-$string['moodlebrandedapp_help'] = '<p>The Branded Moodle app has all the functionality of our free mobile app for Moodle combined with your own custom branding.</p>
-<a href="https://moodle.com/branded-app">About the Branded Moodle app</a>';
-$string['moodlepartners'] = 'Moodle Partners';
-$string['moodlepartners_help'] = '<p>Moodle Partners are services providers that are certified by Moodle HQ to provide high quality Moodle services for your organisation\'s online learning environment.</p>
-<a href="https://moodle.com/about-partners/">About our Partners</a><br />
-<a href="https://moodle.com/partners">Find a Partner</a>';
-$string['moodleservices'] = 'Moodle services';
-$string['moodleservices_help'] = 'Make sure you get the best from your Moodle learning environment by using these Moodle services:';
-
-// Deprecated since Moodle 4.5.
-$string['registration_help'] = 'By registering:
-
-* You will receive security alerts
-* You can activate mobile app push notifications from your site
-* You are contributing to our Moodle statistics of the worldwide community';

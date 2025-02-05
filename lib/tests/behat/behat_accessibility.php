@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Steps definitions to open and close action menus.
+ *
+ * @package    core
+ * @category   test
+ * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 use Behat\Mink\Exception\{DriverException, ExpectationException};
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
@@ -36,7 +45,8 @@ class behat_accessibility extends behat_base {
      * There are standard tags to ensure WCAG 2.1 A, WCAG 2.1 AA, and Section 508 compliance.
      * It is also possible to specify any desired optional tags.
      *
-     * See {@link https://github.com/dequelabs/axe-core/blob/v4.10.0/doc/rule-descriptions.md} for the list of available tags
+     * The list of available tags can be found at
+     * https://github.com/dequelabs/axe-core/blob/v4.7.2/doc/rule-descriptions.md.
      *
      * @Then the page should meet accessibility standards
      * @Then the page should meet accessibility standards with :extratags extra tests
@@ -208,6 +218,14 @@ EOF;
                 'type' > 'tag',
                 'values' => array_merge($standardtags, $extratags),
             ],
+            'rules' => [
+                // Disable the target-size rule.
+                // This rule was added in Axe 4.7, but changed in 4.8 to allow for spacing around the element.
+                // See https://github.com/dequelabs/axe-core/pull/4117 for more information on this change.
+                'target-size' => [
+                    'enabled' => false,
+                ],
+            ]
         ]);
     }
 }

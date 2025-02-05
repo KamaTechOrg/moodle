@@ -19,7 +19,6 @@
  *
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @package core
  */
 
 namespace core\output;
@@ -29,7 +28,6 @@ namespace core\output;
  *
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @package core
  */
 class mustache_engine extends \Mustache_Engine {
     /**
@@ -70,11 +68,12 @@ class mustache_engine extends \Mustache_Engine {
     /**
      * Get the current set of Mustache helpers.
      *
-     * @see \Mustache_Engine::setHelpers
+     * @see Mustache_Engine::setHelpers
      *
      * @return \Mustache_HelperCollection
      */
-    public function gethelpers() {
+    public function getHelpers()
+    {
         if (!isset($this->helpers)) {
             $this->helpers = new mustache_helper_collection(null, $this->disallowednestedhelpers);
         }

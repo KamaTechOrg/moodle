@@ -70,7 +70,7 @@ class question_usage_column extends column_base {
     }
 
     public function get_extra_classes(): array {
-        return ['pe-3'];
+        return ['pr-3'];
     }
 
 }

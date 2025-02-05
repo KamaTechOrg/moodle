@@ -41,11 +41,10 @@ require_once($CFG->dirroot . '/mod/scorm/lib.php');
 class locallib_test extends \advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_scorm_update_calendar(): void {
+    public function test_scorm_update_calendar() {
         global $DB;
 
         $this->setAdminUser();
@@ -78,7 +77,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals($time, $event->timesort);
     }
 
-    public function test_scorm_update_calendar_time_open_update(): void {
+    public function test_scorm_update_calendar_time_open_update() {
         global $DB;
 
         $this->setAdminUser();
@@ -115,7 +114,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals($time + DAYSECS, $event->timesort);
     }
 
-    public function test_scorm_update_calendar_time_open_delete(): void {
+    public function test_scorm_update_calendar_time_open_delete() {
         global $DB;
 
         $this->setAdminUser();
@@ -143,7 +142,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('event'));
     }
 
-    public function test_scorm_update_calendar_time_close(): void {
+    public function test_scorm_update_calendar_time_close() {
         global $DB;
 
         $this->setAdminUser();
@@ -176,7 +175,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals($time, $event->timesort);
     }
 
-    public function test_scorm_update_calendar_time_close_update(): void {
+    public function test_scorm_update_calendar_time_close_update() {
         global $DB;
 
         $this->setAdminUser();
@@ -213,7 +212,7 @@ class locallib_test extends \advanced_testcase {
         $this->assertEquals($time + DAYSECS, $event->timesort);
     }
 
-    public function test_scorm_update_calendar_time_close_delete(): void {
+    public function test_scorm_update_calendar_time_close_delete() {
         global $DB;
 
         $this->setAdminUser();

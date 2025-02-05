@@ -27,13 +27,11 @@ use core_competency\api;
  */
 class import_test extends \advanced_testcase {
 
-    public function test_import_framework(): void {
+    public function test_import_framework() {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
-        $importer = new framework_importer(
-            file_get_contents(self::get_fixture_path(__NAMESPACE__, 'example.csv')),
-        );
+        $importer = new framework_importer(file_get_contents(__DIR__ . '/fixtures/example.csv'));
 
         $this->assertEquals('', $importer->get_error());
 

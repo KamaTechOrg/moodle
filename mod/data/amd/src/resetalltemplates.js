@@ -63,7 +63,7 @@ const registerEventListeners = () => {
  */
 const resetAllTemplatesConfirm = async(actionLink) => {
     try {
-        await Notification.deleteCancelPromise(
+        await Notification.saveCancelPromise(
             getString('resetalltemplatesconfirmtitle', 'mod_data'),
             getString('resetalltemplatesconfirm', 'mod_data'),
             getString('reset', 'core'),

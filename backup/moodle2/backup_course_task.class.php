@@ -156,7 +156,7 @@ class backup_course_task extends backup_task {
      * @param string $content content in which to encode links.
      * @return string content with links encoded.
      */
-    public static function encode_content_links($content) {
+    static public function encode_content_links($content) {
 
         // Link to the course main page (it also covers "&topic=xx" and "&week=xx"
         // because they don't become transformed (section number) in backup/restore.
@@ -165,7 +165,7 @@ class backup_course_task extends backup_task {
         // A few other key course links.
         $content = self::encode_links_helper($content, 'GRADEINDEXBYID',       '/grade/index.php?id=');
         $content = self::encode_links_helper($content, 'GRADEREPORTINDEXBYID', '/grade/report/index.php?id=');
-        $content = self::encode_links_helper($content, 'BADGESVIEWBYID',       '/badges/index.php?type=2&id=');
+        $content = self::encode_links_helper($content, 'BADGESVIEWBYID',       '/badges/view.php?type=2&id=');
         $content = self::encode_links_helper($content, 'USERINDEXVIEWBYID',    '/user/index.php?id=');
         $content = self::encode_links_helper($content, 'PLUGINFILEBYCONTEXT',  '/pluginfile.php/');
         $content = self::encode_links_helper($content, 'PLUGINFILEBYCONTEXTURLENCODED', '/pluginfile.php/', true);

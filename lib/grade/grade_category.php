@@ -511,23 +511,28 @@ class grade_category extends grade_object {
             }
         }
 
-        $gradeinst = new grade_grade();
-        $fields = implode(',', $gradeinst->required_fields);
+        $grade_inst = new grade_grade();
+        $fields = 'g.'.implode(',g.', $grade_inst->required_fields);
 
         // where to look for final grades - include grade of this item too, we will store the results there
         $gis = array_merge($depends_on, array($this->grade_item->id));
         list($usql, $params) = $DB->get_in_or_equal($gis);
 
         if ($userid) {
-            $usersql = "AND userid=?";
+            $usersql = "AND g.userid=?";
             $params[] = $userid;
 
         } else {
             $usersql = "";
         }
 
+        $sql = "SELECT $fields
+                  FROM {grade_grades} g, {grade_items} gi
+                 WHERE gi.id = g.itemid AND gi.id $usql $usersql
+              ORDER BY g.userid";
+
         // group the results by userid and aggregate the grades for this user
-        $rs = $DB->get_recordset_select('grade_grades', "itemid $usql $usersql", $params, 'userid', $fields);
+        $rs = $DB->get_recordset_sql($sql, $params);
         if ($rs->valid()) {
             $prevuser = 0;
             $grade_values = array();
@@ -1110,7 +1115,7 @@ class grade_category extends grade_object {
                 $freq = array_count_values($converted_grade_values);
                 arsort($freq);                      // sort by frequency keeping keys
                 $top = reset($freq);               // highest frequency count
-                $modes = moodle_array_keys_filter($freq, $top);  // Search for all modes (have the same highest count).
+                $modes = array_keys($freq, $top);  // search for all modes (have the same highest count)
                 rsort($modes, SORT_NUMERIC);       // get highest mode
                 $agg_grade = reset($modes);
                 // Record the weights as used.
@@ -2056,7 +2061,7 @@ class grade_category extends grade_object {
      * @param int   $sortorder The current sortorder
      * @return array An array containing 'object', 'type', 'depth' and optionally 'children'
      */
-    private static function _fetch_course_tree_recursion($category_array, &$sortorder) {
+    static private function _fetch_course_tree_recursion($category_array, &$sortorder) {
         if (isset($category_array['object']->gradetype) && $category_array['object']->gradetype==GRADE_TYPE_NONE) {
             return null;
         }

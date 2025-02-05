@@ -54,7 +54,8 @@ Feature: We can bulk insert grades for students in a course
 
   Scenario: I can bulk insert grades and check their override flags for grade view.
     Given I am on the "Test assignment one" "assign activity" page
-    And I go to "Student 1" "Test assignment one" activity advanced grading page
+    And I follow "View all submissions"
+    And I click on "Grade" "link" in the "Student 1" "table_row"
     And I set the following fields to these values:
       | Grade out of 100 | 50 |
     And I press "Save changes"
@@ -96,7 +97,8 @@ Feature: We can bulk insert grades for students in a course
 
   Scenario: I can bulk insert grades and check their override flags for user view.
     Given I am on the "Test assignment two" "assign activity" page
-    And I go to "Student 1" "Test assignment two" activity advanced grading page
+    And I follow "View all submissions"
+    And I click on "Grade" "link" in the "Student 1" "table_row"
     And I set the following fields to these values:
       | Grade out of 100 | 50 |
     And I press "Save changes"

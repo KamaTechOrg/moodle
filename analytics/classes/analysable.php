@@ -28,7 +28,7 @@ interface analysable {
     /**
      * Max timestamp.
      */
-    const MAX_TIME = SQL_INT_MAX;
+    const MAX_TIME = 9999999999;
 
     /**
      * The analysable unique identifier in the site.

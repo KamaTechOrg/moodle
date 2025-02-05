@@ -23,7 +23,7 @@ namespace core_adminpresets;
  * @category   test
  * @copyright  2021 Sara Arjona (sara@moodle.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @coversDefaultClass \core_adminpresets\helper
+ * @coversDefaultClass helper
  */
 class helper_test extends \advanced_testcase {
 
@@ -84,7 +84,7 @@ class helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function create_preset_provider(): array {
+    public function create_preset_provider(): array {
         return [
             'Default values' => [
             ],
@@ -177,7 +177,7 @@ class helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function add_item_provider(): array {
+    public function add_item_provider(): array {
         return [
             'Setting without plugin' => [
                 'name' => 'settingname',
@@ -239,7 +239,7 @@ class helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function add_plugin_provider(): array {
+    public function add_plugin_provider(): array {
         return [
             'Plugin: enabled (using int)' => [
                 'type' => 'plugintype',
@@ -321,7 +321,7 @@ class helper_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function change_default_preset_provider(): array {
+    public function change_default_preset_provider(): array {
         return [
             'Starter preset' => [
                 'preset' => 'starter',
@@ -344,7 +344,7 @@ class helper_test extends \advanced_testcase {
                 ],
                 'plugins' => [
                     'assign' => 1,
-                    'book' => 1,
+                    'chat' => 1,
                     'data' => 1,
                     'lesson' => 1,
                 ],
@@ -364,7 +364,7 @@ class helper_test extends \advanced_testcase {
                 'preset' => 'unexisting',
             ],
             'Valid XML file' => [
-                'preset' => self::get_fixture_path(__NAMESPACE__, 'import_settings_plugins.xml'),
+                'preset' => __DIR__ . '/fixtures/import_settings_plugins.xml',
                 'settings' => [
                     'allowemojipicker' => 1,
                     'enableportfolios' => 1,
@@ -377,7 +377,7 @@ class helper_test extends \advanced_testcase {
                 ],
             ],
             'Invalid XML file' => [
-                'preset' => self::get_fixture_path(__NAMESPACE__, 'invalid_xml_file.xml'),
+                'preset' => __DIR__ . '/fixtures/invalid_xml_file.xml',
             ],
             'Unexisting XML file' => [
                 'preset' => __DIR__ . '/fixtures/unexisting.xml',

@@ -25,7 +25,8 @@ namespace core_cache;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers \core_cache\allow_temporary_caches
  */
-final class allow_temporary_caches_test extends \advanced_testcase {
+class allow_temporary_caches_test extends \advanced_testcase {
+
     /**
      * Tests whether temporary caches are allowed.
      */
@@ -91,8 +92,8 @@ final class allow_temporary_caches_test extends \advanced_testcase {
             get_fast_modinfo($course);
         } finally {
             // You have to do this after phpunit_disable or it breaks later tests.
-            factory::reset();
-            factory::instance(true);
+            \cache_factory::reset();
+            \cache_factory::instance(true);
         }
     }
 }

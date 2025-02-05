@@ -134,7 +134,8 @@ class audience {
         }
 
         // Get all sql audiences.
-        [$select, $params] = $DB->get_in_or_equal($allowedreports, SQL_PARAMS_NAMED, database::generate_param_name('_'));
+        $prefix = database::generate_param_name() . '_';
+        [$select, $params] = $DB->get_in_or_equal($allowedreports, SQL_PARAMS_NAMED, $prefix);
         $sql = "{$reporttablealias}.id {$select}";
 
         return [$sql, $params];
@@ -160,11 +161,11 @@ class audience {
     /**
      * Returns SQL to limit the list of reports to those that the given user has access to
      *
-     * - A user with 'viewall/editall' capability will have access to all reports
+     * - A user with 'editall' capability will have access to all reports
      * - A user with 'edit' capability will have access to:
      *      - Those reports this user has created
      *      - Those reports this user is in audience of
-     * - Otherwise:
+     * - A user with 'view' capability will have access to:
      *      - Those reports this user is in audience of
      *
      * @param string $reporttablealias
@@ -183,29 +184,25 @@ class audience {
             $context = context_system::instance();
         }
 
-        if (has_any_capability(['moodle/reportbuilder:editall', 'moodle/reportbuilder:viewall'], $context, $userid)) {
-            return ['1=1', []];
+        // If user can't view all reports, limit the returned list to those reports they can see.
+        if (!has_capability('moodle/reportbuilder:editall', $context, $userid)) {
+            $reports = self::user_reports_list($userid);
+
+            [$paramprefix, $paramuserid] = database::generate_param_names(2);
+            [$reportselect, $params] = $DB->get_in_or_equal($reports, SQL_PARAMS_NAMED, "{$paramprefix}_", true, null);
+
+            $where = "{$reporttablealias}.id {$reportselect}";
+
+            // User can also see any reports that they can edit.
+            if (has_capability('moodle/reportbuilder:edit', $context, $userid)) {
+                $where = "({$reporttablealias}.usercreated = :{$paramuserid} OR {$where})";
+                $params[$paramuserid] = $userid ?? $USER->id;
+            }
+
+            return [$where, $params];
         }
 
-        // Limit the returned list to those reports the user can see, by selecting based on report audience.
-        [$reportselect, $params] = $DB->get_in_or_equal(
-            self::user_reports_list($userid),
-            SQL_PARAMS_NAMED,
-            database::generate_param_name('_'),
-            true,
-            null,
-        );
-
-        $where = "{$reporttablealias}.id {$reportselect}";
-
-        // User can also see any reports that they can edit.
-        if (has_capability('moodle/reportbuilder:edit', $context, $userid)) {
-            $paramuserid = database::generate_param_name();
-            $where = "({$reporttablealias}.usercreated = :{$paramuserid} OR {$where})";
-            $params[$paramuserid] = $userid ?? $USER->id;
-        }
-
-        return [$where, $params];
+        return ['1=1', []];
     }
 
     /**
@@ -280,10 +277,66 @@ class audience {
     }
 
     /**
+     * Returns the list of audiences types in the system.
+     *
+     * @return array
+     */
+    private static function get_audience_types(): array {
+        $sources = [];
+
+        $audiences = core_component::get_component_classes_in_namespace(null, 'reportbuilder\\audience');
+        foreach ($audiences as $class => $path) {
+            $audienceclass = $class::instance();
+            if (is_subclass_of($class, base::class) && $audienceclass->user_can_add()) {
+                $componentname = $audienceclass->get_component_displayname();
+                $sources[$componentname][$class] = $audienceclass->get_name();
+            }
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Get all the audiences types the current user can add to, organised by categories.
+     *
+     * @return array
+     *
      * @deprecated since Moodle 4.1 - please do not use this function any more, {@see custom_report_audience_cards_exporter}
      */
-    #[\core\attribute\deprecated('custom_report_audience_cards_exporter', since: '4.1', final: true)]
-    public static function get_all_audiences_menu_types() {
-        \core\deprecation::emit_deprecation_if_present([self::class, __FUNCTION__]);
+    public static function get_all_audiences_menu_types(): array {
+        debugging('The function ' . __FUNCTION__ . '() is deprecated, please do not use it any more. ' .
+            'See \'custom_report_audience_cards_exporter\' class for replacement', DEBUG_DEVELOPER);
+
+        $menucardsarray = [];
+        $notavailablestr = get_string('notavailable', 'moodle');
+
+        $audiencetypes = self::get_audience_types();
+        $audiencetypeindex = 0;
+        foreach ($audiencetypes as $categoryname => $audience) {
+            $menucards = [
+                'name' => $categoryname,
+                'key' => 'index' . ++$audiencetypeindex,
+            ];
+
+            foreach ($audience as $classname => $name) {
+                $class = $classname::instance();
+                $title = $class->is_available() ? get_string('addaudience', 'core_reportbuilder', $class->get_name()) :
+                    $notavailablestr;
+                $menucard['title'] = $title;
+                $menucard['name'] = $class->get_name();
+                $menucard['disabled'] = !$class->is_available();
+                $menucard['identifier'] = get_class($class);
+                $menucard['action'] = 'add-audience';
+                $menucards['items'][] = $menucard;
+            }
+
+            // Order audience types on each category alphabetically.
+            core_collator::asort_array_of_arrays_by_key($menucards['items'], 'name');
+            $menucards['items'] = array_values($menucards['items']);
+
+            $menucardsarray[] = $menucards;
+        }
+
+        return $menucardsarray;
     }
 }

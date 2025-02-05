@@ -47,7 +47,6 @@ class pgsql_native_moodle_database_test extends \advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->libdir.'/dml/pgsql_native_moodle_database.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -90,6 +89,7 @@ class pgsql_native_moodle_database_test extends \advanced_testcase {
         global $DB;
         $reflector = new ReflectionClass($DB);
         $property = $reflector->getProperty('inorequaluniqueindex');
+        $property->setAccessible(true);
         return (int) $property->getValue($DB);
     }
 
@@ -390,11 +390,15 @@ class pgsql_native_moodle_database_test extends \advanced_testcase {
 
         $reflector = new ReflectionClass($db2);
         $rp = $reflector->getProperty('pgsql');
+        $rp->setAccessible(true);
         return $rp->getValue($db2);
     }
 
     /**
      * Test SSL connection.
+     *
+     * @return void
+     * @covers ::raw_connect
      */
     public function test_ssl_connection(): void {
         $pgconnerr = 'pg_connect(): Unable to connect to PostgreSQL server:';

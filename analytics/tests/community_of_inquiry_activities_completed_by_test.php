@@ -50,7 +50,7 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
      * @param string $availabilitylevel
      * @return void
      */
-    public function test_get_activities_with_availability($availabilitylevel): void {
+    public function test_get_activities_with_availability($availabilitylevel) {
 
         list($course, $stu1) = $this->setup_course();
 
@@ -76,6 +76,7 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
         ));
 
         $method = new ReflectionMethod($availabilityinfo, 'set_in_database');
+        $method->setAccessible(true);
         $method->invoke($availabilityinfo, json_encode($structure));
 
         $this->setUser($stu1);
@@ -113,7 +114,7 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
      *
      * @return void
      */
-    public function test_get_activities_with_weeks(): void {
+    public function test_get_activities_with_weeks() {
 
         $startdate = gmmktime('0', '0', '0', 10, 24, 2015);
         $record = array(
@@ -156,7 +157,7 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
      *
      * @return void
      */
-    public function test_get_activities_by_section(): void {
+    public function test_get_activities_by_section() {
 
         // This makes debugging easier, sorry WA's +8 :).
         $this->setTimezone('UTC');
@@ -226,7 +227,7 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
      *
      * @return void
      */
-    public function test_get_activities_with_specific_restrictions(): void {
+    public function test_get_activities_with_specific_restrictions() {
 
         list($course, $stu1) = $this->setup_course();
 
@@ -336,9 +337,11 @@ final class community_of_inquiry_activities_completed_by_test extends advanced_t
         $class = new ReflectionClass($indicator);
 
         $property = $class->getProperty('course');
+        $property->setAccessible(true);
         $property->setValue($indicator, $course);
 
         $method = new ReflectionMethod($indicator, 'get_activities');
+        $method->setAccessible(true);
 
         return array($indicator, $method);
     }

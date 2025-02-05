@@ -25,17 +25,17 @@
         "width": "500"
     }
 }}
-<div id="{{idnumber}}" class="progressbar_container mb-3 {{class}}" data-recordid="{{id}}">
+<div id="{{id}}" class="progressbar_container mb-3">
     <div class="progress">
-        <div id="{{idnumber}}_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-value="{{value}}" aria-valuemin="0" aria-valuemax="100" style="width: {{value}}%"></div>
+        <div id="{{id}}_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-value="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
     </div>
     <div class="d-flex">
         <div style="flex: 1 1 0; min-width: 0;">
-            <div id="{{idnumber}}_status" class="text-truncate">&nbsp;</div>
+            <div id="{{id}}_status" class="text-truncate">&nbsp;</div>
         </div>
-        <div class="text-end ps-3" style="flex: 0 0 content">
-            <span id="{{idnumber}}_estimate" class="">&nbsp;</span>
-            <span id="{{idnumber}}_percentage" class="d-inline-block" style="width: 3em">{{value}}%</span>
+        <div class="text-right pl-3" style="flex: 0 0 content">
+            <span id="{{id}}_estimate" class="">&nbsp;</span>
+            <span id="{{id}}_percentage" class="d-inline-block" style="width: 3em">0%</span>
         </div>
     </div>
 </div>
@@ -43,33 +43,21 @@
 {{! We must not use the JS helper otherwise this gets executed too late. }}
 <script>
 (function() {
-
-    let el = document.getElementById('{{idnumber}}');
-    let progressBar = document.getElementById('{{idnumber}}_bar');
-    let statusIndicator = document.getElementById('{{idnumber}}_status');
-    let estimateIndicator = document.getElementById('{{idnumber}}_estimate');
-    let percentageIndicator = document.getElementById('{{idnumber}}_percentage');
-
-    // Change background colour to red if there was an error.
-    if ({{error}} == 1) {
-        el.querySelector('.progress-bar').style.background = 'red';
-    }
+    var el = document.getElementById('{{id}}'),
+        progressBar = document.getElementById('{{id}}_bar'),
+        statusIndicator = document.getElementById('{{id}}_status'),
+        estimateIndicator = document.getElementById('{{id}}_estimate');
+        percentageIndicator = document.getElementById('{{id}}_percentage');
 
     el.addEventListener('update', function(e) {
         var msg = e.detail.message,
             percent = e.detail.percent,
-            estimate = e.detail.estimate
-            error = e.detail.error;
+            estimate = e.detail.estimate;
 
         statusIndicator.textContent = msg;
         progressBar.style.width = percent.toFixed(1) + '%';
         progressBar.setAttribute('value', percent.toFixed(1));
-
-        if (error) {
-            progressBar.classList.add('bg-danger');
-            progressBar.classList.remove('bg-success');
-            estimateIndicator.textContent = '';
-        } else if (percent === 100) {
+        if (percent === 100) {
             progressBar.classList.add('bg-success');
             progressBar.classList.remove('progress-bar-striped');
             progressBar.classList.remove('progress-bar-animated');

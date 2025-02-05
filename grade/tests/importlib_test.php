@@ -34,7 +34,6 @@ class importlib_test extends \advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once("{$CFG->dirroot}/grade/import/lib.php");
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -81,7 +80,7 @@ class importlib_test extends \advanced_testcase {
      *
      * @covers ::grade_import_commit
      */
-    public function test_grade_import_commit(): void {
+    public function test_grade_import_commit() {
         global $USER, $DB, $CFG;
         $this->resetAfterTest();
 

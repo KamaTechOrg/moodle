@@ -40,7 +40,6 @@ class builders_exported_posts_test extends \advanced_testcase {
      * Set up function for tests.
      */
     public function setUp(): void {
-        parent::setUp();
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_forum\subscriptions::reset_forum_cache();
@@ -56,7 +55,6 @@ class builders_exported_posts_test extends \advanced_testcase {
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_forum\subscriptions::reset_forum_cache();
-        parent::tearDown();
     }
 
     /**
@@ -94,7 +92,7 @@ class builders_exported_posts_test extends \advanced_testcase {
      * Test the build function throws exception if not given all of the forums for
      * the list of posts.
      */
-    public function test_build_throws_exception_on_missing_forums(): void {
+    public function test_build_throws_exception_on_missing_forums() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -119,7 +117,7 @@ class builders_exported_posts_test extends \advanced_testcase {
      * Test the build function throws exception if not given all of the discussions for
      * the list of posts.
      */
-    public function test_build_throws_exception_on_missing_discussions(): void {
+    public function test_build_throws_exception_on_missing_discussions() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -144,7 +142,7 @@ class builders_exported_posts_test extends \advanced_testcase {
      * Test the build function returns the exported posts in the order that the posts are
      * given.
      */
-    public function test_build_returns_posts_in_order(): void {
+    public function test_build_returns_posts_in_order() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -187,7 +185,7 @@ class builders_exported_posts_test extends \advanced_testcase {
     /**
      * Test the build function loads authors.
      */
-    public function test_build_loads_authors(): void {
+    public function test_build_loads_authors() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -232,7 +230,7 @@ class builders_exported_posts_test extends \advanced_testcase {
     /**
      * Test the build function loads attachments.
      */
-    public function test_build_loads_attachments(): void {
+    public function test_build_loads_attachments() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -308,7 +306,7 @@ class builders_exported_posts_test extends \advanced_testcase {
     /**
      * Test the build function loads author groups.
      */
-    public function test_build_loads_author_groups(): void {
+    public function test_build_loads_author_groups() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -378,7 +376,7 @@ class builders_exported_posts_test extends \advanced_testcase {
     /**
      * Test the build function loads tags.
      */
-    public function test_build_loads_tags(): void {
+    public function test_build_loads_tags() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
@@ -439,7 +437,7 @@ class builders_exported_posts_test extends \advanced_testcase {
     /**
      * Test the build function loads read_receipts.
      */
-    public function test_build_loads_read_receipts(): void {
+    public function test_build_loads_read_receipts() {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();

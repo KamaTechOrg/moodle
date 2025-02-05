@@ -188,10 +188,6 @@
     margin: 0.5em 0;
 }
 
-.path-mod-quiz .autosave_info {
-    font-size: small;
-}
-
 .path-mod-quiz .othernav a,
 .path-mod-quiz .othernav input {
     display: block;
@@ -251,6 +247,24 @@
     text-align: center;
 }
 
+#page-mod-quiz-view #page .quizattemptsummary td p {
+    margin-top: 0;
+}
+
+#page-mod-quiz-view table.quizattemptsummary tr.bestrow td {
+    border-color: #bce8f1;
+    background-color: #d9edf7;
+}
+
+table.quizattemptsummary .noreviewmessage {
+    color: gray;
+}
+
+#page-mod-quiz-view .generaltable.quizattemptsummary {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #page-mod-quiz-view .generalbox#feedback .overriddennotice {
     text-align: center;
     font-size: 0.7em;
@@ -301,6 +315,10 @@ body.path-mod-quiz table tbody tr.gradedattempt > td.sticky-column {
 /** Mod quiz summary **/
 #page-mod-quiz-summary #content {
     text-align: center;
+}
+
+#page-mod-quiz-summary .questionflag {
+    vertical-align: text-bottom;
 }
 
 #page-mod-quiz-summary #quiz-timer {
@@ -501,6 +519,15 @@ table.quizreviewsummary td.cell {
     min-height: 2.85em;
 }
 
+@media (max-width: 576px) {
+    #page-mod-quiz-edit .maxgrade {
+        margin-bottom: 0.6em;
+    }
+    #page-mod-quiz-edit .maxgrade .form-control {
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
 #page-mod-quiz-edit .maxgrade label {
     display: inline;
 }
@@ -1082,9 +1109,6 @@ table.quizreviewsummary td.cell {
 #page-mod-quiz-edit .inplaceeditable-text {
     color: #000;
     text-align: right;
-}
-#page-mod-quiz-editgrading .inplaceeditable .quickeditlink {
-    color: var(--primary);
 }
 #page-mod-quiz-edit .inplaceeditable .quickeditlink {
     color: var(--primary);

@@ -130,7 +130,7 @@ class entries_export_test extends \advanced_testcase {
         $includefiles = false;
         utils::data_exportdata($data->id, $fields, $selectedfields, $exporter, $currentgroup, $context,
             $exportuser, $exporttime, $exportapproval, $tags, $includefiles);
-        $this->assertEquals(file_get_contents(self::get_fixture_path(__NAMESPACE__, 'test_data_export_without_files.csv')),
+        $this->assertEquals(file_get_contents(__DIR__ . '/fixtures/test_data_export_without_files.csv'),
             $exporter->send_file(false));
 
         $this->assertEquals(1, $exporter->get_records_count());
@@ -147,18 +147,18 @@ class entries_export_test extends \advanced_testcase {
         $ziparchive = new \zip_archive();
         $ziparchive->open($tmpdir . '/testexportarchive.zip');
         $expectedfilecontents = [
-            // The test generator for mod_data uses a copy of field/picture/pix/sample.png as sample file content for the
-            // file stored in a file and picture field.
-            // So we expect that this file has to have the same content as sample.png.
+            // The test generator for mod_data uses a copy of pix/monologo.png as sample file content for the file stored in a
+            // file and picture field.
+            // So we expect that this file has to have the same content as monologo.png.
             // Also, the default value for the subdirectory in the zip archive containing the files is 'files/'.
-            'files/samplefile.png' => 'mod/data/field/picture/pix/sample.png',
-            'files/samplefile_1.png' => 'mod/data/field/picture/pix/sample.png',
-            'files/picturefile.png' => 'mod/data/field/picture/pix/sample.png',
+            'files/samplefile.png' => 'mod/data/pix/monologo.png',
+            'files/samplefile_1.png' => 'mod/data/pix/monologo.png',
+            'files/picturefile.png' => 'mod/data/pix/monologo.png',
             // By checking that the content of the exported csv is identical to the fixture file it is verified
             // that the filenames in the csv file correspond to the names of the exported file.
             // It also verifies that files with identical file names in different fields (or records) will be numbered
             // automatically (samplefile.png, samplefile_1.png, ...).
-            'testexportfile.csv' => self::get_fixture_path(__NAMESPACE__, 'test_data_export_with_files.csv'),
+            'testexportfile.csv' => __DIR__ . '/fixtures/test_data_export_with_files.csv'
         ];
         for ($i = 0; $i < $ziparchive->count(); $i++) {
             // We here iterate over all files in the zip archive and check if their content is identical to the files

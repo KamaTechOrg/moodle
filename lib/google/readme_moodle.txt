@@ -55,8 +55,6 @@ Local changes (to reapply until upstream upgrades contain them):
       ```
     * MDL-46563 - PHP 8.3 compliance
       - Converted use of `get_class()` to `static::class`
-    * MDL-81634 - PHP 8.4 compliance
-      - Implicitly defined nullables
 
 Information
 -----------

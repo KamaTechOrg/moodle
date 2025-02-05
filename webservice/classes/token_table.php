@@ -36,16 +36,7 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @package    core_webservice
  * @copyright  2017 John Okely <john@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @deprecated since 4.5 MDL-79496. Table replaced with a report builder system report.
- * @todo MDL-79909 This will be deleted in Moodle 6.0.
  */
-#[\core\attribute\deprecated(
-    replacement: null,
-    since: '4.5',
-    reason: 'Table replaced with a report builder system report',
-    mdl: 'MDL-79496',
-)]
 class token_table extends \table_sql {
 
     /**
@@ -191,7 +182,7 @@ class token_table extends \table_sql {
 
         if ($data->serviceshortname <> MOODLE_OFFICIAL_MOBILE_SERVICE && !is_siteadmin($data->userid)
                 && array_key_exists($data->userid, $usermissingcaps)) {
-            $count = \html_writer::span(count($usermissingcaps[$data->userid]), 'badge bg-danger text-white');
+            $count = \html_writer::span(count($usermissingcaps[$data->userid]), 'badge badge-danger');
             $links = array_map(function($capname) {
                 return get_capability_docs_link((object)['name' => $capname]) . \html_writer::div($capname, 'text-muted');
             }, $usermissingcaps[$data->userid]);

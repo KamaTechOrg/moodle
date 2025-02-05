@@ -36,11 +36,10 @@ namespace mod_book\event;
 class events_test extends \advanced_testcase {
 
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
-    public function test_chapter_created(): void {
+    public function test_chapter_created() {
         // There is no proper API to call to generate chapters for a book, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -66,7 +65,7 @@ class events_test extends \advanced_testcase {
         $this->assertEquals($chapter->id, $event->objectid);
     }
 
-    public function test_chapter_updated(): void {
+    public function test_chapter_updated() {
         // There is no proper API to call to generate chapters for a book, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -92,7 +91,7 @@ class events_test extends \advanced_testcase {
         $this->assertEquals($chapter->id, $event->objectid);
     }
 
-    public function test_chapter_deleted(): void {
+    public function test_chapter_deleted() {
         // There is no proper API to call to delete chapters for a book, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -120,7 +119,7 @@ class events_test extends \advanced_testcase {
         $this->assertEquals($chapter, $event->get_record_snapshot('book_chapters', $chapter->id));
     }
 
-    public function test_course_module_instance_list_viewed(): void {
+    public function test_course_module_instance_list_viewed() {
         // There is no proper API to call to trigger this event, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -142,7 +141,7 @@ class events_test extends \advanced_testcase {
         $this->assertEquals(\context_course::instance($course->id), $event->get_context());
     }
 
-    public function test_course_module_viewed(): void {
+    public function test_course_module_viewed() {
         // There is no proper API to call to trigger this event, so what we are
         // doing here is simply making sure that the events returns the right information.
 
@@ -168,7 +167,7 @@ class events_test extends \advanced_testcase {
         $this->assertEquals($book->id, $event->objectid);
     }
 
-    public function test_chapter_viewed(): void {
+    public function test_chapter_viewed() {
         // There is no proper API to call to trigger this event, so what we are
         // doing here is simply making sure that the events returns the right information.
 

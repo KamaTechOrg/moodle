@@ -103,9 +103,10 @@ function is_moodle_cookie_secure() {
 }
 
 /**
- * Sets a Moodle cookie with an encrypted username
+ * Sets a moodle cookie with a weakly encrypted username
  *
  * @param string $username to encrypt and place in a cookie, '' means delete current cookie
+ * @return void
  */
 function set_moodle_cookie($username) {
     global $CFG;
@@ -133,13 +134,12 @@ function set_moodle_cookie($username) {
 
     if ($username !== '') {
         // Set username cookie for 60 days.
-        setcookie($cookiename, \core\encryption::encrypt($username), time() + (DAYSECS * 60), $CFG->sessioncookiepath,
-            $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly);
+        setcookie($cookiename, rc4encrypt($username), time() + (DAYSECS * 60), $CFG->sessioncookiepath, $CFG->sessioncookiedomain, $cookiesecure, $CFG->cookiehttponly);
     }
 }
 
 /**
- * Gets a Moodle cookie with an encrypted username
+ * Gets a moodle cookie with a weakly encrypted username
  *
  * @return string username
  */
@@ -156,14 +156,14 @@ function get_moodle_cookie() {
 
     $cookiename = 'MOODLEID1_'.$CFG->sessioncookie;
 
-    try {
-        $username = \core\encryption::decrypt($_COOKIE[$cookiename] ?? '');
-        if ($username === 'guest' || $username === 'nobody') {
+    if (empty($_COOKIE[$cookiename])) {
+        return '';
+    } else {
+        $username = rc4decrypt($_COOKIE[$cookiename]);
+        if ($username === 'guest' or $username === 'nobody') {
             // backwards compatibility - we do not set these cookies any more
             $username = '';
         }
         return $username;
-    } catch (\moodle_exception $ex) {
-        return '';
     }
 }

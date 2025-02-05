@@ -18,6 +18,8 @@ Feature: Award badges based on activity completion
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
       | student2 | C1     | student        |
+    And the following config values are set as admin:
+      | grade_item_advanced | hiddenuntil |
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
@@ -52,13 +54,14 @@ Feature: Award badges based on activity completion
 
   Scenario: Student does not earn a badge using activity completion when does not get passing grade
     Given I navigate to "Badges" in current page administration
+    And I press "Manage badges"
     And I follow "Course Badge 1"
     And I select "Criteria" from the "jump" singleselect
     And I set the field "type" to "Activity completion"
     And I set the field "Quiz - Test quiz name 1" to "1"
     And I press "Save"
     And I press "Enable access"
-    And I click on "Enable" "button" in the "Confirm" "dialogue"
+    And I press "Continue"
     And I should see "Recipients (0)"
     # Pass grade for student1. Activity is considered complete because student1 got a passing grade.
     And user "student1" has attempted "Test quiz name 1" with responses:
@@ -68,7 +71,7 @@ Feature: Award badges based on activity completion
     And user "student2" has attempted "Test quiz name 1" with responses:
       | slot | response |
       | 1    | False    |
-    And I navigate to "Badges" in current page administration
+    And I navigate to "Badges > Manage badges" in current page administration
     And I follow "Course Badge 1"
     Then I should see "Recipients (1)"
     And I select "Recipients (1)" from the "jump" singleselect
@@ -77,13 +80,14 @@ Feature: Award badges based on activity completion
 
   Scenario: Students with any grades in an activity will receive a badge if the completion condition is set to receive any grade
     Given I navigate to "Badges" in current page administration
+    And I press "Manage badges"
     And I follow "Course Badge 2"
     And I select "Criteria" from the "jump" singleselect
     And I set the field "type" to "Activity completion"
     And I set the field "Quiz - Test quiz name 2" to "1"
     And I press "Save"
     And I press "Enable access"
-    And I click on "Enable" "button" in the "Confirm" "dialogue"
+    And I press "Continue"
     # Pass grade for student1.
     And user "student1" has attempted "Test quiz name 2" with responses:
       | slot | response |
@@ -92,7 +96,7 @@ Feature: Award badges based on activity completion
     And user "student2" has attempted "Test quiz name 2" with responses:
       | slot | response |
       | 1    | False    |
-    And I navigate to "Badges" in current page administration
+    And I navigate to "Badges > Manage badges" in current page administration
     And I follow "Course Badge 2"
     Then I should see "Recipients (2)"
     And I select "Recipients (2)" from the "jump" singleselect
@@ -109,6 +113,7 @@ Feature: Award badges based on activity completion
       | slot | response |
       | 1    | False    |
     And I navigate to "Badges" in current page administration
+    And I press "Manage badges"
     And I follow "Course Badge 1"
     And I select "Criteria" from the "jump" singleselect
     And I set the field "type" to "Activity completion"
@@ -116,7 +121,7 @@ Feature: Award badges based on activity completion
     And I press "Save"
     # Enable badge access once students have completed the activity.
     When I press "Enable access"
-    And I click on "Enable" "button" in the "Confirm" "dialogue"
+    And I press "Continue"
     # Only student1 should earn the badge because student2 did not pass the quiz.
     Then I should see "Recipients (1)"
     And I select "Recipients (1)" from the "jump" singleselect

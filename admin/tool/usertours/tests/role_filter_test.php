@@ -22,9 +22,9 @@ namespace tool_usertours;
  * @package    tool_usertours
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \tool_usertours\local\filter\role
  */
 class role_filter_test extends \advanced_testcase {
+
     /**
      * @var $course Test course
      */
@@ -55,7 +55,6 @@ class role_filter_test extends \advanced_testcase {
 
     public function setUp(): void {
         global $DB;
-        parent::setUp();
 
         $this->resetAfterTest(true);
         $generator = $this->getDataGenerator();
@@ -73,7 +72,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when any is set.
      */
-    public function test_filter_matches_any(): void {
+    public function test_filter_matches_any() {
         $context = \context_course::instance($this->course->id);
 
         // Note: No need to persist this tour.
@@ -94,7 +93,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when one role is set.
      */
-    public function test_filter_matches_single_role(): void {
+    public function test_filter_matches_single_role() {
         $context = \context_course::instance($this->course->id);
 
         $roles = [
@@ -123,7 +122,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when multiple roles are set.
      */
-    public function test_filter_matches_multiple_role(): void {
+    public function test_filter_matches_multiple_role() {
         $context = \context_course::instance($this->course->id);
 
         $roles = [
@@ -153,7 +152,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when one user has multiple roles.
      */
-    public function test_filter_matches_multiple_role_one_user(): void {
+    public function test_filter_matches_multiple_role_one_user() {
         $context = \context_course::instance($this->course->id);
 
         $roles = [
@@ -185,7 +184,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when it is targetted at an admin.
      */
-    public function test_filter_matches_multiple_role_only_admin(): void {
+    public function test_filter_matches_multiple_role_only_admin() {
         $context = \context_course::instance($this->course->id);
 
         $roles = [
@@ -213,7 +212,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when multiple roles are set, including an admin user.
      */
-    public function test_filter_matches_multiple_role_including_admin(): void {
+    public function test_filter_matches_multiple_role_including_admin() {
         $context = \context_course::instance($this->course->id);
 
         $roles = [
@@ -244,7 +243,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test the filter_matches function when an admin user has multiple roles.
      */
-    public function test_filter_matches_multiple_role_admin_user(): void {
+    public function test_filter_matches_multiple_role_admin_user() {
         global $USER;
 
         $context = \context_course::instance($this->course->id);
@@ -267,7 +266,7 @@ class role_filter_test extends \advanced_testcase {
     /**
      * Test that the get_filter_options function does not include the guest roles.
      */
-    public function test_get_filter_options_no_guest_roles(): void {
+    public function test_get_filter_options_no_guest_roles() {
         create_role('Test Role', 'testrole', 'This is a test role', 'guest');
 
         $allroles = role_get_names(null, ROLENAME_ALIAS);

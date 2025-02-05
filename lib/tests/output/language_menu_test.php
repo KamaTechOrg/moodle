@@ -32,7 +32,6 @@ class language_menu_test extends \advanced_testcase {
      */
     public function setUp(): void {
         global $PAGE;
-        parent::setUp();
         $this->resetAfterTest();
         $PAGE->set_url('/');
     }
@@ -44,7 +43,7 @@ class language_menu_test extends \advanced_testcase {
      * @param string $language
      * @param array $expected
      */
-    public function test_get_lang_menu(bool $withadditionallangs, string $language, array $expected): void {
+    public function test_get_lang_menu(bool $withadditionallangs, string $language, array $expected) {
         global $CFG, $PAGE;
 
         // Mimic multiple langs installed. To trigger responses 'get_list_of_translations'.
@@ -62,6 +61,7 @@ class language_menu_test extends \advanced_testcase {
 
         $output = new language_menu($PAGE);
         $method = new ReflectionMethod('\core\output\language_menu', 'export_for_template');
+        $method->setAccessible(true);
         $renderer = $PAGE->get_renderer('core');
 
         $response = $method->invoke($output, $renderer);
@@ -101,7 +101,7 @@ class language_menu_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function get_lang_menu_provider(): array {
+    public function get_lang_menu_provider(): array {
         return [
             'Lang menu with only the current language' => [
                 false, 'en', []

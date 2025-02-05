@@ -14,11 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace core_cache;
+/**
+ * Cache helper class
+ *
+ * This file is part of Moodle's cache API, affectionately called MUC.
+ * It contains the components that are requried in order to use caching.
+ *
+ * @package    core
+ * @category   cache
+ * @copyright  2012 Sam Hemelryk
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-use core\lang_string;
-use core\exception\coding_exception;
-use DirectoryIterator;
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * The cache helper class.
@@ -26,22 +34,23 @@ use DirectoryIterator;
  * The cache helper class provides common functionality to the cache API and is useful to developers within to interact with
  * the cache API in a general way.
  *
- * @package    core_cache
+ * @package    core
  * @category   cache
  * @copyright  2012 Sam Hemelryk
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class helper {
+class cache_helper {
+
     /**
      * Statistics gathered by the cache API during its operation will be used here.
      * @static
      * @var array
      */
-    protected static $stats = [];
+    protected static $stats = array();
 
     /**
      * The instance of the cache helper.
-     * @var self
+     * @var cache_helper
      */
     protected static $instance;
 
@@ -61,25 +70,25 @@ class helper {
      * @return bool
      */
     public static function ready_for_early_init() {
-        return config::config_file_exists();
+        return cache_config::config_file_exists();
     }
 
     /**
-     * Returns an instance of the helper.
+     * Returns an instance of the cache_helper.
      *
      * This is designed for internal use only and acts as a static store.
      * @staticvar null $instance
-     * @return self
+     * @return cache_helper
      */
     protected static function instance() {
         if (is_null(self::$instance)) {
-            self::$instance = new self();
+            self::$instance = new cache_helper();
         }
         return self::$instance;
     }
 
     /**
-     * Constructs an instance of the helper class. Again for internal use only.
+     * Constructs an instance of the cache_helper class. Again for internal use only.
      */
     protected function __construct() {
         // Nothing to do here, just making sure you can't get an instance of this.
@@ -89,41 +98,41 @@ class helper {
      * Used as a data store for initialised definitions.
      * @var array
      */
-    protected $definitions = [];
+    protected $definitions = array();
 
     /**
      * Used as a data store for initialised cache stores
      * We use this because we want to avoid establishing multiple instances of a single store.
      * @var array
      */
-    protected $stores = [];
+    protected $stores = array();
 
     /**
      * Returns the class for use as a cache loader for the given mode.
      *
-     * @param int $mode One of store::MODE_
+     * @param int $mode One of cache_store::MODE_
      * @return string
      * @throws coding_exception
      */
     public static function get_class_for_mode($mode) {
         switch ($mode) {
-            case store::MODE_APPLICATION:
-                return application_cache::class;
-            case store::MODE_REQUEST:
-                return request_cache::class;
-            case store::MODE_SESSION:
-                return session_cache::class;
+            case cache_store::MODE_APPLICATION :
+                return 'cache_application';
+            case cache_store::MODE_REQUEST :
+                return 'cache_request';
+            case cache_store::MODE_SESSION :
+                return 'cache_session';
         }
-        throw new coding_exception('Unknown cache mode passed. Must be one of store::MODE_*');
+        throw new coding_exception('Unknown cache mode passed. Must be one of cache_store::MODE_*');
     }
 
     /**
      * Returns the cache stores to be used with the given definition.
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return array
      */
-    public static function get_cache_stores(definition $definition) {
-        $instance = config::instance();
+    public static function get_cache_stores(cache_definition $definition) {
+        $instance = cache_config::instance();
         $stores = $instance->get_stores_for_definition($definition);
         $stores = self::initialise_cachestore_instances($stores, $definition);
         return $stores;
@@ -133,12 +142,12 @@ class helper {
      * Internal function for initialising an array of stores against a given cache definition.
      *
      * @param array $stores
-     * @param definition $definition
-     * @return store[]
+     * @param cache_definition $definition
+     * @return cache_store[]
      */
-    protected static function initialise_cachestore_instances(array $stores, definition $definition) {
-        $return = [];
-        $factory = factory::instance();
+    protected static function initialise_cachestore_instances(array $stores, cache_definition $definition) {
+        $return = array();
+        $factory = cache_factory::instance();
         foreach ($stores as $name => $details) {
             $store = $factory->create_store_from_config($name, $details, $definition);
             if ($store !== false) {
@@ -149,15 +158,15 @@ class helper {
     }
 
     /**
-     * Returns a locakable_cache_interface instance suitable for use with the store.
+     * Returns a cache_lock instance suitable for use with the store.
      *
-     * @param store $store
-     * @return lockable_cache_interface
+     * @param cache_store $store
+     * @return cache_lock_interface
      */
-    public static function get_cachelock_for_store(store $store) {
-        $instance = config::instance();
+    public static function get_cachelock_for_store(cache_store $store) {
+        $instance = cache_config::instance();
         $lockconf = $instance->get_lock_for_store($store->my_name());
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         return $factory->create_lock_instance($lockconf);
     }
 
@@ -171,9 +180,9 @@ class helper {
      */
     public static function early_get_cache_plugins() {
         global $CFG;
-        $result = [];
-        $ignored = ['CVS', '_vti_cnf', 'simpletest', 'db', 'yui', 'tests'];
-        $fulldir = $CFG->dirroot . '/cache/stores';
+        $result = array();
+        $ignored = array('CVS', '_vti_cnf', 'simpletest', 'db', 'yui', 'tests');
+        $fulldir = $CFG->dirroot.'/cache/stores';
         $items = new DirectoryIterator($fulldir);
         foreach ($items as $item) {
             if ($item->isDot() or !$item->isDir()) {
@@ -187,7 +196,7 @@ class helper {
                 // Better ignore plugins with problematic names here.
                 continue;
             }
-            $result[$pluginname] = $fulldir . '/' . $pluginname;
+            $result[$pluginname] = $fulldir.'/'.$pluginname;
             unset($item);
         }
         unset($items);
@@ -206,14 +215,14 @@ class helper {
      * @return boolean
      * @throws coding_exception
      */
-    public static function invalidate_by_definition($component, $area, array $identifiers = [], $keys = []) {
+    public static function invalidate_by_definition($component, $area, array $identifiers = array(), $keys = array()) {
         $cache = cache::make($component, $area, $identifiers);
         if (is_array($keys)) {
             $cache->delete_many($keys);
         } else if (is_scalar($keys)) {
             $cache->delete($keys);
         } else {
-            throw new coding_exception('helper::invalidate_by_definition only accepts $keys as array, or scalar.');
+            throw new coding_exception('cache_helper::invalidate_by_definition only accepts $keys as array, or scalar.');
         }
         return true;
     }
@@ -228,17 +237,17 @@ class helper {
      * @param array $keys
      */
     public static function invalidate_by_event($event, array $keys) {
-        $instance = config::instance();
+        $instance = cache_config::instance();
         $invalidationeventset = false;
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $inuse = $factory->get_caches_in_use();
         $purgetoken = null;
         foreach ($instance->get_definitions() as $name => $definitionarr) {
-            $definition = definition::load($name, $definitionarr);
+            $definition = cache_definition::load($name, $definitionarr);
             if ($definition->invalidates_on_event($event)) {
                 // First up check if there is a cache loader for this definition already.
                 // If there is we need to invalidate the keys from there.
-                $definitionkey = $definition->get_component() . '/' . $definition->get_area();
+                $definitionkey = $definition->get_component().'/'.$definition->get_area();
                 if (isset($inuse[$definitionkey])) {
                     $inuse[$definitionkey]->delete_many($keys);
                 }
@@ -247,7 +256,7 @@ class helper {
                 // Request caches shouldn't have events as all data is lost at the end of the request.
                 // Events should only be logged once of course and likely several definitions are watching so we
                 // track its logging with $invalidationeventset.
-                $logevent = ($invalidationeventset === false && $definition->get_mode() !== store::MODE_REQUEST);
+                $logevent = ($invalidationeventset === false && $definition->get_mode() !== cache_store::MODE_REQUEST);
 
                 if ($logevent) {
                     // Get the event invalidation cache.
@@ -256,7 +265,7 @@ class helper {
                     $data = $cache->get($event);
                     if ($data === false) {
                         // There are none.
-                        $data = [];
+                        $data = array();
                     }
                     // Add our keys to them with the current cache timestamp.
                     if (null === $purgetoken) {
@@ -282,12 +291,12 @@ class helper {
      * @param array $identifiers
      * @return bool
      */
-    public static function purge_by_definition($component, $area, array $identifiers = []) {
+    public static function purge_by_definition($component, $area, array $identifiers = array()) {
         // Create the cache.
         $cache = cache::make($component, $area, $identifiers);
         // Initialise, in case of a store.
-        if ($cache instanceof store) {
-            $factory = factory::instance();
+        if ($cache instanceof cache_store) {
+            $factory = cache_factory::instance();
             $definition = $factory->create_definition($component, $area, null);
             $cacheddefinition = clone $definition;
             $cacheddefinition->set_identifiers($identifiers);
@@ -307,17 +316,17 @@ class helper {
      * @param string $event
      */
     public static function purge_by_event($event) {
-        $instance = config::instance();
+        $instance = cache_config::instance();
         $invalidationeventset = false;
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $inuse = $factory->get_caches_in_use();
         $purgetoken = null;
         foreach ($instance->get_definitions() as $name => $definitionarr) {
-            $definition = definition::load($name, $definitionarr);
+            $definition = cache_definition::load($name, $definitionarr);
             if ($definition->invalidates_on_event($event)) {
                 // First up check if there is a cache loader for this definition already.
                 // If there is we need to invalidate the keys from there.
-                $definitionkey = $definition->get_component() . '/' . $definition->get_area();
+                $definitionkey = $definition->get_component().'/'.$definition->get_area();
                 if (isset($inuse[$definitionkey])) {
                     $inuse[$definitionkey]->purge();
                 } else {
@@ -328,7 +337,7 @@ class helper {
                 // Request caches shouldn't have events as all data is lost at the end of the request.
                 // Events should only be logged once of course and likely several definitions are watching so we
                 // track its logging with $invalidationeventset.
-                $logevent = ($invalidationeventset === false && $definition->get_mode() !== store::MODE_REQUEST);
+                $logevent = ($invalidationeventset === false && $definition->get_mode() !== cache_store::MODE_REQUEST);
 
                 // We need to flag the event in the "Event invalidation" cache if it hasn't already happened.
                 if ($logevent && $invalidationeventset === false) {
@@ -338,9 +347,9 @@ class helper {
                     if (null === $purgetoken) {
                         $purgetoken = cache::get_purge_token(true);
                     }
-                    $data = [
+                    $data = array(
                         'purged' => $purgetoken,
-                    ];
+                    );
                     // Set that data back to the cache.
                     $cache->set($event, $data);
                     // This only needs to occur once.
@@ -355,9 +364,9 @@ class helper {
      * @param string $store
      * @param string $storeclass
      * @param string $definition A string that identifies the definition.
-     * @param int $mode One of store::MODE_*. Since 2.9.
+     * @param int $mode One of cache_store::MODE_*. Since 2.9.
      */
-    protected static function ensure_ready_for_stats($store, $storeclass, $definition, $mode = store::MODE_APPLICATION) {
+    protected static function ensure_ready_for_stats($store, $storeclass, $definition, $mode = cache_store::MODE_APPLICATION) {
         // This function is performance-sensitive, so exit as quickly as possible
         // if we do not need to do anything.
         if (isset(self::$stats[$definition]['stores'][$store])) {
@@ -365,28 +374,28 @@ class helper {
         }
 
         if (!array_key_exists($definition, self::$stats)) {
-            self::$stats[$definition] = [
+            self::$stats[$definition] = array(
                 'mode' => $mode,
-                'stores' => [
-                    $store => [
+                'stores' => array(
+                    $store => array(
                         'class' => $storeclass,
                         'hits' => 0,
                         'misses' => 0,
                         'sets' => 0,
-                        'iobytes' => store::IO_BYTES_NOT_SUPPORTED,
+                        'iobytes' => cache_store::IO_BYTES_NOT_SUPPORTED,
                         'locks' => 0,
-                    ],
-                ],
-            ];
+                    )
+                )
+            );
         } else if (!array_key_exists($store, self::$stats[$definition]['stores'])) {
-            self::$stats[$definition]['stores'][$store] = [
+            self::$stats[$definition]['stores'][$store] = array(
                 'class' => $storeclass,
                 'hits' => 0,
                 'misses' => 0,
                 'sets' => 0,
-                'iobytes' => store::IO_BYTES_NOT_SUPPORTED,
+                'iobytes' => cache_store::IO_BYTES_NOT_SUPPORTED,
                 'locks' => 0,
-            ];
+            );
         }
     }
 
@@ -397,52 +406,47 @@ class helper {
      * It is backwards compatible when a string is passed but is not accurate.
      *
      * @since 2.9
-     * @param definition|string $definition
+     * @param cache_definition|string $definition
      * @return string
      */
     protected static function get_definition_stat_id_and_mode($definition) {
-        if (!($definition instanceof definition)) {
+        if (!($definition instanceof cache_definition)) {
             // All core calls to this method have been updated, this is the legacy state.
             // We'll use application as the default as that is the most common, really this is not accurate of course but
             // at this point we can only guess and as it only affects calls to cache stat outside of core (of which there should
             // be none) I think that is fine.
             debugging('Please update you cache stat calls to pass the definition rather than just its ID.', DEBUG_DEVELOPER);
-            return [(string)$definition, store::MODE_APPLICATION];
+            return array((string)$definition, cache_store::MODE_APPLICATION);
         }
-        return [$definition->get_id(), $definition->get_mode()];
+        return array($definition->get_id(), $definition->get_mode());
     }
 
     /**
      * Record a cache hit in the stats for the given store and definition.
      *
      * In Moodle 2.9 the $definition argument changed from accepting only a string to accepting a string or a
-     * definition instance. It is preferable to pass a cache definition instance.
+     * cache_definition instance. It is preferable to pass a cache definition instance.
      *
-     * In Moodle 3.9 the first argument changed to also accept a store.
+     * In Moodle 3.9 the first argument changed to also accept a cache_store.
      *
      * @internal
-     * @param string|store $store
-     * @param definition $definition You used to be able to pass a string here, however that is deprecated please pass the
-     *      actual definition object now.
+     * @param string|cache_store $store
+     * @param cache_definition $definition You used to be able to pass a string here, however that is deprecated please pass the
+     *      actual cache_definition object now.
      * @param int $hits The number of hits to record (by default 1)
-     * @param int $readbytes Number of bytes read from the cache or store::IO_BYTES_NOT_SUPPORTED
+     * @param int $readbytes Number of bytes read from the cache or cache_store::IO_BYTES_NOT_SUPPORTED
      */
-    public static function record_cache_hit(
-        $store,
-        $definition,
-        int $hits = 1,
-        int $readbytes = store::IO_BYTES_NOT_SUPPORTED,
-    ): void {
+    public static function record_cache_hit($store, $definition, int $hits = 1, int $readbytes = cache_store::IO_BYTES_NOT_SUPPORTED): void {
         $storeclass = '';
-        if ($store instanceof store) {
+        if ($store instanceof cache_store) {
             $storeclass = get_class($store);
             $store = $store->my_name();
         }
-        [$definitionstr, $mode] = self::get_definition_stat_id_and_mode($definition);
+        list($definitionstr, $mode) = self::get_definition_stat_id_and_mode($definition);
         self::ensure_ready_for_stats($store, $storeclass, $definitionstr, $mode);
         self::$stats[$definitionstr]['stores'][$store]['hits'] += $hits;
-        if ($readbytes !== store::IO_BYTES_NOT_SUPPORTED) {
-            if (self::$stats[$definitionstr]['stores'][$store]['iobytes'] === store::IO_BYTES_NOT_SUPPORTED) {
+        if ($readbytes !== cache_store::IO_BYTES_NOT_SUPPORTED) {
+            if (self::$stats[$definitionstr]['stores'][$store]['iobytes'] === cache_store::IO_BYTES_NOT_SUPPORTED) {
                 self::$stats[$definitionstr]['stores'][$store]['iobytes'] = $readbytes;
             } else {
                 self::$stats[$definitionstr]['stores'][$store]['iobytes'] += $readbytes;
@@ -454,23 +458,23 @@ class helper {
      * Record a cache miss in the stats for the given store and definition.
      *
      * In Moodle 2.9 the $definition argument changed from accepting only a string to accepting a string or a
-     * definition instance. It is preferable to pass a cache definition instance.
+     * cache_definition instance. It is preferable to pass a cache definition instance.
      *
-     * In Moodle 3.9 the first argument changed to also accept a store.
+     * In Moodle 3.9 the first argument changed to also accept a cache_store.
      *
      * @internal
-     * @param string|store $store
-     * @param definition $definition You used to be able to pass a string here, however that is deprecated please pass the
-     *      actual definition object now.
+     * @param string|cache_store $store
+     * @param cache_definition $definition You used to be able to pass a string here, however that is deprecated please pass the
+     *      actual cache_definition object now.
      * @param int $misses The number of misses to record (by default 1)
      */
     public static function record_cache_miss($store, $definition, $misses = 1) {
         $storeclass = '';
-        if ($store instanceof store) {
+        if ($store instanceof cache_store) {
             $storeclass = get_class($store);
             $store = $store->my_name();
         }
-        [$definitionstr, $mode] = self::get_definition_stat_id_and_mode($definition);
+        list($definitionstr, $mode) = self::get_definition_stat_id_and_mode($definition);
         self::ensure_ready_for_stats($store, $storeclass, $definitionstr, $mode);
         self::$stats[$definitionstr]['stores'][$store]['misses'] += $misses;
     }
@@ -479,33 +483,29 @@ class helper {
      * Record a cache set in the stats for the given store and definition.
      *
      * In Moodle 2.9 the $definition argument changed from accepting only a string to accepting a string or a
-     * definition instance. It is preferable to pass a cache definition instance.
+     * cache_definition instance. It is preferable to pass a cache definition instance.
      *
-     * In Moodle 3.9 the first argument changed to also accept a store.
+     * In Moodle 3.9 the first argument changed to also accept a cache_store.
      *
      * @internal
-     * @param string|store $store
-     * @param definition $definition You used to be able to pass a string here, however that is deprecated please pass the
-     *      actual definition object now.
+     * @param string|cache_store $store
+     * @param cache_definition $definition You used to be able to pass a string here, however that is deprecated please pass the
+     *      actual cache_definition object now.
      * @param int $sets The number of sets to record (by default 1)
-     * @param int $writebytes Number of bytes written to the cache or store::IO_BYTES_NOT_SUPPORTED
+     * @param int $writebytes Number of bytes written to the cache or cache_store::IO_BYTES_NOT_SUPPORTED
      */
-    public static function record_cache_set(
-        $store,
-        $definition,
-        int $sets = 1,
-        int $writebytes = store::IO_BYTES_NOT_SUPPORTED
-    ) {
+    public static function record_cache_set($store, $definition, int $sets = 1,
+            int $writebytes = cache_store::IO_BYTES_NOT_SUPPORTED) {
         $storeclass = '';
-        if ($store instanceof store) {
+        if ($store instanceof cache_store) {
             $storeclass = get_class($store);
             $store = $store->my_name();
         }
-        [$definitionstr, $mode] = self::get_definition_stat_id_and_mode($definition);
+        list($definitionstr, $mode) = self::get_definition_stat_id_and_mode($definition);
         self::ensure_ready_for_stats($store, $storeclass, $definitionstr, $mode);
         self::$stats[$definitionstr]['stores'][$store]['sets'] += $sets;
-        if ($writebytes !== store::IO_BYTES_NOT_SUPPORTED) {
-            if (self::$stats[$definitionstr]['stores'][$store]['iobytes'] === store::IO_BYTES_NOT_SUPPORTED) {
+        if ($writebytes !== cache_store::IO_BYTES_NOT_SUPPORTED) {
+            if (self::$stats[$definitionstr]['stores'][$store]['iobytes'] === cache_store::IO_BYTES_NOT_SUPPORTED) {
                 self::$stats[$definitionstr]['stores'][$store]['iobytes'] = $writebytes;
             } else {
                 self::$stats[$definitionstr]['stores'][$store]['iobytes'] += $writebytes;
@@ -528,13 +528,13 @@ class helper {
      * anything. This will involve full setup of the cache + the purge operation. On a site using caching heavily this WILL be
      * painful.
      *
-     * @param bool $usewriter If set to true the config_writer class is used. This class is special as it avoids
+     * @param bool $usewriter If set to true the cache_config_writer class is used. This class is special as it avoids
      *      it is still usable when caches have been disabled.
      *      Please use this option only if you really must. It's purpose is to allow the cache to be purged when it would be
      *      otherwise impossible.
      */
     public static function purge_all($usewriter = false) {
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $config = $factory->create_config_instance($usewriter);
         foreach ($config->get_all_stores() as $store) {
             self::purge_store($store['name'], $config);
@@ -548,12 +548,12 @@ class helper {
      * Purges a store given its name.
      *
      * @param string $storename
-     * @param config|null $config
+     * @param cache_config $config
      * @return bool
      */
-    public static function purge_store($storename, ?config $config = null) {
+    public static function purge_store($storename, cache_config $config = null) {
         if ($config === null) {
-            $config = config::instance();
+            $config = cache_config::instance();
         }
 
         $stores = $config->get_all_stores();
@@ -571,14 +571,14 @@ class helper {
             return false;
         }
         // Found the store: is it ready?
-        /* @var store $instance */
+        /* @var cache_store $instance */
         $instance = new $class($store['name'], $store['configuration']);
         if (!$instance->is_ready()) {
             unset($instance);
             return false;
         }
         foreach ($config->get_definitions_by_store($storename) as $id => $definition) {
-            $definition = definition::load($id, $definition);
+            $definition = cache_definition::load($id, $definition);
             $definitioninstance = clone($instance);
             $definitioninstance->initialise($definition);
             $definitioninstance->purge();
@@ -591,7 +591,7 @@ class helper {
     /**
      * Purges all of the stores used by a definition.
      *
-     * Unlike helper::purge_by_definition this purges all of the data from the stores not
+     * Unlike cache_helper::purge_by_definition this purges all of the data from the stores not
      * just the data relating to the definition.
      * This function is useful when you must purge a definition that requires setup but you don't
      * want to set it up.
@@ -600,7 +600,7 @@ class helper {
      * @param string $area
      */
     public static function purge_stores_used_by_definition($component, $area) {
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $config = $factory->create_config_instance();
         $definition = $factory->create_definition($component, $area);
         $stores = $config->get_stores_for_definition($definition);
@@ -612,14 +612,14 @@ class helper {
     /**
      * Returns the translated name of the definition.
      *
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return lang_string
      */
     public static function get_definition_name($definition) {
-        if ($definition instanceof definition) {
+        if ($definition instanceof cache_definition) {
             return $definition->get_name();
         }
-        $identifier = 'cachedef_' . clean_param($definition['area'], PARAM_STRINGID);
+        $identifier = 'cachedef_'.clean_param($definition['area'], PARAM_STRINGID);
         $component = $definition['component'];
         if ($component === 'core') {
             $component = 'cache';
@@ -630,16 +630,13 @@ class helper {
     /**
      * Hashes a descriptive key to make it shorter and still unique.
      * @param string|int $key
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return string
      */
-    public static function hash_key($key, definition $definition) {
+    public static function hash_key($key, cache_definition $definition) {
         if ($definition->uses_simple_keys()) {
             if (debugging() && preg_match('#[^a-zA-Z0-9_]#', $key ?? '')) {
-                throw new coding_exception(
-                    'Cache definition ' . $definition->get_id() . ' requires simple keys. Invalid key provided.',
-                    $key,
-                );
+                throw new coding_exception('Cache definition '.$definition->get_id().' requires simple keys. Invalid key provided.', $key);
             }
             // We put the key first so that we can be sure the start of the key changes.
             return (string)$key . '-' . $definition->generate_single_key_prefix();
@@ -654,10 +651,13 @@ class helper {
      * @param bool $coreonly If set to true only core definitions will be updated.
      */
     public static function update_definitions($coreonly = false) {
+        global $CFG;
+        // Include locallib.
+        require_once($CFG->dirroot.'/cache/locallib.php');
         // First update definitions
-        config_writer::update_definitions($coreonly);
+        cache_config_writer::update_definitions($coreonly);
         // Second reset anything we have already initialised to ensure we're all up to date.
-        factory::reset();
+        cache_factory::reset();
     }
 
     /**
@@ -667,12 +667,15 @@ class helper {
      * @return string The new site identifier.
      */
     public static function update_site_identifier($siteidentifier) {
-        $factory = factory::instance();
+        global $CFG;
+        // Include locallib.
+        require_once($CFG->dirroot.'/cache/locallib.php');
+        $factory = cache_factory::instance();
         $factory->updating_started();
         $config = $factory->create_config_instance(true);
         $siteidentifier = $config->update_site_identifier($siteidentifier);
         $factory->updating_finished();
-        factory::reset();
+        cache_factory::reset();
         return $siteidentifier;
     }
 
@@ -687,7 +690,7 @@ class helper {
             return self::$siteidentifier;
         }
         // If site identifier hasn't been collected yet attempt to get it from the cache config.
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         // If the factory is initialising then we don't want to try to get it from the config or we risk
         // causing the cache to enter an infinite initialisation loop.
         if (!$factory->is_initialising()) {
@@ -736,13 +739,13 @@ class helper {
         if ($output) {
             mtrace('Cleaning up stale session data from cache stores.');
         }
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $config = $factory->create_config_instance();
         $definitions = $config->get_definitions();
         $purgetime = time() - $CFG->sessiontimeout;
         foreach ($definitions as $definitionarray) {
             // We are only interested in session caches.
-            if (!($definitionarray['mode'] & store::MODE_SESSION)) {
+            if (!($definitionarray['mode'] & cache_store::MODE_SESSION)) {
                 continue;
             }
             $definition = $factory->create_definition($definitionarray['component'], $definitionarray['area']);
@@ -752,18 +755,18 @@ class helper {
             // Initialise all of the stores used for that definition.
             foreach ($stores as $store) {
                 // If the store doesn't support searching we can skip it.
-                if (!($store instanceof searchable_cache_interface)) {
+                if (!($store instanceof cache_is_searchable)) {
                     debugging('Cache stores used for session definitions should ideally be searchable.', DEBUG_DEVELOPER);
                     continue;
                 }
                 // Get all of the last access keys.
-                $keys = $store->find_by_prefix(session_cache::LASTACCESS);
+                $keys = $store->find_by_prefix(cache_session::LASTACCESS);
                 $todelete = [];
                 foreach ($store->get_many($keys) as $key => $value) {
                     $expiresvalue = 0;
-                    if ($value instanceof ttl_wrapper) {
+                    if ($value instanceof cache_ttl_wrapper) {
                         $expiresvalue = $value->data;
-                    } else if ($value instanceof cached_object) {
+                    } else if ($value instanceof cache_cached_object) {
                         $expiresvalue = $value->restore_object();
                     } else {
                         $expiresvalue = $value;
@@ -771,13 +774,13 @@ class helper {
                     $expires = (int) $expiresvalue;
 
                     if ($expires > 0 && $expires < $purgetime) {
-                        $prefix = substr($key, strlen(session_cache::LASTACCESS));
+                        $prefix = substr($key, strlen(cache_session::LASTACCESS));
                         $foundbyprefix = $store->find_by_prefix($prefix);
                         $todelete = array_merge($todelete, [$key], $foundbyprefix);
                     }
                 }
                 if ($todelete) {
-                    $outcome = (int) $store->delete_many($todelete);
+                    $outcome = (int)$store->delete_many($todelete);
                     if ($output) {
                         $strdef = s($definition->get_id());
                         $strstore = s($store->my_name());
@@ -796,14 +799,14 @@ class helper {
      * @return array[] An array of stores, keys are the store names.
      */
     public static function get_stores_suitable_for_mode_default() {
-        $factory = factory::instance();
+        $factory = cache_factory::instance();
         $config = $factory->create_config_instance();
         $requirements = 0;
         foreach ($config->get_definitions() as $definition) {
-            $definition = definition::load($definition['component'] . '/' . $definition['area'], $definition);
+            $definition = cache_definition::load($definition['component'].'/'.$definition['area'], $definition);
             $requirements = $requirements | $definition->get_requirements_bin();
         }
-        $stores = [];
+        $stores = array();
         foreach ($config->get_all_stores() as $name => $store) {
             if (!empty($store['features']) && ($store['features'] & $requirements)) {
                 $stores[$name] = $store;
@@ -815,12 +818,12 @@ class helper {
     /**
      * Returns stores suitable for use with a given definition.
      *
-     * @param definition $definition
-     * @return store[]
+     * @param cache_definition $definition
+     * @return cache_store[]
      */
-    public static function get_stores_suitable_for_definition(definition $definition) {
-        $factory = factory::instance();
-        $stores = [];
+    public static function get_stores_suitable_for_definition(cache_definition $definition) {
+        $factory = cache_factory::instance();
+        $stores = array();
         if ($factory->is_initialising() || $factory->stores_disabled()) {
             // No suitable stores here.
             return $stores;
@@ -853,11 +856,13 @@ class helper {
      * @param array|null $stores An array of stores to get warnings for, or null for all.
      * @return string[]
      */
-    public static function warnings(?array $stores = null) {
+    public static function warnings(array $stores = null) {
+        global $CFG;
         if ($stores === null) {
-            $stores = administration_helper::get_store_instance_summaries();
+            require_once($CFG->dirroot.'/cache/locallib.php');
+            $stores = core_cache\administration_helper::get_store_instance_summaries();
         }
-        $warnings = [];
+        $warnings = array();
         foreach ($stores as $store) {
             if (!empty($store['warnings'])) {
                 $warnings = array_merge($warnings, $store['warnings']);
@@ -877,18 +882,4 @@ class helper {
     public static function result_found($value): bool {
         return $value !== false;
     }
-
-    /**
-     * Checks whether the cluster mode is available in PHP.
-     *
-     * @return bool Return true if the PHP supports redis cluster, otherwise false.
-     */
-    public static function is_cluster_available(): bool {
-        return class_exists('RedisCluster');
-    }
 }
-
-// Alias this class to the old name.
-// This file will be autoloaded by the legacyclasses autoload system.
-// In future all uses of this class will be corrected and the legacy references will be removed.
-class_alias(helper::class, \cache_helper::class);

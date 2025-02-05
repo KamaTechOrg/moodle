@@ -37,13 +37,12 @@ class questiontext_test extends area_test_base {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->dirroot . '/mod/quiz/locallib.php');
-        parent::setUpBeforeClass();
     }
 
     /**
      * Test find course areas.
      */
-    public function test_find_course_areas(): void {
+    public function test_find_course_areas() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -127,7 +126,7 @@ class questiontext_test extends area_test_base {
     /**
      * Test find relevant areas.
      */
-    public function test_find_relevant_areas(): void {
+    public function test_find_relevant_areas() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -157,7 +156,7 @@ class questiontext_test extends area_test_base {
     /**
      * Test find system areas.
      */
-    public function test_find_system_areas(): void {
+    public function test_find_system_areas() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -198,7 +197,7 @@ class questiontext_test extends area_test_base {
      *
      * @covers ::get_course_and_category
      */
-    public function test_get_course_and_category(): void {
+    public function test_get_course_and_category() {
         $this->resetAfterTest();
         $this->setAdminUser();
 

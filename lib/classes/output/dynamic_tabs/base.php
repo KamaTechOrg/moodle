@@ -18,8 +18,8 @@ declare(strict_types=1);
 
 namespace core\output\dynamic_tabs;
 
-use core\exception\moodle_exception;
-use core\output\templatable;
+use moodle_exception;
+use templatable;
 
 /**
  * Class tab_base
@@ -29,6 +29,7 @@ use core\output\templatable;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class base implements templatable {
+
     /** @var array */
     protected $data;
 

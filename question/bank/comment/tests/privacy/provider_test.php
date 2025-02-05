@@ -54,7 +54,6 @@ class provider_test extends \core_privacy\tests\provider_testcase {
      */
     protected function setUp(): void {
         global $DB;
-        parent::setUp();
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -100,7 +99,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_metadata().
      */
-    public function test_get_metadata(): void {
+    public function test_get_metadata() {
         $collection = new collection('qbank_comment');
         $newcollection = provider::get_metadata($collection);
         $itemcollection = $newcollection->get_collection();
@@ -116,7 +115,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_contexts_for_userid() when user had not posted any comments..
      */
-    public function test_get_contexts_for_userid_no_comment(): void {
+    public function test_get_contexts_for_userid_no_comment() {
         $this->setUser($this->teacher1);
         $coursecontext1 = context_course::instance($this->course1->id);
         $this->add_comment('New comment', $coursecontext1);
@@ -129,7 +128,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::get_contexts_for_userid().
      */
-    public function test_get_contexts_for_userid(): void {
+    public function test_get_contexts_for_userid() {
         $coursecontext1 = context_course::instance($this->course1->id);
         $coursecontext2 = context_course::instance($this->course2->id);
 
@@ -148,7 +147,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::export_user_data() when the user has not posted any comments.
      */
-    public function test_export_for_context_no_comment(): void {
+    public function test_export_for_context_no_comment() {
         $coursecontext1 = context_course::instance($this->course1->id);
         $coursecontext2 = context_course::instance($this->course2->id);
 
@@ -166,7 +165,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::export_user_data().
      */
-    public function test_export_for_context(): void {
+    public function test_export_for_context() {
         $coursecontext1 = context_course::instance($this->course1->id);
         $coursecontext2 = context_course::instance($this->course2->id);
 
@@ -184,7 +183,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_all_users_in_context().
      */
-    public function test_delete_data_for_all_users_in_context(): void {
+    public function test_delete_data_for_all_users_in_context() {
         global $DB;
 
         $coursecontext1 = context_course::instance($this->course1->id);
@@ -228,7 +227,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test for provider::delete_data_for_user().
      */
-    public function test_delete_data_for_user(): void {
+    public function test_delete_data_for_user() {
         global $DB;
 
         $coursecontext1 = context_course::instance($this->course1->id);
@@ -282,7 +281,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test that only users within a course context are fetched.
      */
-    public function test_get_users_in_context(): void {
+    public function test_get_users_in_context() {
         $component = 'qbank_comment';
 
         $coursecontext1 = context_course::instance($this->course1->id);
@@ -319,7 +318,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Test that data for users in approved userlist is deleted.
      */
-    public function test_delete_data_for_users(): void {
+    public function test_delete_data_for_users() {
         $component = 'qbank_comment';
 
         $coursecontext1 = context_course::instance($this->course1->id);

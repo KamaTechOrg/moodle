@@ -45,14 +45,13 @@ class lib_test extends \advanced_testcase {
         global $CFG;
         require_once($CFG->dirroot . '/mod/url/lib.php');
         require_once($CFG->dirroot . '/mod/url/locallib.php');
-        parent::setUpBeforeClass();
     }
 
     /**
      * Tests the url_appears_valid_url function
      * @return void
      */
-    public function test_url_appears_valid_url(): void {
+    public function test_url_appears_valid_url() {
         $this->assertTrue(url_appears_valid_url('http://example'));
         $this->assertTrue(url_appears_valid_url('http://www.example.com'));
         $this->assertTrue(url_appears_valid_url('http://www.examplé.com'));
@@ -99,7 +98,7 @@ class lib_test extends \advanced_testcase {
      * Test url_view
      * @return void
      */
-    public function test_url_view(): void {
+    public function test_url_view() {
         global $CFG;
 
         $CFG->enablecompletion = 1;
@@ -140,7 +139,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Test mod_url_core_calendar_provide_event_action with user override
      */
-    public function test_url_core_calendar_provide_event_action_user_override(): void {
+    public function test_url_core_calendar_provide_event_action_user_override() {
         global $CFG, $USER;
 
         $this->resetAfterTest();
@@ -186,7 +185,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent2->is_actionable());
     }
 
-    public function test_url_core_calendar_provide_event_action(): void {
+    public function test_url_core_calendar_provide_event_action() {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -212,7 +211,7 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_url_core_calendar_provide_event_action_already_completed(): void {
+    public function test_url_core_calendar_provide_event_action_already_completed() {
         global $CFG;
 
         $this->resetAfterTest();

@@ -36,7 +36,6 @@ class general_action_bar_test extends advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once("{$CFG->dirroot}/grade/lib.php");
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -156,7 +155,7 @@ class general_action_bar_test extends advanced_testcase {
      *
      * @return array
      */
-    public static function export_for_template_provider(): array {
+    public function export_for_template_provider(): array {
         $graderpluginname = get_string('pluginname', 'gradereport_grader');
         $historypluginname = get_string('pluginname', 'gradereport_history');
         $outcomespluginname = get_string('pluginname', 'gradereport_outcomes');

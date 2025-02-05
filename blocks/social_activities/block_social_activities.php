@@ -62,7 +62,7 @@ class block_social_activities extends block_list {
         $controlmenuclass = $format->get_output_classname('content\\cm\\controlmenu');
 
         $badgeattributes = [
-            'class' => 'badge rounded-pill bg-warning text-dark mt-2',
+            'class' => 'badge badge-pill badge-warning mt-2',
             'data-region' => 'visibility'
         ];
 
@@ -133,7 +133,7 @@ class block_social_activities extends block_list {
         }
 
         if ($ismoving) {
-            $this->content->icons[] = $OUTPUT->pix_icon('t/move', get_string('move'), 'moodle', ['class' => 'ps-1']);
+            $this->content->icons[] = '&nbsp;' . $OUTPUT->pix_icon('t/move', get_string('move'));
             $cancelurl = new moodle_url('/course/mod.php', array('cancelcopy' => 'true', 'sesskey' => sesskey()));
             $this->content->items[] = $USER->activitycopyname . '&nbsp;(<a href="' . $cancelurl . '">' . $strcancel . '</a>)';
         }
@@ -164,7 +164,7 @@ class block_social_activities extends block_list {
 
                     $editbuttons = html_writer::tag('div',
                         $courserenderer->render($controlmenu),
-                        ['class' => 'buttons activity-actions ms-auto']
+                        ['class' => 'buttons activity-actions ml-auto']
                     );
                 } else {
                     $editbuttons = '';

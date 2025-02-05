@@ -41,7 +41,6 @@ class helper_test extends \advanced_testcase {
      * This is executed before running any test in this file.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
 
         // Set this user as the admin.
@@ -55,7 +54,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test the update user profile image function.
      */
-    public function test_update_user_profile_image(): void {
+    public function test_update_user_profile_image() {
         global $DB, $CFG;
 
         // Set the profile image.
@@ -80,7 +79,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test that we can not enrol past the maximum number of users allowed.
      */
-    public function test_enrol_user_max_enrolled(): void {
+    public function test_enrol_user_max_enrolled() {
         global $DB;
 
         // Set up the LTI enrolment tool.
@@ -109,7 +108,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test that we can not enrol when the enrolment has not started.
      */
-    public function test_enrol_user_enrolment_not_started(): void {
+    public function test_enrol_user_enrolment_not_started() {
         global $DB;
 
         // Set up the LTI enrolment tool.
@@ -131,7 +130,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test that we can not enrol when the enrolment has finished.
      */
-    public function test_enrol_user_enrolment_finished(): void {
+    public function test_enrol_user_enrolment_finished() {
         global $DB;
 
         // Set up the LTI enrolment tool.
@@ -153,7 +152,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test returning the number of available tools.
      */
-    public function test_count_lti_tools(): void {
+    public function test_count_lti_tools() {
         $generator = $this->getDataGenerator();
         // Create two tools belonging to the same course.
         $course1 = $generator->create_course();
@@ -192,7 +191,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test returning the list of available tools.
      */
-    public function test_get_lti_tools(): void {
+    public function test_get_lti_tools() {
         $generator = $this->getDataGenerator();
         // Create two tools belonging to the same course.
         $course1 = $generator->create_course();
@@ -245,7 +244,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the launch url of a tool.
      */
-    public function test_get_launch_url(): void {
+    public function test_get_launch_url() {
         $course1 = $this->getDataGenerator()->create_course();
         $data = new \stdClass();
         $data->courseid = $course1->id;
@@ -259,7 +258,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the cartridge url of a tool.
      */
-    public function test_get_cartridge_url(): void {
+    public function test_get_cartridge_url() {
         global $CFG;
 
         $slasharguments = $CFG->slasharguments;
@@ -289,7 +288,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the cartridge url of a tool.
      */
-    public function test_get_proxy_url(): void {
+    public function test_get_proxy_url() {
         global $CFG;
 
         $slasharguments = $CFG->slasharguments;
@@ -319,7 +318,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the name of a tool.
      */
-    public function test_get_name(): void {
+    public function test_get_name() {
         $course1 = $this->getDataGenerator()->create_course();
         $data = new \stdClass();
         $data->courseid = $course1->id;
@@ -336,7 +335,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the description of a tool.
      */
-    public function test_get_description(): void {
+    public function test_get_description() {
         $generator = $this->getDataGenerator();
         $course1 = $generator->create_course();
         $data = new \stdClass();
@@ -359,7 +358,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test getting the icon of a tool.
      */
-    public function test_get_icon(): void {
+    public function test_get_icon() {
         global $CFG;
 
         $course1 = $this->getDataGenerator()->create_course();
@@ -377,7 +376,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test verifying a cartridge token.
      */
-    public function test_verify_cartridge_token(): void {
+    public function test_verify_cartridge_token() {
         $course1 = $this->getDataGenerator()->create_course();
         $data = new \stdClass();
         $data->courseid = $course1->id;
@@ -391,7 +390,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test verifying a proxy token.
      */
-    public function test_verify_proxy_token(): void {
+    public function test_verify_proxy_token() {
         $course1 = $this->getDataGenerator()->create_course();
         $data = new \stdClass();
         $data->courseid = $course1->id;
@@ -405,7 +404,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Data provider for the set_xpath test.
      */
-    public static function set_xpath_provider(): array {
+    public function set_xpath_provider() {
         return [
             "Correct structure" => [
                 "parameters" => [
@@ -475,23 +474,24 @@ class helper_test extends \advanced_testcase {
      * @param array $parameters A hash of parameters represented by a heirarchy of xpath expressions
      * @param string $expected The name of the fixture file containing the expected result.
      */
-    public function test_set_xpath($parameters, $expected): void {
+    public function test_set_xpath($parameters, $expected) {
         $helper = new \ReflectionClass('enrol_lti\\helper');
         $function = $helper->getMethod('set_xpath');
+        $function->setAccessible(true);
 
         $document = new \DOMDocument();
-        $document->load(realpath(self::get_fixture_path(__NAMESPACE__, 'input.xml')));
+        $document->load(realpath(__DIR__ . '/fixtures/input.xml'));
         $xpath = new \DOMXpath($document);
         $function->invokeArgs(null, [$xpath, $parameters]);
         $result = $document->saveXML();
-        $expected = file_get_contents(realpath(self::get_fixture_path(__NAMESPACE__, $expected)));
+        $expected = file_get_contents(realpath(__DIR__ . '/fixtures/' . $expected));
         $this->assertEquals($expected, $result);
     }
 
     /**
      * Test set_xpath when an incorrect xpath expression is given.
      */
-    public function test_set_xpath_incorrect_xpath(): void {
+    public function test_set_xpath_incorrect_xpath() {
         $parameters = [
             "/root" => [
                 "/firstnode" => null,
@@ -502,9 +502,10 @@ class helper_test extends \advanced_testcase {
         ];
         $helper = new \ReflectionClass('enrol_lti\\helper');
         $function = $helper->getMethod('set_xpath');
+        $function->setAccessible(true);
 
         $document = new \DOMDocument();
-        $document->load(realpath(self::get_fixture_path(__NAMESPACE__, 'input.xml')));
+        $document->load(realpath(__DIR__ . '/fixtures/input.xml'));
         $xpath = new \DOMXpath($document);
 
         $this->expectException('coding_exception');
@@ -514,7 +515,7 @@ class helper_test extends \advanced_testcase {
     /**
      * Test create cartridge.
      */
-    public function test_create_cartridge(): void {
+    public function test_create_cartridge() {
         global $CFG;
 
         $course1 = $this->getDataGenerator()->create_course();

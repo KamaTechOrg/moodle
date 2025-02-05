@@ -15,11 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 declare(strict_types=1);
-
 namespace mod_scorm\cache;
-
-use core_cache\data_source_interface;
-use core_cache\definition;
+use cache_definition;
 
 /**
  * Cache data source for the scorm elements.
@@ -29,7 +26,7 @@ use core_cache\definition;
  * @author    Dan Marsden <dan@danmarsden.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class elements implements data_source_interface {
+class elements implements \cache_data_source {
 
     /** @var elements the singleton instance of this class. */
     protected static $instance = null;
@@ -38,10 +35,10 @@ class elements implements data_source_interface {
      * Returns an instance of the data source class that the cache can use for loading data using the other methods
      * specified by this interface.
      *
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return object
      */
-    public static function get_instance_for_cache(definition $definition): elements {
+    public static function get_instance_for_cache(cache_definition $definition): elements {
         if (is_null(self::$instance)) {
             self::$instance = new elements();
         }

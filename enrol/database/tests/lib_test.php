@@ -46,13 +46,12 @@ class lib_test extends \advanced_testcase {
             sqlsrv_configure("LogSubsystems", SQLSRV_LOG_SYSTEM_OFF);
             sqlsrv_configure("LogSeverity", SQLSRV_LOG_SEVERITY_ERROR);
         }
-        parent::tearDownAfterClass();
     }
 
     /**
      * Test for getting user enrolment actions.
      */
-    public function test_get_user_enrolment_actions(): void {
+    public function test_get_user_enrolment_actions() {
         global $CFG, $PAGE;
         $this->resetAfterTest();
 

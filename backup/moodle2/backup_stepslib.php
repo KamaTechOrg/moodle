@@ -119,20 +119,6 @@ abstract class backup_activity_structure_step extends backup_structure_step {
         // Return the root element (activity)
         return $activity;
     }
-
-    /**
-     * Set a delegate section itemid mapping.
-     *
-     * @param string $pluginname the name of the plugin that is delegating the section.
-     * @param int $itemid the itemid of the section being delegated.
-     */
-    protected function set_delegated_section_mapping(string $pluginname, int $itemid) {
-        backup_structure_dbops::insert_backup_ids_record(
-            $this->get_backupid(),
-            "course_section::$pluginname::$itemid",
-            $this->task->get_moduleid()
-        );
-    }
 }
 
 /**
@@ -414,14 +400,9 @@ class backup_section_structure_step extends backup_structure_step {
 
         // Define each element separated
 
-        $section = new backup_nested_element(
-            'section',
-            ['id'],
-            [
+        $section = new backup_nested_element('section', array('id'), array(
                 'number', 'name', 'summary', 'summaryformat', 'sequence', 'visible',
-                'availabilityjson', 'component', 'itemid', 'timemodified',
-            ]
-        );
+                'availabilityjson', 'timemodified'));
 
         // attach format plugin structure to $section element, only one allowed
         $this->add_plugin_structure('format', $section, false);
@@ -491,7 +472,7 @@ class backup_course_structure_step extends backup_structure_step {
 
         $customfields = new backup_nested_element('customfields');
         $customfield = new backup_nested_element('customfield', array('id'), array(
-            'shortname', 'type', 'value', 'valueformat', 'valuetrust',
+          'shortname', 'type', 'value', 'valueformat'
         ));
 
         $courseformatoptions = new backup_nested_element('courseformatoptions');
@@ -575,7 +556,6 @@ class backup_course_structure_step extends backup_structure_step {
         if ($this->get_setting_value('customfield')) {
             $handler = core_course\customfield\course_handler::create();
             $fieldsforbackup = $handler->get_instance_data_for_backup($this->task->get_courseid());
-            $handler->backup_define_structure($this->task->get_courseid(), $customfield);
             $customfield->set_source_array($fieldsforbackup);
         }
 
@@ -917,6 +897,14 @@ class backup_comments_structure_step extends backup_structure_step {
  */
 class backup_badges_structure_step extends backup_structure_step {
 
+    protected function execute_condition() {
+        // Check that all activities have been included.
+        if ($this->task->is_excluding_activities()) {
+            return false;
+        }
+        return true;
+    }
+
     protected function define_structure() {
         global $CFG;
 
@@ -960,16 +948,10 @@ class backup_badges_structure_step extends backup_structure_step {
         // Build the tree.
 
         $badges->add_child($badge);
-
-        // Have the activities been included? Only if that's the case, the criteria will be included too.
-        $activitiesincluded = !$this->task->is_excluding_activities();
-        if ($activitiesincluded) {
-            $badge->add_child($criteria);
-            $criteria->add_child($criterion);
-            $criterion->add_child($parameters);
-            $parameters->add_child($parameter);
-        }
-
+        $badge->add_child($criteria);
+        $criteria->add_child($criterion);
+        $criterion->add_child($parameters);
+        $parameters->add_child($parameter);
         $badge->add_child($endorsement);
         $badge->add_child($alignments);
         $alignments->add_child($alignment);
@@ -991,19 +973,18 @@ class backup_badges_structure_step extends backup_structure_step {
             'courseid' => backup::VAR_COURSEID
         ];
         $badge->set_source_sql($parametersql, $parameterparams);
-        if ($activitiesincluded) {
-            $criterion->set_source_table('badge_criteria', ['badgeid' => backup::VAR_PARENTID]);
-            $parametersql = 'SELECT cp.*, c.criteriatype
-                               FROM {badge_criteria_param} cp JOIN {badge_criteria} c
-                                 ON cp.critid = c.id
-                              WHERE critid = :critid';
-            $parameterparams = ['critid' => backup::VAR_PARENTID];
-            $parameter->set_source_sql($parametersql, $parameterparams);
-        }
+        $criterion->set_source_table('badge_criteria', array('badgeid' => backup::VAR_PARENTID));
         $endorsement->set_source_table('badge_endorsement', array('badgeid' => backup::VAR_PARENTID));
 
         $alignment->set_source_table('badge_alignment', array('badgeid' => backup::VAR_PARENTID));
         $relatedbadge->set_source_table('badge_related', array('badgeid' => backup::VAR_PARENTID));
+
+        $parametersql = 'SELECT cp.*, c.criteriatype
+                             FROM {badge_criteria_param} cp JOIN {badge_criteria} c
+                                 ON cp.critid = c.id
+                             WHERE critid = :critid';
+        $parameterparams = array('critid' => backup::VAR_PARENTID);
+        $parameter->set_source_sql($parametersql, $parameterparams);
 
         $manual_award->set_source_table('badge_manual_award', array('badgeid' => backup::VAR_PARENTID));
 
@@ -1017,10 +998,8 @@ class backup_badges_structure_step extends backup_structure_step {
 
         $badge->annotate_ids('user', 'usercreated');
         $badge->annotate_ids('user', 'usermodified');
-        if ($activitiesincluded) {
-            $criterion->annotate_ids('badge', 'badgeid');
-            $parameter->annotate_ids('criterion', 'critid');
-        }
+        $criterion->annotate_ids('badge', 'badgeid');
+        $parameter->annotate_ids('criterion', 'critid');
         $endorsement->annotate_ids('badge', 'badgeid');
         $alignment->annotate_ids('badge', 'badgeid');
         $relatedbadge->annotate_ids('badge', 'badgeid');
@@ -1380,7 +1359,7 @@ class backup_groups_structure_step extends backup_structure_step {
 
         $groupcustomfields = new backup_nested_element('groupcustomfields');
         $groupcustomfield = new backup_nested_element('groupcustomfield', ['id'], [
-            'shortname', 'type', 'value', 'valueformat', 'valuetrust', 'groupid']);
+            'shortname', 'type', 'value', 'valueformat', 'groupid']);
 
         $members = new backup_nested_element('group_members');
 
@@ -1395,7 +1374,7 @@ class backup_groups_structure_step extends backup_structure_step {
 
         $groupingcustomfields = new backup_nested_element('groupingcustomfields');
         $groupingcustomfield = new backup_nested_element('groupingcustomfield', ['id'], [
-            'shortname', 'type', 'value', 'valueformat', 'valuetrust', 'groupingid']);
+            'shortname', 'type', 'value', 'valueformat', 'groupingid']);
 
         $groupinggroups = new backup_nested_element('grouping_groups');
 
@@ -2160,19 +2139,14 @@ class backup_main_structure_step extends backup_structure_step {
 
         $activities = new backup_nested_element('activities');
 
-        $activity = new backup_nested_element(
-            'activity',
-            null,
-            ['moduleid', 'sectionid', 'modulename', 'title', 'directory', 'insubsection']
-        );
+        $activity = new backup_nested_element('activity', null, array(
+            'moduleid', 'sectionid', 'modulename', 'title',
+            'directory'));
 
         $sections = new backup_nested_element('sections');
 
-        $section = new backup_nested_element(
-            'section',
-            null,
-            ['sectionid', 'title', 'directory', 'parentcmid', 'modname']
-        );
+        $section = new backup_nested_element('section', null, array(
+            'sectionid', 'title', 'directory'));
 
         $course = new backup_nested_element('course', null, array(
             'courseid', 'title', 'directory'));

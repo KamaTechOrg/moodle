@@ -22,24 +22,30 @@ Feature: Admin preset deletion
     And I should not see "Delete"
 
   Scenario: Custom preset settings can be deleted
-    When I press "Delete" action in the "Custom preset" report row
-    Then I should see "Are you sure you want to delete the site admin preset Custom preset?"
+    Given I should see "Custom preset"
+    And I open the action menu in "Custom preset" "table_row"
+    When I choose "Delete" in the open action menu
+    And I should see "Are you sure you want to delete the site admin preset Custom preset?"
     And I should not see "This preset has been previously applied"
-    And I click on "Cancel" "button" in the ".modal-dialog" "css_element"
+    And I click on "Cancel" "button"
     And I should see "Presets allow you to easily switch between different site admin configurations."
-    And I press "Delete" action in the "Custom preset" report row
+    And "Custom preset" "table_row" should exist
+    And I open the action menu in "Custom preset" "table_row"
+    And I choose "Delete" in the open action menu
     And I should not see "This preset has been previously applied"
-    And I click on "Delete" "button" in the ".modal-dialog" "css_element"
+    And I click on "Delete" "button"
     And I should see "Presets allow you to easily switch between different site admin configurations."
-    And I should not see "Custom preset" in the "reportbuilder-table" "table"
+    Then "Custom preset" "table_row" should not exist
 
   Scenario: Delete preset that has been applied
-    When I press "Review settings and apply" action in the "Custom preset" report row
+    Given I open the action menu in "Custom preset" "table_row"
+    And I choose "Review settings and apply" in the open action menu
     And I click on "Apply" "button"
     And I navigate to "Site admin presets" in site administration
-    And I press "Delete" action in the "Custom preset" report row
+    When I open the action menu in "Custom preset" "table_row"
+    And I choose "Delete" in the open action menu
     And I should see "Are you sure you want to delete the site admin preset Custom preset?"
     Then I should see "This preset has been previously applied"
-    And I click on "Delete" "button" in the ".modal-dialog" "css_element"
+    And I click on "Delete" "button"
     And I should see "Presets allow you to easily switch between different site admin configurations"
-    And I should not see "Custom preset" in the "reportbuilder-table" "table"
+    And "Custom preset" "table_row" should not exist

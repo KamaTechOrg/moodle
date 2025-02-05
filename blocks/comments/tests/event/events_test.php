@@ -44,7 +44,6 @@ class events_test extends \advanced_testcase {
      * Setup test data.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -56,7 +55,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test comment_created event.
      */
-    public function test_comment_created(): void {
+    public function test_comment_created() {
         global $CFG;
 
         require_once($CFG->dirroot . '/comment/lib.php');
@@ -120,7 +119,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test comment_deleted event.
      */
-    public function test_comment_deleted(): void {
+    public function test_comment_deleted() {
         global $CFG;
 
         require_once($CFG->dirroot . '/comment/lib.php');

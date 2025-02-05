@@ -108,7 +108,7 @@ class private_files extends \core_form\dynamic_form {
      * If necessary, form data is available in $this->_ajaxformdata or
      * by calling $this->optional_param()
      */
-    public function check_access_for_dynamic_submission(): void {
+    protected function check_access_for_dynamic_submission(): void {
         require_capability('moodle/user:manageownfiles', $this->get_context_for_dynamic_submission());
     }
 
@@ -131,7 +131,7 @@ class private_files extends \core_form\dynamic_form {
      * @return array
      * @throws \coding_exception
      */
-    public function get_options(): array {
+    protected function get_options(): array {
         global $CFG;
 
         $maxbytes = $CFG->userquota;

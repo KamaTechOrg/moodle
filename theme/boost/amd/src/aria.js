@@ -23,7 +23,6 @@
 
 import $ from 'jquery';
 import Pending from 'core/pending';
-import * as FocusLockManager from 'core/local/aria/focuslock';
 
 /**
  * Drop downs from bootstrap don't support keyboard accessibility by default.
@@ -79,10 +78,13 @@ const dropdownFix = () => {
         const menu = e.target.parentElement.querySelector('[role="menu"]');
         let menuItems = false;
         let foundMenuItem = false;
+        let textInput = false;
 
         if (menu) {
             menuItems = menu.querySelectorAll('[role="menuitem"]');
+            textInput = e.target.parentElement.querySelector('[data-action="search"]');
         }
+
         if (menuItems && menuItems.length > 0) {
             // Up key opens the menu at the end.
             if (trigger === 'ArrowUp') {
@@ -99,7 +101,10 @@ const dropdownFix = () => {
             }
         }
 
-        if (foundMenuItem) {
+        if (textInput) {
+            shiftFocus(textInput);
+        }
+        if (foundMenuItem && textInput === null) {
             shiftFocus(foundMenuItem);
         }
     };
@@ -107,7 +112,7 @@ const dropdownFix = () => {
     // Search for menu items by finding the first item that has
     // text starting with the typed character (case insensitive).
     document.addEventListener('keypress', e => {
-        if (e.target.matches('[role="menu"] [role="menuitem"]')) {
+        if (e.target.matches('.dropdown [role="menu"] [role="menuitem"]')) {
             const menu = e.target.closest('[role="menu"]');
             if (!menu) {
                 return;
@@ -139,7 +144,7 @@ const dropdownFix = () => {
             handleMenuButton(e);
         }
 
-        if (e.target.matches('[role="menu"] [role="menuitem"]')) {
+        if (e.target.matches('.dropdown [role="menu"] [role="menuitem"]')) {
             const trigger = e.key;
             let next = false;
             const menu = e.target.closest('[role="menu"]');
@@ -193,28 +198,10 @@ const dropdownFix = () => {
         }
     });
 
-    // Trap focus if the dropdown is a dialog.
-    $(document).on('shown.bs.dropdown', e => {
-        const dialog = e.target.querySelector('.dropdown-menu[role="dialog"]');
-        if (dialog) {
-            // Use setTimeout to make sure the dialog is positioned correctly to prevent random scrolling.
-            setTimeout(() => {
-                FocusLockManager.trapFocus(dialog);
-            });
-        }
-    });
-
-    // Untrap focus when the dialog dropdown is closed.
-    $(document).on('hidden.bs.dropdown', e => {
-        const dialog = e.target.querySelector('.dropdown-menu[role="dialog"]');
-        if (dialog) {
-            FocusLockManager.untrapFocus();
-        }
-
+    $('.dropdown').on('hidden.bs.dropdown', e => {
         // We need to focus on the menu trigger.
         const trigger = e.target.querySelector('[data-toggle="dropdown"]');
-        // If it's a click event, then no element is focused because the clicked element is inside a closed dropdown.
-        const focused = e.clickEvent?.target || (document.activeElement !== document.body ? document.activeElement : null);
+        const focused = document.activeElement != document.body ? document.activeElement : null;
         if (trigger && focused && e.target.contains(focused)) {
             shiftFocus(trigger, () => {
                 if (document.activeElement === document.body) {
@@ -310,9 +297,9 @@ const comboboxFix = () => {
                     if (editable && !next) {
                         next = options[options.length - 1];
                     }
-                } else if (trigger == 'Home' && !editable) {
+                } else if (trigger == 'Home') {
                     next = options[0];
-                } else if (trigger == 'End' && !editable) {
+                } else if (trigger == 'End') {
                     next = options[options.length - 1];
                 } else if ((trigger == ' ' && !editable) || trigger == 'Enter') {
                     e.preventDefault();
@@ -351,6 +338,7 @@ const comboboxFix = () => {
             const listbox = option.closest('[role="listbox"]');
             const combobox = document.querySelector(`[role="combobox"][aria-controls="${listbox.id}"]`);
             if (combobox) {
+                combobox.focus();
                 selectOption(combobox, option);
             }
         }
@@ -380,14 +368,9 @@ const comboboxFix = () => {
         }
 
         if (combobox.hasAttribute('value')) {
-            combobox.value = option.dataset.shortText || option.textContent.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
+            combobox.value = option.textContent.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
         } else {
-            const selectedOptionContainer = combobox.querySelector('[data-selected-option]');
-            if (selectedOptionContainer) {
-                selectedOptionContainer.textContent = option.dataset.shortText || option.textContent;
-            } else {
-                combobox.textContent = option.dataset.shortText || option.textContent;
-            }
+            combobox.textContent = option.textContent;
         }
 
         if (combobox.dataset.inputElement) {
@@ -416,50 +399,47 @@ const autoFocus = () => {
 };
 
 /**
- * Changes the focus to the correct element based on the key that is pressed.
- * @param {NodeList} elements A NodeList of focusable elements to navigate between.
- * @param {KeyboardEvent} e The keyboard event that triggers the roving focus.
- * @param {boolean} vertical Whether the navigation is vertical.
- * @param {boolean} updateTabIndex Whether to update the tabIndex of the elements.
+ * Changes the focus to the correct tab based on the key that is pressed.
+ * @param {KeyboardEvent} e
  */
-const rovingFocus = (elements, e, vertical, updateTabIndex) => {
+const updateTabFocus = e => {
+    const tabList = e.target.closest('[role="tablist"]');
+    const vertical = tabList.getAttribute('aria-orientation') == 'vertical';
     const rtl = window.right_to_left();
     const arrowNext = vertical ? 'ArrowDown' : (rtl ? 'ArrowLeft' : 'ArrowRight');
     const arrowPrevious = vertical ? 'ArrowUp' : (rtl ? 'ArrowRight' : 'ArrowLeft');
-    const keys = [arrowNext, arrowPrevious, 'Home', 'End'];
+    const tabs = Array.prototype.filter.call(
+        tabList.querySelectorAll('[role="tab"]'),
+        tab => !!tab.offsetHeight); // We only work with the visible tabs.
 
-    if (!keys.includes(e.key)) {
-        return;
+    for (let i = 0; i < tabs.length; i++) {
+        tabs[i].index = i;
     }
-
-    const focusElement = index => {
-        elements[index].focus();
-        if (updateTabIndex) {
-            elements.forEach((element, i) => element.setAttribute('tabindex', i === index ? '0' : '-1'));
-        }
-    };
-
-    const currentIndex = Array.prototype.indexOf.call(elements, e.target);
-    let nextIndex;
 
     switch (e.key) {
         case arrowNext:
             e.preventDefault();
-            nextIndex = (currentIndex + 1 < elements.length) ? currentIndex + 1 : 0;
-            focusElement(nextIndex);
+            if (e.target.index !== undefined && tabs[e.target.index + 1]) {
+                tabs[e.target.index + 1].focus();
+            } else {
+                tabs[0].focus();
+            }
             break;
         case arrowPrevious:
             e.preventDefault();
-            nextIndex = (currentIndex - 1 >= 0) ? currentIndex - 1 : elements.length - 1;
-            focusElement(nextIndex);
+            if (e.target.index !== undefined && tabs[e.target.index - 1]) {
+                tabs[e.target.index - 1].focus();
+            } else {
+                tabs[tabs.length - 1].focus();
+            }
             break;
         case 'Home':
             e.preventDefault();
-            focusElement(0);
+            tabs[0].focus();
             break;
         case 'End':
             e.preventDefault();
-            focusElement(elements.length - 1);
+            tabs[tabs.length - 1].focus();
     }
 };
 
@@ -470,14 +450,7 @@ const tabElementFix = () => {
     document.addEventListener('keydown', e => {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
             if (e.target.matches('[role="tablist"] [role="tab"]')) {
-                const tabList = e.target.closest('[role="tablist"]');
-                const tabs = Array.prototype.filter.call(
-                    tabList.querySelectorAll('[role="tab"]'),
-                    tab => !!tab.offsetHeight
-                ); // We only work with the visible tabs.
-                const vertical = tabList.getAttribute('aria-orientation') == 'vertical';
-
-                rovingFocus(tabs, e, vertical, false);
+                updateTabFocus(e);
             }
         }
     });
@@ -512,25 +485,10 @@ const collapseFix = () => {
     });
 };
 
-/**
- * Fix accessibility issues
- */
-const toolbarFix = () => {
-    document.addEventListener('keydown', e => {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
-            if (e.target.matches('[role="toolbar"] button')) {
-                const buttons = e.target.closest('[role="toolbar"]').querySelectorAll('button');
-                rovingFocus(buttons, e, false, true);
-            }
-        }
-    });
-};
-
 export const init = () => {
     dropdownFix();
     comboboxFix();
     autoFocus();
     tabElementFix();
     collapseFix();
-    toolbarFix();
 };

@@ -31,13 +31,12 @@ class condition_test extends \advanced_testcase {
         // Load the mock info class so that it can be used.
         global $CFG;
         require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
-        parent::setUp();
     }
 
     /**
      * Tests constructing and using condition.
      */
-    public function test_usage(): void {
+    public function test_usage() {
         global $CFG, $USER;
         $this->resetAfterTest();
         $CFG->enableavailability = true;
@@ -116,7 +115,7 @@ class condition_test extends \advanced_testcase {
      * Tests the constructor including error conditions. Also tests the
      * string conversion feature (intended for debugging only).
      */
-    public function test_constructor(): void {
+    public function test_constructor() {
         // No parameters.
         $structure = new \stdClass();
         try {
@@ -169,7 +168,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the save() function.
      */
-    public function test_save(): void {
+    public function test_save() {
         $structure = (object)array('id' => 123);
         $cond = new condition($structure);
         $structure->type = 'grouping';
@@ -184,7 +183,7 @@ class condition_test extends \advanced_testcase {
     /**
      * Tests the update_dependency_id() function.
      */
-    public function test_update_dependency_id(): void {
+    public function test_update_dependency_id() {
         $cond = new condition((object)array('id' => 123));
         $this->assertFalse($cond->update_dependency_id('frogs', 123, 456));
         $this->assertFalse($cond->update_dependency_id('groupings', 12, 34));
@@ -200,7 +199,7 @@ class condition_test extends \advanced_testcase {
      * Tests the filter_users (bulk checking) function. Also tests the SQL
      * variant get_user_list_sql.
      */
-    public function test_filter_users(): void {
+    public function test_filter_users() {
         global $DB, $CFG;
         $this->resetAfterTest();
         $CFG->enableavailability = true;

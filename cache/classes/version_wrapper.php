@@ -24,6 +24,7 @@ namespace core_cache;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class version_wrapper {
+
     /**
      * The data being stored.
      * @var mixed

@@ -14,13 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-declare(strict_types=1);
-
-namespace mod_lesson\cache;
-
-use core_cache\data_source_interface;
-use core_cache\definition;
-
 /**
  * Cache data source for the lesson overrides.
  *
@@ -28,7 +21,21 @@ use core_cache\definition;
  * @copyright 2021 Shamim Rezaie <shamim@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class overrides implements data_source_interface {
+
+declare(strict_types=1);
+
+namespace mod_lesson\cache;
+
+use cache_definition;
+
+/**
+ * Class lesson_overrides
+ *
+ * @package   mod_lesson
+ * @copyright 2021 Shamim Rezaie <shamim@moodle.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class overrides implements \cache_data_source {
 
     /** @var overrides the singleton instance of this class. */
     protected static $instance = null;
@@ -37,10 +44,10 @@ class overrides implements data_source_interface {
      * Returns an instance of the data source class that the cache can use for loading data using the other methods
      * specified by this interface.
      *
-     * @param definition $definition
+     * @param cache_definition $definition
      * @return object
      */
-    public static function get_instance_for_cache(definition $definition): overrides {
+    public static function get_instance_for_cache(cache_definition $definition): overrides {
         if (is_null(self::$instance)) {
             self::$instance = new overrides();
         }

@@ -84,17 +84,6 @@ export default class extends BaseComponent {
         return null;
     }
 
-    /**
-     * Get a fallback element when there is no CM in the section.
-     *
-     * This is used to show the correct dropzone position.
-     *
-     * @returns {element|null} the las course module element of the section.
-     */
-    getLastCmFallback() {
-        return null;
-    }
-
     // Drag and drop methods.
 
     /**
@@ -126,20 +115,14 @@ export default class extends BaseComponent {
         if (dropdata?.type === 'files') {
             return true;
         }
-        // We accept any course module unless it can form a subsection loop.
+        // We accept any course module.
         if (dropdata?.type === 'cm') {
-            if (this.section?.component && dropdata?.hasdelegatedsection === true) {
-                return false;
-            }
             return true;
         }
+        // We accept any section but the section 0 or ourself
         if (dropdata?.type === 'section') {
-            // Sections controlled by a plugin cannot accept sections.
-            if (this.section.component !== null) {
-                return false;
-            }
-            // We accept any section but yourself and the next one.
-            return dropdata?.id != this.id && dropdata?.number != this.section.number + 1;
+            const sectionzeroid = this.course.sectionlist[0];
+            return dropdata?.id != this.id && dropdata?.id != sectionzeroid && this.id != sectionzeroid;
         }
         return false;
     }
@@ -165,15 +148,17 @@ export default class extends BaseComponent {
             });
         }
         if (dropdata.type == 'cm') {
-            const lastCm = this.getLastCm();
-            lastCm?.classList.add(this.classes.DROPDOWN);
-            if (!lastCm) {
-                this.getLastCmFallback()?.classList.add(this.classes.DROPDOWN);
-            }
+            this.getLastCm()?.classList.add(this.classes.DROPDOWN);
         }
         if (dropdata.type == 'section') {
-            this.element.classList.remove(this.classes.DROPUP);
-            this.element.classList.add(this.classes.DROPDOWN);
+            // The relative move of section depends on the section number.
+            if (this.section.number > dropdata.number) {
+                this.element.classList.remove(this.classes.DROPUP);
+                this.element.classList.add(this.classes.DROPDOWN);
+            } else {
+                this.element.classList.add(this.classes.DROPUP);
+                this.element.classList.remove(this.classes.DROPDOWN);
+            }
         }
     }
 
@@ -182,7 +167,6 @@ export default class extends BaseComponent {
      */
     hideDropZone() {
         this.getLastCm()?.classList.remove(this.classes.DROPDOWN);
-        this.getLastCmFallback()?.classList.remove(this.classes.DROPDOWN);
         this.element.classList.remove(this.classes.DROPUP);
         this.element.classList.remove(this.classes.DROPDOWN);
         this.removeOverlay();
@@ -210,7 +194,7 @@ export default class extends BaseComponent {
             this.reactive.dispatch(mutation, [dropdata.id], this.id);
         }
         if (dropdata.type == 'section') {
-            this.reactive.dispatch('sectionMoveAfter', [dropdata.id], this.id);
+            this.reactive.dispatch('sectionMove', [dropdata.id], this.id);
         }
     }
 }

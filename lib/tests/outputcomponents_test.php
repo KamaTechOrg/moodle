@@ -25,7 +25,12 @@ use single_button;
 use single_select;
 use theme_config;
 use url_select;
-use core\output\user_picture;
+use user_picture;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->libdir . '/outputcomponents.php');
 
 /**
  * Unit tests for lib/outputcomponents.php.
@@ -35,13 +40,14 @@ use core\output\user_picture;
  * @copyright 2011 David Mudrak <david@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class outputcomponents_test extends \advanced_testcase {
+class outputcomponents_test extends \advanced_testcase {
+
     /**
      * Tests user_picture::fields.
      *
      * @deprecated since Moodle 3.11 MDL-45242
      */
-    public function test_fields_aliasing(): void {
+    public function test_fields_aliasing() {
         $fields = user_picture::fields();
         $fields = array_map('trim', explode(',', $fields));
         $this->assertTrue(in_array('id', $fields));
@@ -76,7 +82,7 @@ final class outputcomponents_test extends \advanced_testcase {
     /**
      * Tests user_picture::unalias.
      */
-    public function test_fields_unaliasing(): void {
+    public function test_fields_unaliasing() {
         $fields = implode(',', \core_user\fields::get_picture_fields());
         $fields = array_map('trim', explode(',', $fields));
 
@@ -103,7 +109,7 @@ final class outputcomponents_test extends \advanced_testcase {
     /**
      * Tests user_picture::unalias with null values.
      */
-    public function test_fields_unaliasing_null(): void {
+    public function test_fields_unaliasing_null() {
         $fields = implode(',', \core_user\fields::get_picture_fields());
         $fields = array_map('trim', explode(',', $fields));
 
@@ -129,7 +135,7 @@ final class outputcomponents_test extends \advanced_testcase {
         $this->assertSame('Value of custom1', $returned->custom1);
     }
 
-    public function test_get_url(): void {
+    public function test_get_url() {
         global $DB, $CFG, $USER;
 
         $this->resetAfterTest();
@@ -315,13 +321,13 @@ final class outputcomponents_test extends \advanced_testcase {
         $this->assertSame($CFG->wwwroot.'/theme/image.php?theme=classic&component=core&rev=1&image=u%2Ff2', $up3->get_url($page, $renderer)->out(false));
     }
 
-    public function test_empty_menu(): void {
+    public function test_empty_menu() {
         $emptymenu = new custom_menu();
         $this->assertInstanceOf(custom_menu::class, $emptymenu);
         $this->assertFalse($emptymenu->has_children());
     }
 
-    public function test_basic_syntax(): void {
+    public function test_basic_syntax() {
         $definition = <<<EOF
 Moodle community|http://moodle.org
 -Moodle free support|http://moodle.org/support
@@ -366,7 +372,7 @@ EOF;
         $this->assertSame('Commercial hosting', $subitem->get_title());
     }
 
-    public function test_custommenu_mulitlang(): void {
+    public function test_custommenu_mulitlang() {
         $definition = <<<EOF
 Start|http://school.info
 Info
@@ -443,7 +449,7 @@ EOF;
         return $str;
     }
 
-    public function test_prepare(): void {
+    public function test_prepare() {
         $expecteda = array('<span class="current-page">1</span>',
             '<a href="index.php?page=1">2</a>',
             '<a href="index.php?page=2">3</a>',
@@ -472,7 +478,7 @@ EOF;
         $this->assertEquals($expectedb, $pbarb->pagelinks);
     }
 
-    public function test_pix_icon(): void {
+    public function test_pix_icon() {
         $this->resetAfterTest();
 
         $page = new \moodle_page();
@@ -504,7 +510,7 @@ EOF;
     /**
      * Test for checking the template context data for the single_select element.
      */
-    public function test_single_select(): void {
+    public function test_single_select() {
         global $PAGE;
 
         $fakename = 'fakename';
@@ -584,7 +590,7 @@ EOF;
      * Test for checking the template context data for the single_select element.
      * @covers \single_button
      */
-    public function test_single_button(): void {
+    public function test_single_button() {
         global $PAGE;
         $url = new \moodle_url('/');
         $realname = 'realname';
@@ -616,7 +622,7 @@ EOF;
      * Test for checking the template context data for the single_select element legacy API.
      * @covers \single_button
      */
-    public function test_single_button_deprecated(): void {
+    public function test_single_button_deprecated() {
         global $PAGE;
         $url = new \moodle_url('/');
         $realname = 'realname';
@@ -663,7 +669,7 @@ EOF;
     /**
      * Test for checking the template context data for the url_select element.
      */
-    public function test_url_select(): void {
+    public function test_url_select() {
         global $PAGE;
 
         $fakename = 'fakename';
@@ -745,43 +751,11 @@ EOF;
     }
 
     /**
-     * Test for checking the template context data for the url_select element.
-     * @covers \url_select::disable_option
-     * @covers \url_select::enable_option
-     */
-    public function test_url_select_disabled_options(): void {
-        global $PAGE;
-        $url1 = new \moodle_url("/#a");
-        $url2 = new \moodle_url("/#b");
-        $url3 = new \moodle_url("/#c");
-
-        $urls = [
-            $url1->out() => 'A',
-            $url2->out() => 'B',
-            $url3->out() => 'C',
-        ];
-        $urlselect = new url_select($urls,
-            null,
-            null,
-            'someformid',
-            null);
-        $renderer = $PAGE->get_renderer('core');
-        $urlselect->set_option_disabled($url2->out(), true);
-        $data = $urlselect->export_for_template($renderer);
-        $this->assertFalse($data->options[0]['disabled']);
-        $this->assertTrue($data->options[1]['disabled']);
-        $urlselect->set_option_disabled($url2->out(), false);
-        $data = $urlselect->export_for_template($renderer);
-        $this->assertFalse($data->options[0]['disabled']);
-        $this->assertFalse($data->options[1]['disabled']);
-    }
-
-    /**
      * Data provider for test_block_contents_is_fake().
      *
      * @return array
      */
-    public static function block_contents_is_fake_provider(): array {
+    public function block_contents_is_fake_provider() {
         return [
             'Null' => [null, false],
             'Not set' => [false, false],
@@ -797,7 +771,7 @@ EOF;
      * @param mixed $value Value for the data-block attribute
      * @param boolean $expected The expected result
      */
-    public function test_block_contents_is_fake($value, $expected): void {
+    public function test_block_contents_is_fake($value, $expected) {
         $bc = new block_contents(array());
         if ($value !== false) {
             $bc->attributes['data-block'] = $value;

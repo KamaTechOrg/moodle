@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace core_reportbuilder\task;
 
-use core\{clock, di};
 use core\task\scheduled_task;
 use core_reportbuilder\local\helpers\schedule;
 use core_reportbuilder\local\models\schedule as model;
@@ -47,9 +46,7 @@ class send_schedules extends scheduled_task {
     public function execute(): void {
         global $DB;
 
-        $schedules = model::get_records_select('enabled = 1 AND timenextsend <= :time', [
-            'time' => di::get(clock::class)->time(),
-        ]);
+        $schedules = model::get_records_select('enabled = 1 AND timenextsend <= :time', ['time' => time()]);
         $schedules = array_filter($schedules, [schedule::class, 'should_send_schedule']);
 
         // Loop over all schedules for sending, execute corresponding task to send each individually.

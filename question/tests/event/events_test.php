@@ -24,6 +24,7 @@
 
 namespace core_question\event;
 
+use qbank_managecategories\question_category_object;
 use qtype_description;
 use qtype_description_edit_form;
 use qtype_description_test_helper;
@@ -41,7 +42,6 @@ class events_test extends \advanced_testcase {
      * Tests set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -50,26 +50,33 @@ class events_test extends \advanced_testcase {
      * There is no easy way to trigger this event using the API, so the unit test will simply
      * create and trigger the event and ensure data is returned as expected.
      */
-    public function test_questions_imported(): void {
+    public function test_questions_imported() {
 
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $quiz = $this->getDataGenerator()->create_module('quiz', ['course' => $course->id]);
-        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
 
         $contexts = new \core_question\local\bank\question_edit_contexts(\context_module::instance($quiz->cmid));
 
-        $defaultcategory = question_make_default_categories([$contexts->lowest()]);
+        $defaultcategoryobj = question_make_default_categories([$contexts->lowest()]);
+        $defaultcategory = $defaultcategoryobj->id . ',' . $defaultcategoryobj->contextid;
 
-        $category = $questiongenerator->create_question_category([
-            'name' => 'newcategory',
-            'parent' => $defaultcategory->id,
-        ]);
+        $qcobject = new question_category_object(
+                1,
+                new \moodle_url('/mod/quiz/edit.php', ['cmid' => $quiz->cmid]),
+                $contexts->having_one_edit_tab_cap('categories'),
+                $defaultcategoryobj->id,
+                $defaultcategory,
+                null,
+                $contexts->having_cap('moodle/question:add'));
+
+        // Create the category.
+        $categoryid = $qcobject->add_category($defaultcategory, 'newcategory', '', true);
 
         // Log the view of this category.
         $params = [
                 'context' => \context_module::instance($quiz->cmid),
-                'other' => ['categoryid' => $category->id, 'format' => 'testformat'],
+                'other' => ['categoryid' => $categoryid, 'format' => 'testformat'],
         ];
 
         $event = \core\event\questions_imported::create($params);
@@ -83,7 +90,7 @@ class events_test extends \advanced_testcase {
         // Check that the event data is valid.
         $this->assertInstanceOf('\core\event\questions_imported', $event);
         $this->assertEquals(\context_module::instance($quiz->cmid), $event->get_context());
-        $this->assertEquals($category->id, $event->other['categoryid']);
+        $this->assertEquals($categoryid, $event->other['categoryid']);
         $this->assertEquals('testformat', $event->other['format']);
         $this->assertDebuggingNotCalled();
 
@@ -94,26 +101,33 @@ class events_test extends \advanced_testcase {
      * There is no easy way to trigger this event using the API, so the unit test will simply
      * create and trigger the event and ensure data is returned as expected.
      */
-    public function test_questions_exported(): void {
+    public function test_questions_exported() {
 
         $this->setAdminUser();
         $course = $this->getDataGenerator()->create_course();
         $quiz = $this->getDataGenerator()->create_module('quiz', ['course' => $course->id]);
-        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
 
         $contexts = new \core_question\local\bank\question_edit_contexts(\context_module::instance($quiz->cmid));
 
-        $defaultcategory = question_make_default_categories([$contexts->lowest()]);
+        $defaultcategoryobj = question_make_default_categories([$contexts->lowest()]);
+        $defaultcategory = $defaultcategoryobj->id . ',' . $defaultcategoryobj->contextid;
 
-        $category = $questiongenerator->create_question_category([
-            'name' => 'newcategory',
-            'parent' => $defaultcategory->id,
-        ]);
+        $qcobject = new question_category_object(
+                1,
+                new \moodle_url('/mod/quiz/edit.php', ['cmid' => $quiz->cmid]),
+                $contexts->having_one_edit_tab_cap('categories'),
+                $defaultcategoryobj->id,
+                $defaultcategory,
+                null,
+                $contexts->having_cap('moodle/question:add'));
+
+        // Create the category.
+        $categoryid = $qcobject->add_category($defaultcategory, 'newcategory', '', true);
 
         // Log the view of this category.
         $params = [
                 'context' => \context_module::instance($quiz->cmid),
-                'other' => ['categoryid' => $category->id, 'format' => 'testformat'],
+                'other' => ['categoryid' => $categoryid, 'format' => 'testformat'],
         ];
 
         $event = \core\event\questions_exported::create($params);
@@ -127,7 +141,7 @@ class events_test extends \advanced_testcase {
         // Check that the event data is valid.
         $this->assertInstanceOf('\core\event\questions_exported', $event);
         $this->assertEquals(\context_module::instance($quiz->cmid), $event->get_context());
-        $this->assertEquals($category->id, $event->other['categoryid']);
+        $this->assertEquals($categoryid, $event->other['categoryid']);
         $this->assertEquals('testformat', $event->other['format']);
         $this->assertDebuggingNotCalled();
 
@@ -136,7 +150,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the question created event.
      */
-    public function test_question_created(): void {
+    public function test_question_created() {
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
@@ -162,7 +176,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the question deleted event.
      */
-    public function test_question_deleted(): void {
+    public function test_question_deleted() {
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
@@ -189,7 +203,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the question updated event.
      */
-    public function test_question_updated(): void {
+    public function test_question_updated() {
 
         global $CFG;
         require_once($CFG->dirroot . '/question/type/description/questiontype.php');
@@ -230,7 +244,7 @@ class events_test extends \advanced_testcase {
     /**
      * Test the question moved event.
      */
-    public function test_question_moved(): void {
+    public function test_question_moved() {
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
@@ -264,7 +278,7 @@ class events_test extends \advanced_testcase {
      * There is no external API for viewing the question, so the unit test will simply
      * create and trigger the event and ensure data is returned as expected.
      */
-    public function test_question_viewed(): void {
+    public function test_question_viewed() {
 
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('core_question');

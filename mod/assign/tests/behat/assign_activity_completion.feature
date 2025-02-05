@@ -70,7 +70,7 @@ Feature: View activity completion in the assignment activity
     And the manual completion button for "Music history" should exist
 
   @javascript
-  Scenario: A student can manually mark the assign activity as done but a teacher cannot
+  Scenario: Use manual completion from the activity page
     Given I am on the "Music history" "assign activity" page logged in as teacher1
     # Teacher view.
     And the manual completion button for "Music history" should be disabled
@@ -81,7 +81,7 @@ Feature: View activity completion in the assignment activity
     And I toggle the manual completion state of "Music history"
     And the manual completion button of "Music history" is displayed as "Done"
 
-  Scenario: Verify that the assignment completion conditions are displayed to teachers
+  Scenario: View automatic completion items as a teacher
     Given I am on the "Music history" "assign activity editing" page logged in as teacher1
     And I expand all fieldsets
     And I set the following fields to these values:
@@ -95,7 +95,7 @@ Feature: View activity completion in the assignment activity
     And "Music history" should have the "Receive a grade" completion condition
 
   @javascript
-  Scenario: Verify that students can complete an assignment activity by achieving a passing grade
+  Scenario: View automatic completion items as a student
     Given I am on the "Music history" "assign activity editing" page logged in as teacher1
     And I expand all fieldsets
     And I set the following fields to these values:
@@ -121,7 +121,8 @@ Feature: View activity completion in the assignment activity
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And I log out
     And I am on the "Music history" "assign activity" page logged in as teacher1
-    And I go to "Vinnie Student1" "Music history" activity advanced grading page
+    And I follow "View all submissions"
+    And I click on "Grade" "link" in the "Vinnie Student1" "table_row"
     And I set the field "Grade out of 100" to "33"
     And I set the field "Notify student" to "0"
     And I press "Save changes"
@@ -144,7 +145,8 @@ Feature: View activity completion in the assignment activity
     And the "Make a submission" completion condition of "Music history 2" is displayed as "done"
     And I log out
     And I am on the "Music history 2" "assign activity" page logged in as teacher1
-    And I go to "Vinnie Student1" "Music history 2" activity advanced grading page
+    And I follow "View all submissions"
+    And I click on "Grade" "link" in the "Vinnie Student1" "table_row"
     And I set the field "Grade out of 100" to "33"
     And I set the field "Notify student" to "0"
     And I set the field "Allow another attempt" to "Yes"

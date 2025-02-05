@@ -27,7 +27,6 @@ use testable_plugininfo_base;
  * @package   core
  * @copyright 2019 Andrew Nicols
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \core\plugininfo\base
  */
 class base_test extends \advanced_testcase {
 
@@ -39,7 +38,6 @@ class base_test extends \advanced_testcase {
 
         require_once($CFG->dirroot.'/lib/tests/fixtures/testable_plugin_manager.php');
         require_once($CFG->dirroot.'/lib/tests/fixtures/testable_plugininfo_base.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -49,7 +47,6 @@ class base_test extends \advanced_testcase {
         // The caches of the testable singleton must be reset explicitly. It is
         // safer to kill the whole testable singleton at the end of every test.
         testable_core_plugin_manager::reset_caches();
-        parent::tearDown();
     }
 
     /**
@@ -86,7 +83,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function load_disk_version_invalid_supported_version_provider(): array {
+    public function load_disk_version_invalid_supported_version_provider(): array {
         return [
             'Invalid supported range.' => [
                 'supported' => [31, 29],
@@ -152,7 +149,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function load_disk_version_invalid_incompatible_version_provider(): array {
+    public function load_disk_version_invalid_incompatible_version_provider(): array {
         return [
             [[38]],
             [['38']],
@@ -200,7 +197,7 @@ class base_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function load_disk_version_branch_supports_provider(): array {
+    public function load_disk_version_branch_supports_provider(): array {
         return [
             'Range, branch in support, lowest' => [
                 'supported' => [29, 31],
@@ -278,6 +275,7 @@ class base_test extends \advanced_testcase {
 
     /**
      * Ensure that plugintype_supports_ordering() returns true.
+     * @covers ::plugintype_supports_ordering
      */
     public function test_plugintype_supports_ordering(): void {
         $this->assertFalse(base::plugintype_supports_ordering());
@@ -313,7 +311,7 @@ class base_test extends \advanced_testcase {
      *
      * @return string[]
      */
-    public static function plugins_not_supporting_ordering(): array {
+    public function plugins_not_supporting_ordering(): array {
         return [
             ['mod_assign'],
             ['block_login'],

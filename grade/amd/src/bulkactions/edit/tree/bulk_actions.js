@@ -89,15 +89,4 @@ export default class GradebookEditTreeBulkActions extends BulkActions {
             checkbox.addEventListener('change', eventHandler.bind(this));
         });
     }
-
-    /**
-     * Defines the action for deselecting a selected item.
-     *
-     * @method deselectItem
-     * @param {HTMLElement} selectedItem The selected element.
-     * @returns {void}
-     */
-    deselectItem(selectedItem) {
-        selectedItem.checked = false;
-    }
 }

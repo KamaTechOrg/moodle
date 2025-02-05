@@ -1,8 +1,3 @@
-=== 4.5 Onwards ===
-
-This file has been replaced by UPGRADING.md. See MDL-81125 for further information.
-
-===
 This files describes API changes in the lti code.
 
 === 4.1 ===
