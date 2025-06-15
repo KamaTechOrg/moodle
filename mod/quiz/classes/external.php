@@ -2223,6 +2223,8 @@ class mod_quiz_external extends external_api {
         $quiz->coursemodule = $cm->id;
         $quiz->preferredbehaviour = 'deferredfeedback';
         $quiz->grade = 100.00000;
+        $quiz->browsersecurity = '-';
+
         // ... set other default quiz settings as needed.
 
         // // Insert quiz into database.
@@ -2234,7 +2236,8 @@ class mod_quiz_external extends external_api {
         // Add module to section.
         course_add_cm_to_section($course, $cm->id, $sectioninfo->id);
         rebuild_course_cache($course->id);
-
+        //$config = \quizaccess_seb\helper::get_seb_config_content(541);
+        //\quizaccess_seb\helper::send_seb_config_file($config);
         return ['status' => 'success', 'quizid' => $quiz->id, 'cmid' => $cm->id];
     }
 
@@ -2793,5 +2796,39 @@ class mod_quiz_external extends external_api {
             'messages' => new external_value(PARAM_TEXT, 'Any messages'),
         ]);
     }
+
+
+    public static function execute_parameters() {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Course Module ID of the quiz'),
+        ]);
+    }
+
+    public static function execute($cmid) {
+        self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid]);
+
+        $cm = get_coursemodule_from_id('quiz', $cmid, 0, false, MUST_EXIST);
+        $context = context_module::instance($cmid);
+        require_capability('mod/quiz:view', $context);
+
+        $config = \quizaccess_seb\helper::get_seb_config_content($cmid);
+
+        return [
+            'filename' => "quiz-$cmid.seb",
+            'mimetype' => 'application/x-seb',
+            'content'  => base64_encode($config),
+        ];
+    }
+
+    public static function execute_returns() {
+        return new external_single_structure([
+            'filename' => new external_value(PARAM_FILE, 'File name of the SEB configuration'),
+            'mimetype' => new external_value(PARAM_TEXT, 'MIME type of the file'),
+            'content'  => new external_value(PARAM_RAW, 'Base64 encoded SEB configuration content'),
+        ]);
+    }
+
     
 }
+
+

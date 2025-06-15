@@ -276,4 +276,12 @@ $functions = [
         'capabilities'  => 'mod/quiz:manage',
 	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
+
+    'mod_quiz_get_seb_file' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'execute',
+        'description'   => 'Get quiz SEB file.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+    ]
 ];
