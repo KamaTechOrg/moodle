@@ -11,5 +11,11 @@ $PAGE->set_title("Typing Lesson");
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
+
+// להוסיף אייקון עם גודל גדול - כאן גודל 64 פיקסל:
+echo '<div style="text-align:center; margin-bottom:20px;">';
+echo '<i class="typcn typcn-message-typing" style="font-size:64px; color:#0073e6;"></i>';
+echo '</div>';
+
 echo $OUTPUT->heading("Typing Lesson Content");
 echo $OUTPUT->footer();
