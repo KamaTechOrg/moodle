@@ -6,16 +6,24 @@ $cm = get_coursemodule_from_id('typinglesson', $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
 require_course_login($course, true, $cm);
 
+// Set the URL, title, and heading for the page
 $PAGE->set_url('/mod/typinglesson/view.php', ['id' => $id]);
 $PAGE->set_title("Typing Lesson");
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 
-// להוסיף אייקון עם גודל גדול - כאן גודל 64 פיקסל:
+// Display the icon image located in the mod's pix folder
+// Create a moodle_url pointing to the image file
+$iconurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
+
+// Output the image tag with inline CSS to control size (width and height)
 echo '<div style="text-align:center; margin-bottom:20px;">';
-echo '<i class="typcn typcn-message-typing" style="font-size:64px; color:#0073e6;"></i>';
+echo html_writer::empty_tag('img', ['src' => $iconurl, 'style' => 'width:64px; height:64px;']);
 echo '</div>';
 
+// Output the main heading of the content
 echo $OUTPUT->heading("Typing Lesson Content");
+
+// Output the page footer
 echo $OUTPUT->footer();
