@@ -19,7 +19,7 @@ $iconurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
 
 // Output the image tag with inline CSS to control size (width and height)
 echo '<div style="text-align:center; margin-bottom:20px;">';
-echo html_writer::empty_tag('img', ['src' => $iconurl, 'style' => 'width:64px; height:64px;']);
+echo html_writer::empty_tag('img', ['src' => $iconurl, 'style' => 'width:80px; height:80px;']);
 echo '</div>';
 
 // Output the main heading of the content
