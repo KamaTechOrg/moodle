@@ -18,9 +18,10 @@ echo $OUTPUT->header();
 $iconurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
 
 // Output the image tag with inline CSS to control size (width and height)
-echo '<div >';
-echo html_writer::empty_tag('img', ['src' => $iconurl, 'style' => 'width:100px; height:100px; !important']);
-echo '</div>';
+echo html_writer::empty_tag('img', [
+    'src' => $iconurl,
+    'style' => 'width:100px !important; height:100px !important; display:block; margin:auto;'
+]);
 
 // Output the main heading of the content
 echo $OUTPUT->heading("Typing Lesson Content");
