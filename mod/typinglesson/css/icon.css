@@ -1,8 +1,6 @@
 .typinglesson-banner {
     background-image: url("../pix/icon.svg");
     background-size: cover;
-    background-position: center;
-    width: 100vh;
-    max-width: 800px;
-    height: 100vh;
+    width: 100px;
+    height: 300px;
 }
