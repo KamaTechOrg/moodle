@@ -1,0 +1,11 @@
+.typinglesson-banner {
+    background-image: url("../pix/icon.jpg");
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    max-width: 800px;
+    height: 300px;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}

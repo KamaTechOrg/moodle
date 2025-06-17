@@ -10,3 +10,8 @@ function typinglesson_supports($feature) {
             return null;
     }
 }
+
+function typinglesson_before_standard_html_head() {
+    global $PAGE;
+    $PAGE->requires->css('/mod/typinglesson/styles/styles.css');
+}

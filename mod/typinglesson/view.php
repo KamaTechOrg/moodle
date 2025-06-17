@@ -10,26 +10,14 @@ require_course_login($course, true, $cm);
 $PAGE->set_url('/mod/typinglesson/view.php', ['id' => $id]);
 $PAGE->set_title("Typing Lesson");
 $PAGE->set_heading($course->fullname);
+$PAGE->requires->css('/mod/typinglesson/styles/styles.css');
 
 echo $OUTPUT->header();
 
-// URL for the background image
-$backgroundurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
-
-// Output div with background image
-echo html_writer::start_tag('div', [
-    'style' => 'background-image: url(' . $backgroundurl . '); 
-                background-size: cover; 
-                background-position: center; 
-                width: 24px; 
-                height: 24px; 
-                border-radius: 10px; 
-                margin-bottom: 20px;'
-]);
+// Output div with background image using CSS class
+echo html_writer::start_tag('div', ['class' => 'typinglesson-banner']);
 echo html_writer::end_tag('div');
 
-// Main heading
 echo $OUTPUT->heading("Typing Lesson Content");
 
-// Footer
 echo $OUTPUT->footer();
