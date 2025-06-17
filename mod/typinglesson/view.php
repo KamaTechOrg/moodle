@@ -6,25 +6,30 @@ $cm = get_coursemodule_from_id('typinglesson', $id, 0, false, MUST_EXIST);
 $course = get_course($cm->course);
 require_course_login($course, true, $cm);
 
-// Set the URL, title, and heading for the page
+// Set page settings
 $PAGE->set_url('/mod/typinglesson/view.php', ['id' => $id]);
 $PAGE->set_title("Typing Lesson");
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 
-// Display the icon image located in the mod's pix folder
-// Create a moodle_url pointing to the image file
-$iconurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
+// URL for the background image
+$backgroundurl = new moodle_url('/mod/typinglesson/pix/icon.jpg');
 
-// Output the image tag with inline CSS to control size (width and height)
-echo html_writer::empty_tag('img', [
-    'src' => $iconurl,
-    'style' => 'width:24px !important; height:24px !important;'
+// Output div with background image
+echo html_writer::start_tag('div', [
+    'style' => 'background-image: url(' . $backgroundurl . '); 
+                background-size: cover; 
+                background-position: center; 
+                width: 24px; 
+                height: 24px; 
+                border-radius: 10px; 
+                margin-bottom: 20px;'
 ]);
+echo html_writer::end_tag('div');
 
-// Output the main heading of the content
+// Main heading
 echo $OUTPUT->heading("Typing Lesson Content");
 
-// Output the page footer
+// Footer
 echo $OUTPUT->footer();
