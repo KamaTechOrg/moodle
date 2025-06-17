@@ -10,7 +10,7 @@ require_course_login($course, true, $cm);
 $PAGE->set_url('/mod/typinglesson/view.php', ['id' => $id]);
 $PAGE->set_title("Typing Lesson");
 $PAGE->set_heading($course->fullname);
-$PAGE->requires->css('/mod/typinglesson/styles/styles.css');
+$PAGE->requires->css('/mod/typinglesson/css/icon.css');
 
 echo $OUTPUT->header();
 

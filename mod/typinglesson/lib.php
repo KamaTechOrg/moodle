@@ -13,5 +13,5 @@ function typinglesson_supports($feature) {
 
 function typinglesson_before_standard_html_head() {
     global $PAGE;
-    $PAGE->requires->css('/mod/typinglesson/styles/styles.css');
+    $PAGE->requires->css('/mod/typinglesson/css/icon.css');
 }
