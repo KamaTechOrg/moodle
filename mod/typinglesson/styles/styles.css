@@ -2,10 +2,7 @@
     background-image: url("../pix/icon.svg");
     background-size: cover;
     background-position: center;
-    width: 100%;
+    width: 100vh;
     max-width: 800px;
-    height: 300px;
-    margin: 20px auto;
-    border: 1px solid #ccc;
-    border-radius: 10px;
+    height: 100vh;
 }
