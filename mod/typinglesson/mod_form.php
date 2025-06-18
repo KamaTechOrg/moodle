@@ -1,4 +1,8 @@
 <?php
+
+// This page creates the add/edit form for the typinglesson activity in the course,
+// including a field for the activity name, introduction, standard settings, and save buttons.
+
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
 class mod_typinglesson_mod_form extends moodleform_mod {

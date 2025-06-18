@@ -52,8 +52,8 @@
             </KEYS>
         </TABLE>
 
-        <!-- typingl_custom_lessons -->
-        <TABLE NAME="typingl_custom_lessons" COMMENT="Stores custom lessons created by users.">
+        <!-- typing_custom_lessons -->
+        <TABLE NAME="typing_custom_lessons" COMMENT="Stores custom lessons created by users.">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to user"/>

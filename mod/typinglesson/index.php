@@ -1,4 +1,8 @@
 <?php
+
+// Displays the plugin's main activity page and verifies that the user is logged in and has access 
+// — currently populating sample content only
+
 require('../../config.php');
 
 $id = required_param('id', PARAM_INT);

@@ -1,4 +1,8 @@
 <?php
+
+// This file defines the plugin version, system requirements,
+// and its status so that the Moodle system can manage it correctly.
+
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_typinglesson';
