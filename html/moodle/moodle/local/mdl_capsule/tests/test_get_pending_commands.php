@@ -1,32 +1,64 @@
 <?php
+
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->dirroot . '/local/mdl_capsule/classes/external/get_pending_commands.php');
+/**
+ * Class test_get_pending_commands
+ *
+ * @package    local_mdl_capsule
+ * @runTestsInSeparateProcesses
+ */
+class test_get_pending_commands extends advanced_testcase {
 
-use local_mdl_capsule_external; // ודא שהמחלקה קיימת
+    public function setUp(): void {
+        $this->resetAfterTest(true);
+    }
 
-class local_mdl_capsule_external_testcase extends advanced_testcase {
-
-    public function test_get_pending_commands_returns_array() {
-        $this->resetAfterTest(true); // מאפס את מסד הנתונים אחרי הבדיקה
-
-        // צור capsuleid לבדיקה. אפשר ליצור טבלה עם נתונים לבדיקה:
-        $capsuleid = 1;
-
-        // הכנס רשומה לדוגמה למסד הנתונים
+    public function test_get_pending_commands_returns_expected_records() {
         global $DB;
-        $DB->insert_record('capsule_commands', (object)[
+
+        // טוען את הקובץ רק בתוך הפונקציה כדי למנוע שגיאת isolation
+        require_once(__DIR__ . '/../externallib.php');
+
+        $this->setAdminUser();
+
+        $capsuleid = 456;
+
+        $cmd1 = (object)[
             'capsuleid' => $capsuleid,
-            'command' => 'example command'
-        ]);
+            'command' => 'do_something',
+            'status' => 'pending',
+            'timecreated' => time(),
+        ];
+        $cmd2 = (object)[
+            'capsuleid' => $capsuleid,
+            'command' => 'do_another_thing',
+            'status' => 'pending',
+            'timecreated' => time(),
+        ];
 
-        // קריאה לפונקציה שאת בודקת
-        $results = local_mdl_capsule_external::get_pending_commands($capsuleid);
+        $cmd1->id = $DB->insert_record('capsule_commands', $cmd1);
+        $cmd2->id = $DB->insert_record('capsule_commands', $cmd2);
 
-        // בדיקה: האם קיבלנו מערך לא ריק?
-        $this->assertIsArray($results);
-        $this->assertNotEmpty($results);
+        $result = \local_mdl_capsule_external::get_pending_commands($capsuleid);
+
+        $this->assertCount(2, $result);
+        $this->assertEquals($cmd1->id, $result[0]['id']);
+        $this->assertEquals($cmd1->capsuleid, $result[0]['capsuleid']);
+        $this->assertEquals($cmd1->command, $result[0]['command']);
+        $this->assertEquals($cmd2->id, $result[1]['id']);
+        $this->assertEquals($cmd2->capsuleid, $result[1]['capsuleid']);
+        $this->assertEquals($cmd2->command, $result[1]['command']);
+    }
+
+    public function test_get_pending_commands_empty_result() {
+        require_once(__DIR__ . '/../externallib.php');
+
+        $this->setAdminUser();
+
+        $result = \local_mdl_capsule_external::get_pending_commands(999999);
+
+        $this->assertIsArray($result);
+        $this->assertCount(0, $result);
     }
 }
-
