@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XMLDB PATH="mod/typinglesson/db" VERSION="2025052803" COMMENT="XMLDB file for typinglesson"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
     <TABLES>
+        <!-- typinglesson activity instance table (required) -->
+        <TABLE NAME="typinglesson" COMMENT="Main activity instance data for typinglesson.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Name of the activity instance"/>
+                <FIELD NAME="intro" TYPE="text" NOTNULL="false" COMMENT="Activity introduction"/>
+                <FIELD NAME="introformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" COMMENT="Intro text format"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
         <!-- typing_lesson_types -->
         <TABLE NAME="typing_lesson_types" COMMENT="Stores types of typing lessons.">
             <FIELDS>
