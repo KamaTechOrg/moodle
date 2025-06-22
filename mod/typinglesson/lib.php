@@ -31,20 +31,16 @@ function typinglesson_get_coursemodule_info($coursemodule) {
 // Handles creation of a new activity instance.
 function typinglesson_add_instance($data, $mform = null) {
     global $DB;
-
     $data->timecreated = time();
     $data->timemodified = time();
-
     return $DB->insert_record('typinglesson', $data);
 }
 
 // Handles updates to an existing activity instance.
 function typinglesson_update_instance($data, $mform = null) {
     global $DB;
-
     $data->timemodified = time();
     $data->id = $data->instance;
-
     return $DB->update_record('typinglesson', $data);
 }
 
