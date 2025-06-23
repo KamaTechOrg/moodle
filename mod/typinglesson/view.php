@@ -28,16 +28,15 @@ $url = new moodle_url('/mod/typinglesson/addlesson.php', [
 echo $OUTPUT->single_button($url, get_string('addlesson', 'mod_typinglesson'));
 
 // Build the correct URL for the banner icon from the pix folder
-$bannerurl = $OUTPUT->image_url('icon', 'mod_typinglesson');
-
-// Design banner with background image
-echo html_writer::start_tag('div', [
-    'class' => 'typinglesson-banner',
-    'style' => 'background-image:url(' . $bannerurl . '); width: 64px; height: 64px; background-size: contain; background-repeat: no-repeat; margin-top: 20px;'
+$iconurl = $OUTPUT->image_url('icon', 'mod_typinglesson');
+$heading = html_writer::empty_tag('img', [
+    'src' => $iconurl,
+    'alt' => '',
+    'class' => 'typinglesson-heading-icon',
+    'style' => 'width: 30px; height: 30px; vertical-align: middle; margin-right: 8px;'
 ]);
-echo html_writer::end_tag('div');
-
-echo $OUTPUT->heading(get_string('lessoncontentheading', 'mod_typinglesson'));
+$heading .= get_string('lessoncontentheading', 'mod_typinglesson');
+echo $OUTPUT->heading($heading);
 
 // Fetch and display lessons
 $lessons = $DB->get_records('typing_lessons');

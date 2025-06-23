@@ -1,7 +1,7 @@
 <?php
 
 // Defines system functions that allow Moodle to understand how to deal with the typinglesson module,
-// including feature support, loading designs, and an icon in the activity.
+// including feature support, loading designs, and basic lifecycle functions.
 defined('MOODLE_INTERNAL') || die();
 
 function typinglesson_supports($feature) {
@@ -15,17 +15,16 @@ function typinglesson_supports($feature) {
 }
 
 // Load a custom CSS file before the page's HTML is loaded — 
-// for control over the design of pages related to the touch typing plugin.
+// for control over the design of pages related to the typinglesson module.
 function typinglesson_before_standard_html_head() {
     global $PAGE;
     $PAGE->requires->css('/mod/typinglesson/css/icon.css');
 }
 
-//Return information about the Activity (the instance of the module in the course)
+// Return information about the activity (the instance of the module in the course).
+// No need to manually define $info->icon – Moodle will handle it automatically if pix/icon.svg or icon.png exist.
 function typinglesson_get_coursemodule_info($coursemodule) {
-    $info = new cached_cm_info();
-    $info->icon = new moodle_url('/mod/typinglesson/pix/icon.svg');
-    return $info;
+    return new cached_cm_info();
 }
 
 // Handles creation of a new activity instance.
@@ -45,7 +44,6 @@ function typinglesson_update_instance($data, $mform = null) {
 }
 
 // Handles deletion of an activity instance.
-
 function typinglesson_delete_instance($id) {
     global $DB;
 
