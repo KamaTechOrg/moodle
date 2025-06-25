@@ -7,5 +7,5 @@ function theme_mycustom_get_main_scss_content($theme) {
 }
 
 function theme_mycustom_process_css($css, $theme) {
-    return $css; // אפשר להכניס כאן עיבוד נוסף אם תרצי
+    return $css; 
 }

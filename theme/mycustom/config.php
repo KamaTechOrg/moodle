@@ -2,7 +2,7 @@
 
 $THEME->name = 'mycustom';
 
-$THEME->parents = ['boost']; // אפשר גם 'classic'
+$THEME->parents = ['boost']; 
 
 $THEME->sheets = [];
 
