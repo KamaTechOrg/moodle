@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="mod/typinglesson/db" VERSION="2025052803" COMMENT="XMLDB file for typinglesson"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    <TABLES>
+        <!-- typinglesson activity instance table (required) -->
+        <TABLE NAME="typinglesson" COMMENT="Main activity instance data for typinglesson.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Name of the activity instance"/>
+                <FIELD NAME="intro" TYPE="text" NOTNULL="false" COMMENT="Activity introduction"/>
+                <FIELD NAME="introformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" COMMENT="Intro text format"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <!-- typing_lesson_types -->
+        <TABLE NAME="typing_lesson_types" COMMENT="Stores types of typing lessons.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Name of the lesson type"/>
+                <FIELD NAME="alias" TYPE="char" LENGTH="100" NOTNULL="true" COMMENT="Alias for internal use"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <!-- typing_lessons -->
+        <TABLE NAME="typing_lessons" COMMENT="Stores individual typing lessons.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="Name of the lesson"/>
+                <FIELD NAME="description" TYPE="text" NOTNULL="false" COMMENT="Lesson description"/>
+                <FIELD NAME="lesson_type_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to typing_lesson_types"/>
+                <FIELD NAME="required_letters" TYPE="text" NOTNULL="false" COMMENT="JSONB of required letters"/>
+                <FIELD NAME="text_to_type" TYPE="text" NOTNULL="true" COMMENT="The text the user needs to type"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="lesson_type_fk" TYPE="foreign" FIELDS="lesson_type_id" REFTABLE="typing_lesson_types" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <!-- custom_lesson_progress -->
+        <TABLE NAME="custom_lesson_progress" COMMENT="Stores users' progress on custom typing lessons.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="lesson_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to typing_lessons"/>
+                <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to user"/>
+                <FIELD NAME="typing_log" TYPE="text" NOTNULL="false" COMMENT="JSONB storing typing log data"/>
+                <FIELD NAME="duration_ms" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Duration in milliseconds"/>
+                <FIELD NAME="typed_text" TYPE="text" NOTNULL="false" COMMENT="Text typed by the user"/>
+                <FIELD NAME="error_count" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Number of errors"/>
+                <FIELD NAME="correct_count" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Number of correct keystrokes"/>
+                <FIELD NAME="accuracy_score" TYPE="number" LENGTH="10" DECIMALS="5" NOTNULL="false" COMMENT="Accuracy score (float)"/>
+                <FIELD NAME="speed_score" TYPE="number" LENGTH="10" DECIMALS="5" NOTNULL="false" COMMENT="Speed score (float)"/>
+                <FIELD NAME="final_score" TYPE="number" LENGTH="10" DECIMALS="5" NOTNULL="false" COMMENT="Final overall score (float)"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="lesson_fk" TYPE="foreign" FIELDS="lesson_id" REFTABLE="typing_lessons" REFFIELDS="id"/>
+                <KEY NAME="user_fk" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <!-- typing_custom_lessons -->
+        <TABLE NAME="typing_custom_lessons" COMMENT="Stores custom lessons created by users.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to user"/>
+                <FIELD NAME="lesson_source_id" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Foreign key to typing_lessons"/>
+                <FIELD NAME="required_letters" TYPE="text" NOTNULL="false" COMMENT="JSONB of required letters"/>
+                <FIELD NAME="text_to_type" TYPE="text" NOTNULL="true" COMMENT="The text the user needs to type"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+                <KEY NAME="user_fk" TYPE="foreign" FIELDS="user_id" REFTABLE="user" REFFIELDS="id"/>
+                <KEY NAME="lesson_source_fk" TYPE="foreign" FIELDS="lesson_source_id" REFTABLE="typing_lessons" REFFIELDS="id"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>
