@@ -1,0 +1,28 @@
+/* .typinglesson-banner {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 100%;
+    height: 150px;
+    margin: 20px 0;
+    border-radius: 8px;
+} */
+
+.typinglesson-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.typinglesson-table th,
+.typinglesson-table td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.typinglesson-table th {
+    background-color: #f2f2f2;
+}
