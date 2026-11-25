@@ -161,21 +161,31 @@ class behat_config_manager {
 
         if ($runprocess) {
             if (isset($CFG->behat_parallel_run[$runprocess - 1 ]['behat_dataroot'])) {
-                $command = $CFG->behat_parallel_run[$runprocess - 1]['behat_dataroot'];
+                $root = $CFG->behat_parallel_run[$runprocess - 1]['behat_dataroot'];
             } else {
-                $command = $CFG->behat_dataroot . $runprocess;
+                $root = $CFG->behat_dataroot . $runprocess;
             }
         } else {
-            $command = $CFG->behat_dataroot;
+            $root = $CFG->behat_dataroot;
         }
-        $command .= DIRECTORY_SEPARATOR . 'behat' . DIRECTORY_SEPARATOR . 'behat.yml';
+        $configfilepath = $root . DIRECTORY_SEPARATOR . 'behat' . DIRECTORY_SEPARATOR . 'behat.yml';
+
+        // Single-run Behat configs generated under behatrun/ (e.g. behat_dataroot/behatrun/behat/behat.yml) while
+        // $CFG->behat_dataroot still points at the parent directory.
+        if (!$runprocess && !file_exists($configfilepath)) {
+            $fallback = $CFG->behat_dataroot . DIRECTORY_SEPARATOR . 'behatrun' . DIRECTORY_SEPARATOR . 'behat' .
+                DIRECTORY_SEPARATOR . 'behat.yml';
+            if (file_exists($fallback)) {
+                $configfilepath = $fallback;
+            }
+        }
 
         // Cygwin uses linux-style directory separators.
         if (testing_is_cygwin()) {
-            $command = str_replace('\\', '/', $command);
+            $configfilepath = str_replace('\\', '/', $configfilepath);
         }
 
-        return $command;
+        return $configfilepath;
     }
 
     /**

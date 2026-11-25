@@ -170,9 +170,11 @@ if ($options['suite']) {
     $extraopts['suite'] = '--suite="' . $options['suite'] . '"';
 }
 
-// Feature should be added to last, for behat command.
+// Feature paths must appear after all options. A "--format …" appended later must not sit after the path or Behat
+// treats the formatter flags as extra spec paths and runs nothing (exit 0, no output). Use "--" before the path.
+$featurearg = '';
 if ($options['feature']) {
-    $extraopts['feature'] = $options['feature'];
+    $featurearg = escapeshellarg($options['feature']);
     // Only run 1 process as process.
     // Feature file is picked from absolute path provided, so no need to check for behat.yml.
     $options['torun'] = $options['fromrun'];
@@ -205,6 +207,10 @@ if ($options['rerun']) {
     unset($options['rerun']);
 }
 
+if (!preg_match('/(^|\s)--format(=|\s)/', $extraoptstr)) {
+    $extraoptstr .= ' --format=pretty';
+}
+
 $cmds = array();
 $exitcodes = array();
 $status = 0;
@@ -217,10 +223,26 @@ if (empty($parallelrun)) {
     $runtestscommand = behat_command::get_behat_command(false, false, true);
     $runtestscommand .= ' --config ' . behat_config_manager::get_behat_cli_config_filepath();
     $runtestscommand .= ' ' . $extraoptstr;
+    if ($featurearg !== '') {
+        $runtestscommand .= ' -- ' . $featurearg;
+    }
     $cmds['singlerun'] = $runtestscommand;
 
     echo "Running single behat site:" . PHP_EOL;
+    $behatconfigfile = behat_config_manager::get_behat_cli_config_filepath();
+    if (!file_exists($behatconfigfile)) {
+        fwrite(STDERR, 'Behat config file not found: ' . $behatconfigfile . PHP_EOL);
+        fwrite(STDERR, 'Fix: run `php admin/tool/behat/cli/init.php` from the Moodle root, or set $CFG->behat_dataroot ' .
+            'to the directory that contains behat/behat.yml (often behat_dataroot/behatrun for split installs).' . PHP_EOL);
+        $exitcodes['singlerun'] = 1;
+        chdir($cwd);
+        exit(1);
+    }
+    if ($verbose) {
+        echo $runtestscommand . PHP_EOL;
+    }
     passthru("php $runtestscommand", $status);
+    echo PHP_EOL . 'Behat process exit code: ' . (int) $status . PHP_EOL;
     $exitcodes['singlerun'] = $status;
     chdir($cwd);
 } else {
@@ -245,6 +267,9 @@ if (empty($parallelrun)) {
 
         // Command to execute behat run.
         $cmds[BEHAT_PARALLEL_SITE_NAME . $i] = $behatcommand . ' --config ' . $behatconfigpath . " " . $myopts;
+        if ($featurearg !== '') {
+            $cmds[BEHAT_PARALLEL_SITE_NAME . $i] .= ' -- ' . $featurearg;
+        }
         echo "[" . BEHAT_PARALLEL_SITE_NAME . $i . "] " . $cmds[BEHAT_PARALLEL_SITE_NAME . $i] . PHP_EOL;
     }
 

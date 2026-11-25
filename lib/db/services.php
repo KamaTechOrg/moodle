@@ -447,6 +447,14 @@ $functions = array(
         'type' => 'write',
         'capabilities' => 'moodle/course:create, moodle/course:visibility'
     ),
+    'core_course_create_courses_and_enrol_creator' => array(
+        'classname' => 'core_course_external',
+        'methodname' => 'create_courses_and_enrol_creator',
+        'classpath' => 'course/externallib.php',
+        'description' => 'Create new courses and enrol the calling user in each new course via manual enrolment (default role: editing teacher archetype).',
+        'type' => 'write',
+        'capabilities' => 'moodle/course:create, moodle/course:visibility'
+    ),
     'core_course_delete_categories' => array(
         'classname' => 'core_course_external',
         'methodname' => 'delete_categories',
