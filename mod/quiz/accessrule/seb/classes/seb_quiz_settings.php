@@ -595,10 +595,10 @@ class seb_quiz_settings extends persistent {
         // Create rules to each expression provided and add to config.
         $urlfilterrules = [];
         // Get all rules separated by newlines and remove empty rules.
-        $expallowed = array_filter(explode(PHP_EOL, $settings->expressionsallowed));
-        $expblocked = array_filter(explode(PHP_EOL, $settings->expressionsblocked));
-        $regallowed = array_filter(explode(PHP_EOL, $settings->regexallowed));
-        $regblocked = array_filter(explode(PHP_EOL, $settings->regexblocked));
+        $expallowed = array_filter(explode(PHP_EOL, $settings->expressionsallowed ?? ''));
+        $expblocked = array_filter(explode(PHP_EOL, $settings->expressionsblocked ?? ''));
+        $regallowed = array_filter(explode(PHP_EOL, $settings->regexallowed ?? ''));
+        $regblocked = array_filter(explode(PHP_EOL, $settings->regexblocked ?? ''));
         foreach ($expallowed as $rulestring) {
             $urlfilterrules[] = $this->create_filter_rule($rulestring, true, false);
         }

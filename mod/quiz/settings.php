@@ -280,6 +280,7 @@ if ($ADMIN->fulltree) {
     // Autosave frequency.
     $quizsettings->add(new admin_setting_configduration('quiz/autosaveperiod',
             get_string('autosaveperiod', 'quiz'), get_string('autosaveperiod_desc', 'quiz'), 60, 1));
+
 }
 
 // Now, depending on whether any reports have their own settings page, add

@@ -97,21 +97,20 @@ require_once(__DIR__ . '/deprecatedlib.php');
 function quiz_add_instance($quiz) {
     global $DB;
     $cmid = $quiz->coursemodule;
-    
+
     // Process the options from the form.
     $quiz->timecreated = time();
     $result = quiz_process_options($quiz);
     if ($result && is_string($result)) {
         return $result;
     }
-    
+
     // Try to store it in the database.
     $quiz->id = $DB->insert_record('quiz', $quiz);
-    
+
     // Create the first section for this quiz.
     $DB->insert_record('quiz_sections', ['quizid' => $quiz->id,
             'firstslot' => 1, 'heading' => '', 'shufflequestions' => 0]);
-    
 
     // Do the processing required after an add or an update.
     quiz_after_add_or_update($quiz);
@@ -294,6 +293,116 @@ function quiz_delete_all_overrides($quiz, $log = true) {
         quiz_delete_override($quiz, $override->id, $log);
     }
 }
+
+/**
+ * Save a user or group quiz override using the same logic as mod/quiz/overrideedit.php.
+ *
+ * Callers pass form-like data with the effective values for timeopen, timeclose, timelimit,
+ * attempts, and password. Values identical to the base quiz are stored as null in the
+ * database (handled inside this function).
+ *
+ * @param stdClass $quiz Quiz instance row (from the quiz table).
+ * @param cm_info $cm Course module info.
+ * @param context_module $context Module context.
+ * @param stdClass $fromform Data with userid, groupid, timeopen, timeclose, timelimit, attempts, password (quiz id set automatically).
+ * @param stdClass|null $editing Existing override row when editing from the override UI, or null for a new override.
+ * @param bool $groupmode True if this is a group override.
+ * @return int New or existing quiz_overrides.id after save.
+ */
+function quiz_save_override_submission(
+    stdClass $quiz,
+    cm_info $cm,
+    context_module $context,
+    stdClass $fromform,
+    ?stdClass $editing,
+    bool $groupmode
+): int {
+    global $DB;
+
+    $keys = ['timeopen', 'timeclose', 'timelimit', 'attempts', 'password'];
+    $fromform->quiz = $quiz->id;
+
+    foreach ($keys as $key) {
+        if ($fromform->{$key} == $quiz->{$key}) {
+            $fromform->{$key} = null;
+        }
+    }
+
+    $userorgroupchanged = false;
+    if (!$editing || empty($editing->id)) {
+        $userorgroupchanged = true;
+    } else if (!empty($fromform->userid)) {
+        $userorgroupchanged = $fromform->userid !== $editing->userid;
+    } else {
+        $userorgroupchanged = $fromform->groupid !== $editing->groupid;
+    }
+
+    if ($userorgroupchanged) {
+        $conditions = [
+            'quiz' => $quiz->id,
+            'userid' => empty($fromform->userid) ? null : $fromform->userid,
+            'groupid' => empty($fromform->groupid) ? null : $fromform->groupid,
+        ];
+        if ($oldoverride = $DB->get_record('quiz_overrides', $conditions)) {
+            foreach ($keys as $key) {
+                if (is_null($fromform->{$key})) {
+                    $fromform->{$key} = $oldoverride->{$key};
+                }
+            }
+            $quiz->cmid = $cm->id;
+            quiz_delete_override($quiz, $oldoverride->id);
+        }
+    }
+
+    $params = [
+        'context' => $context,
+        'other' => [
+            'quizid' => $quiz->id,
+        ],
+    ];
+
+    if ($editing && !empty($editing->id)) {
+        $fromform->id = $editing->id;
+        $DB->update_record('quiz_overrides', $fromform);
+        $cachekey = $groupmode ? "{$fromform->quiz}_g_{$fromform->groupid}" : "{$fromform->quiz}_u_{$fromform->userid}";
+        cache::make('mod_quiz', 'overrides')->delete($cachekey);
+
+        $params['objectid'] = $editing->id;
+        if (!$groupmode) {
+            $params['relateduserid'] = $fromform->userid;
+            $event = \mod_quiz\event\user_override_updated::create($params);
+        } else {
+            $params['other']['groupid'] = $fromform->groupid;
+            $event = \mod_quiz\event\group_override_updated::create($params);
+        }
+        $event->trigger();
+    } else {
+        unset($fromform->id);
+        $fromform->id = $DB->insert_record('quiz_overrides', $fromform);
+        $cachekey = $groupmode ? "{$fromform->quiz}_g_{$fromform->groupid}" : "{$fromform->quiz}_u_{$fromform->userid}";
+        cache::make('mod_quiz', 'overrides')->delete($cachekey);
+
+        $params['objectid'] = $fromform->id;
+        if (!$groupmode) {
+            $params['relateduserid'] = $fromform->userid;
+            $event = \mod_quiz\event\user_override_created::create($params);
+        } else {
+            $params['other']['groupid'] = $fromform->groupid;
+            $event = \mod_quiz\event\group_override_created::create($params);
+        }
+        $event->trigger();
+    }
+
+    quiz_update_open_attempts(['quizid' => $quiz->id]);
+    if ($groupmode) {
+        quiz_update_events($quiz);
+    } else {
+        quiz_update_events($quiz, $fromform);
+    }
+
+    return (int) $fromform->id;
+}
+
 
 /**
  * Updates a quiz object with override information for a user.
@@ -1208,6 +1317,7 @@ function mod_quiz_inplace_editable(string $itemtype, int $itemid, string $newval
 function quiz_after_add_or_update($quiz) {
     global $DB;
     $cmid = $quiz->coursemodule;
+
     // We need to use context now, so we need to make sure all needed info is already in db.
     $DB->set_field('course_modules', 'instance', $quiz->id, ['id' => $cmid]);
     $context = context_module::instance($cmid);
@@ -1230,16 +1340,15 @@ function quiz_after_add_or_update($quiz) {
         $DB->set_field('quiz_feedback', 'feedbacktext', $feedbacktext,
                 ['id' => $feedback->id]);
     }
-    
+
     // Store any settings belonging to the access rules.
     access_manager::save_settings($quiz);
-    
+
     // Update the events relating to this quiz.
     quiz_update_events($quiz);
-    
     $completionexpected = (!empty($quiz->completionexpected)) ? $quiz->completionexpected : null;
     \core_completion\api::update_completion_date_event($quiz->coursemodule, 'quiz', $quiz->id, $completionexpected);
-    
+
     // Update related grade item.
     quiz_grade_item_update($quiz);
 }
@@ -1254,7 +1363,7 @@ function quiz_after_add_or_update($quiz) {
  */
 function quiz_update_events($quiz, $override = null) {
     global $DB;
-    
+
     // Load the old events relating to this quiz.
     $conds = ['modulename' => 'quiz',
                    'instance' => $quiz->id];

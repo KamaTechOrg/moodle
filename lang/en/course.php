@@ -77,6 +77,7 @@ $string['coursenotyetstarted'] = 'The course has not yet started';
 $string['coursenotyetfinished'] = 'The course has not yet finished';
 $string['courseparticipants'] = 'Course participants';
 $string['coursetoolong'] = 'The course is too long';
+$string['couldnotenrolcreator'] = 'Could not enrol the course creator in the new course (course id: {$a}). Ensure manual enrolment is enabled for new courses.';
 $string['customfield_islocked'] = 'Locked';
 $string['customfield_islocked_help'] = 'If the field is locked, only users with the capability to change locked custom fields (by default users with the default role of manager only) will be able to change it in the course settings.';
 $string['customfield_notvisible'] = 'Nobody';

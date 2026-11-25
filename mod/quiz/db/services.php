@@ -250,6 +250,24 @@ $functions = [
 	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
 
+    'mod_quiz_update_quiz' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'update_quiz',
+        'description'   => 'Update an existing quiz.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
+    'mod_quiz_get_quiz_data' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'get_quiz_data',
+        'description'   => 'Get all data about a quiz for editing purposes.',
+        'type'          => 'read',
+        'capabilities'  => 'mod/quiz:manage',
+	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
     'mod_quiz_create_question_in_quiz' => [
         'classname'     => 'mod_quiz_external',
         'methodname'    => 'create_question_in_quiz',
@@ -276,4 +294,77 @@ $functions = [
         'capabilities'  => 'mod/quiz:manage',
 	'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
+    'mod_quiz_get_seb_file' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'get_quiz_seb_file',
+        'description'   => 'Get quiz SEB file.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+    ],
+    'mod_quiz_set_quiz_seb' => [
+        'classname'   => 'mod_quiz_external',
+        'methodname'  => 'save_quiz_as_seb',
+        'description' => 'Enable/Update SEB settings for a quiz (by cmid) using integrated quizaccess_seb.',
+        'type'        => 'write',
+        'capabilities'=> 'mod/quiz:manage',
+    ],
+
+    'mod_quiz_core_question_delete_questions' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'core_question_delete_questions',
+        'description'   => 'Delete questions from a quiz.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
+    'mod_quiz_reorder_quiz_questions' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'reorder_quiz_questions',
+        'description'   => 'Reorder questions in a quiz by moving a question to a new position.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
+    'mod_quiz_delete_quiz' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'delete_quiz',
+        'description'   => 'Delete a quiz activity.',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
+    'local_question_update_with_files' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'local_question_update_with_files',
+        'description'   => 'Update a question\'s text and move files from draft area to question file area.',
+        'type'          => 'write',
+        // Capability string must exist in core_role (lang/en/role.php) and
+        // must match the require_capability() check in mod/quiz/classes/external.php.
+        'capabilities'  => 'moodle/question:editall',
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+
+    'mod_quiz_get_help' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'get_help',
+        'description'   => 'Get LLM help for a quiz based on its configured help level. Returns 0 if quizid does not exist.',
+        'type'          => 'read',
+        'capabilities'  => 'mod/quiz:attempt',
+        'ajax'          => true,
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
+
+    'mod_quiz_set_help_level' => [
+        'classname'     => 'mod_quiz_external',
+        'methodname'    => 'set_help_level',
+        'description'   => 'Set the help level for a quiz (1=syntax, 2=bug finding, 3=hints).',
+        'type'          => 'write',
+        'capabilities'  => 'mod/quiz:manage',
+        'ajax'          => true,
+        'services'      => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
+
 ];

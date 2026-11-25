@@ -37,6 +37,7 @@ use core_external\util;
 use mod_quiz\access_manager;
 use mod_quiz\quiz_attempt;
 use mod_quiz\quiz_settings;
+use mod_quiz\structure;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -2170,11 +2171,80 @@ class mod_quiz_external extends external_api {
             'section'     => new external_value(PARAM_INT, 'Section number to add the quiz'),
             'name'        => new external_value(PARAM_TEXT, 'Name of the new quiz'),
             'intro'       => new external_value(PARAM_RAW, 'Quiz introduction', VALUE_DEFAULT, ''),
-            // Add more quiz-specific parameters as needed.
+            'introformat' => new external_value(PARAM_INT, 'Intro format (0=MOODLE, 1=HTML, 2=PLAIN, 4=MARKDOWN)', VALUE_DEFAULT, FORMAT_HTML),
+            'visible'     => new external_value(PARAM_INT, 'Whether the quiz is visible (1=yes, 0=no)', VALUE_DEFAULT, 1),
+            // Timing.
+            'timeopen'    => new external_value(PARAM_INT, 'The time when this quiz opens. (0 = no restriction)', VALUE_DEFAULT, 0),
+            'timeclose'   => new external_value(PARAM_INT, 'The time when this quiz closes. (0 = no restriction)', VALUE_DEFAULT, 0),
+            'timelimit'   => new external_value(PARAM_INT, 'The time limit for quiz attempts, in seconds. (0 = no limit)', VALUE_DEFAULT, 0),
+            // Access restrictions.
+            'quizpassword' => new external_value(PARAM_RAW, 'A password that the student must enter before starting or continuing a quiz attempt', VALUE_DEFAULT, ''),
+            'subnet'      => new external_value(PARAM_RAW, 'Used to restrict the IP addresses from which this quiz can be attempted', VALUE_DEFAULT, ''),
+            'browsersecurity' => new external_value(PARAM_ALPHANUMEXT, 'Restriction on the browser the student must use. E.g. \'securewindow\'', VALUE_DEFAULT, ''),
+            // Attempts.
+            'attempts'    => new external_value(PARAM_INT, 'The maximum number of attempts a student is allowed', VALUE_DEFAULT, 0),
+            'attemptonlast' => new external_value(PARAM_INT, 'Whether subsequent attempts start from the answer to the previous attempt (1) or start blank (0)', VALUE_DEFAULT, 0),
+            'grademethod' => new external_value(PARAM_INT, 'One of the values QUIZ_GRADEHIGHEST, QUIZ_GRADEAVERAGE, QUIZ_ATTEMPTFIRST or QUIZ_ATTEMPTLAST', VALUE_DEFAULT, QUIZ_GRADEHIGHEST),
+            // Grading.
+            'grade'       => new external_value(PARAM_FLOAT, 'The total that the quiz overall grade is scaled to be out of', VALUE_DEFAULT, 100.0),
+            'decimalpoints' => new external_value(PARAM_INT, 'Number of decimal points to use when displaying grades', VALUE_DEFAULT, 2),
+            'questiondecimalpoints' => new external_value(PARAM_INT, 'Number of decimal points to use when displaying question grades. (-1 means use decimalpoints)', VALUE_DEFAULT, -1),
+            // Behaviour.
+            'preferredbehaviour' => new external_value(PARAM_ALPHANUMEXT, 'The behaviour to ask questions to use', VALUE_DEFAULT, 'deferredfeedback'),
+            'overduehandling' => new external_value(PARAM_ALPHA, 'The method used to handle overdue attempts. \'autosubmit\', \'graceperiod\' or \'autoabandon\'', VALUE_DEFAULT, 'autosubmit'),
+            'graceperiod' => new external_value(PARAM_INT, 'The amount of time (in seconds) after the time limit runs out during which attempts can still be submitted', VALUE_DEFAULT, 0),
+            'canredoquestions' => new external_value(PARAM_INT, 'Allows students to redo any completed question within a quiz attempt', VALUE_DEFAULT, 0),
+            // Display.
+            'navmethod'   => new external_value(PARAM_ALPHA, 'Any constraints on how the user is allowed to navigate around the quiz. Currently recognised values are \'free\' and \'seq\'', VALUE_DEFAULT, 'free'),
+            'questionsperpage' => new external_value(PARAM_INT, 'How often to insert a page break when editing the quiz, or when shuffling the question order', VALUE_DEFAULT, 1),
+            'shuffleanswers' => new external_value(PARAM_INT, 'Whether the parts of the question should be shuffled, in those question types that support it', VALUE_DEFAULT, 0),
+            'showuserpicture' => new external_value(PARAM_INT, 'Option to show the user\'s picture during the attempt and on the review page', VALUE_DEFAULT, 0),
+            'showblocks' => new external_value(PARAM_INT, 'Whether blocks should be shown on the attempt.php and review.php pages', VALUE_DEFAULT, 0),
+            // Delays.
+            'delay1'      => new external_value(PARAM_INT, 'Delay that must be left between the first and second attempt, in seconds', VALUE_DEFAULT, 0),
+            'delay2'      => new external_value(PARAM_INT, 'Delay that must be left between the second and subsequent attempt, in seconds', VALUE_DEFAULT, 0),
+            // Completion.
+            'completionattemptsexhausted' => new external_value(PARAM_INT, 'Mark quiz complete when the student has exhausted the maximum number of attempts', VALUE_DEFAULT, 0),
+            'completionpass' => new external_value(PARAM_INT, 'Whether to require passing grade', VALUE_DEFAULT, 0),
+            // Other.
+            'allowofflineattempts' => new external_value(PARAM_INT, 'Whether to allow the quiz to be attempted offline in the mobile app', VALUE_DEFAULT, 0),
         ]);
     }
 
-    public static function create_quiz($courseid, $section, $name, $intro = '') {
+    public static function create_quiz(
+        $courseid,
+        $section,
+        $name,
+        $intro = '',
+        $introformat = FORMAT_HTML,
+        $visible = 1,
+        $timeopen = 0,
+        $timeclose = 0,
+        $timelimit = 0,
+        $quizpassword = '',
+        $subnet = '',
+        $browsersecurity = '',
+        $attempts = 0,
+        $attemptonlast = 0,
+        $grademethod = QUIZ_GRADEHIGHEST,
+        $grade = 100.0,
+        $decimalpoints = 2,
+        $questiondecimalpoints = -1,
+        $preferredbehaviour = 'deferredfeedback',
+        $overduehandling = 'autosubmit',
+        $graceperiod = 0,
+        $canredoquestions = 0,
+        $navmethod = 'free',
+        $questionsperpage = 1,
+        $shuffleanswers = 0,
+        $showuserpicture = 0,
+        $showblocks = 0,
+        $delay1 = 0,
+        $delay2 = 0,
+        $completionattemptsexhausted = 0,
+        $completionpass = 0,
+        $allowofflineattempts = 0
+    ) {
         global $DB, $USER;
 
         // Validate parameters.
@@ -2183,6 +2253,34 @@ class mod_quiz_external extends external_api {
             'section'  => $section,
             'name'     => $name,
             'intro'    => $intro,
+            'introformat' => $introformat,
+            'visible'  => $visible,
+            'timeopen' => $timeopen,
+            'timeclose' => $timeclose,
+            'timelimit' => $timelimit,
+            'quizpassword' => $quizpassword,
+            'subnet' => $subnet,
+            'browsersecurity' => $browsersecurity,
+            'attempts' => $attempts,
+            'attemptonlast' => $attemptonlast,
+            'grademethod' => $grademethod,
+            'grade' => $grade,
+            'decimalpoints' => $decimalpoints,
+            'questiondecimalpoints' => $questiondecimalpoints,
+            'preferredbehaviour' => $preferredbehaviour,
+            'overduehandling' => $overduehandling,
+            'graceperiod' => $graceperiod,
+            'canredoquestions' => $canredoquestions,
+            'navmethod' => $navmethod,
+            'questionsperpage' => $questionsperpage,
+            'shuffleanswers' => $shuffleanswers,
+            'showuserpicture' => $showuserpicture,
+            'showblocks' => $showblocks,
+            'delay1' => $delay1,
+            'delay2' => $delay2,
+            'completionattemptsexhausted' => $completionattemptsexhausted,
+            'completionpass' => $completionpass,
+            'allowofflineattempts' => $allowofflineattempts,
         ]);
 
         // Validate context and capability.
@@ -2205,8 +2303,7 @@ class mod_quiz_external extends external_api {
         $cm->module = $module->id;
         $cm->instance = 0;
         $cm->section = $sectioninfo->id;
-        $cm->visible = 1;
-        // ... set other course module defaults.
+        $cm->visible = $params['visible'];
         $cm->id = add_course_module($cm);
 
         // Prepare new quiz record.
@@ -2214,21 +2311,49 @@ class mod_quiz_external extends external_api {
         $quiz->course = $params['courseid'];
         $quiz->name = $params['name'];
         $quiz->intro = $params['intro'];
-        $quiz->quizpassword = '';
-        $quiz->introformat = FORMAT_HTML;
-        $quiz->timeopen = 0;
-        $quiz->timeclose = 0;
+        $quiz->introformat = $params['introformat'];
+        $quiz->quizpassword = $params['quizpassword'];
+        $quiz->timeopen = $params['timeopen'];
+        $quiz->timeclose = $params['timeclose'];
+        $quiz->timelimit = $params['timelimit'];
+        $quiz->subnet = $params['subnet'];
+        $quiz->browsersecurity = $params['browsersecurity'];
+        $quiz->attempts = $params['attempts'];
+        $quiz->attemptonlast = $params['attemptonlast'];
+        $quiz->grademethod = $params['grademethod'];
+        $quiz->grade = $params['grade'];
+        $quiz->decimalpoints = $params['decimalpoints'];
+        $quiz->questiondecimalpoints = $params['questiondecimalpoints'];
+        $quiz->preferredbehaviour = $params['preferredbehaviour'];
+        $quiz->overduehandling = $params['overduehandling'];
+        $quiz->graceperiod = $params['graceperiod'];
+        $quiz->canredoquestions = $params['canredoquestions'];
+        $quiz->navmethod = $params['navmethod'];
+        $quiz->questionsperpage = $params['questionsperpage'];
+        $quiz->shuffleanswers = $params['shuffleanswers'];
+        $quiz->showuserpicture = $params['showuserpicture'];
+        $quiz->showblocks = $params['showblocks'];
+        $quiz->delay1 = $params['delay1'];
+        $quiz->delay2 = $params['delay2'];
+        $quiz->completionattemptsexhausted = $params['completionattemptsexhausted'];
+        $quiz->allowofflineattempts = $params['allowofflineattempts'];
         $quiz->timecreated = time();
         $quiz->timemodified = time();
         $quiz->coursemodule = $cm->id;
-        $quiz->preferredbehaviour = 'deferredfeedback';
-        $quiz->grade = 100.00000;
-        // ... set other default quiz settings as needed.
 
-        // // Insert quiz into database.
+        // Insert quiz into database.
         $quiz->id = quiz_add_instance($quiz);
         if (empty($quiz->id)) {
             throw new moodle_exception('Quiz creation failed: no ID returned.');
+        }
+
+        // Update course module instance ID.
+        $DB->set_field('course_modules', 'instance', $quiz->id, ['id' => $cm->id]);
+
+        // Set completion pass grade if specified.
+        if ($params['completionpass']) {
+            $cm->completionpassgrade = $params['completionpass'];
+            $DB->update_record('course_modules', $cm);
         }
 
         // Add module to section.
@@ -2243,6 +2368,417 @@ class mod_quiz_external extends external_api {
             'status' => new external_value(PARAM_TEXT, 'Operation status'),
             'quizid' => new external_value(PARAM_INT, 'ID of the newly created quiz'),
             'cmid'   => new external_value(PARAM_INT, 'Course module id of the new quiz'),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for update_quiz.
+     *
+     * @return external_function_parameters
+     */
+    public static function update_quiz_parameters() {
+        // Top-level keys of external_function_parameters must not use VALUE_OPTIONAL (Moodle developer debug).
+        return new external_function_parameters([
+            'quizid'       => new external_value(PARAM_INT, 'ID of the quiz to update'),
+            'name'         => new external_value(PARAM_TEXT, 'Name of the quiz', VALUE_DEFAULT, null),
+            'intro'        => new external_value(PARAM_RAW, 'Quiz introduction', VALUE_DEFAULT, null),
+            'introformat'  => new external_value(PARAM_INT, 'Intro format (0=MOODLE, 1=HTML, 2=PLAIN, 4=MARKDOWN)', VALUE_DEFAULT, null),
+            'visible'      => new external_value(PARAM_INT, 'Whether the quiz is visible (1=yes, 0=no)', VALUE_DEFAULT, null),
+            // Timing.
+            'timeopen'     => new external_value(PARAM_INT, 'The time when this quiz opens. (0 = no restriction)', VALUE_DEFAULT, null),
+            'timeclose'    => new external_value(PARAM_INT, 'The time when this quiz closes. (0 = no restriction)', VALUE_DEFAULT, null),
+            'timelimit'    => new external_value(PARAM_INT, 'The time limit for quiz attempts, in seconds. (0 = no limit)', VALUE_DEFAULT, null),
+            // Access restrictions.
+            'quizpassword' => new external_value(PARAM_RAW, 'A password that the student must enter before starting or continuing a quiz attempt', VALUE_DEFAULT, null),
+            'subnet'       => new external_value(PARAM_RAW, 'Used to restrict the IP addresses from which this quiz can be attempted', VALUE_DEFAULT, null),
+            'browsersecurity' => new external_value(PARAM_ALPHANUMEXT, 'Restriction on the browser the student must use. E.g. \'securewindow\'', VALUE_DEFAULT, null),
+            // Attempts.
+            'attempts'     => new external_value(PARAM_INT, 'The maximum number of attempts a student is allowed', VALUE_DEFAULT, null),
+            'attemptonlast' => new external_value(PARAM_INT, 'Whether subsequent attempts start from the answer to the previous attempt (1) or start blank (0)', VALUE_DEFAULT, null),
+            'grademethod'  => new external_value(PARAM_INT, 'One of the values QUIZ_GRADEHIGHEST, QUIZ_GRADEAVERAGE, QUIZ_ATTEMPTFIRST or QUIZ_ATTEMPTLAST', VALUE_DEFAULT, null),
+            // Grading.
+            'grade'        => new external_value(PARAM_FLOAT, 'The total that the quiz overall grade is scaled to be out of', VALUE_DEFAULT, null),
+            'decimalpoints' => new external_value(PARAM_INT, 'Number of decimal points to use when displaying grades', VALUE_DEFAULT, null),
+            'questiondecimalpoints' => new external_value(PARAM_INT, 'Number of decimal points to use when displaying question grades. (-1 means use decimalpoints)', VALUE_DEFAULT, null),
+            // Behaviour.
+            'preferredbehaviour' => new external_value(PARAM_ALPHANUMEXT, 'The behaviour to ask questions to use', VALUE_DEFAULT, null),
+            'overduehandling' => new external_value(PARAM_ALPHA, 'The method used to handle overdue attempts. \'autosubmit\', \'graceperiod\' or \'autoabandon\'', VALUE_DEFAULT, null),
+            'graceperiod'  => new external_value(PARAM_INT, 'The amount of time (in seconds) after the time limit runs out during which attempts can still be submitted', VALUE_DEFAULT, null),
+            'canredoquestions' => new external_value(PARAM_INT, 'Allows students to redo any completed question within a quiz attempt', VALUE_DEFAULT, null),
+            // Display.
+            'navmethod'    => new external_value(PARAM_ALPHA, 'Any constraints on how the user is allowed to navigate around the quiz. Currently recognised values are \'free\' and \'seq\'', VALUE_DEFAULT, null),
+            'questionsperpage' => new external_value(PARAM_INT, 'How often to insert a page break when editing the quiz, or when shuffling the question order', VALUE_DEFAULT, null),
+            'shuffleanswers' => new external_value(PARAM_INT, 'Whether the parts of the question should be shuffled, in those question types that support it', VALUE_DEFAULT, null),
+            'showuserpicture' => new external_value(PARAM_INT, 'Option to show the user\'s picture during the attempt and on the review page', VALUE_DEFAULT, null),
+            'showblocks'   => new external_value(PARAM_INT, 'Whether blocks should be shown on the attempt.php and review.php pages', VALUE_DEFAULT, null),
+            // Delays.
+            'delay1'       => new external_value(PARAM_INT, 'Delay that must be left between the first and second attempt, in seconds', VALUE_DEFAULT, null),
+            'delay2'       => new external_value(PARAM_INT, 'Delay that must be left between the second and subsequent attempt, in seconds', VALUE_DEFAULT, null),
+            // Completion.
+            'completionattemptsexhausted' => new external_value(PARAM_INT, 'Mark quiz complete when the student has exhausted the maximum number of attempts', VALUE_DEFAULT, null),
+            'completionpass' => new external_value(PARAM_INT, 'Whether to require passing grade', VALUE_DEFAULT, null),
+            // Other.
+            'allowofflineattempts' => new external_value(PARAM_INT, 'Whether to allow the quiz to be attempted offline in the mobile app', VALUE_DEFAULT, null),
+        ]);
+    }
+
+    /**
+     * Update an existing quiz.
+     *
+     * @param int $quizid The ID of the quiz to update
+     * @param array ... All other parameters are optional and will only update if provided
+     * @return array Result of the update operation
+     * @throws moodle_exception
+     */
+    public static function update_quiz(
+        $quizid,
+        $name = null,
+        $intro = null,
+        $introformat = null,
+        $visible = null,
+        $timeopen = null,
+        $timeclose = null,
+        $timelimit = null,
+        $quizpassword = null,
+        $subnet = null,
+        $browsersecurity = null,
+        $attempts = null,
+        $attemptonlast = null,
+        $grademethod = null,
+        $grade = null,
+        $decimalpoints = null,
+        $questiondecimalpoints = null,
+        $preferredbehaviour = null,
+        $overduehandling = null,
+        $graceperiod = null,
+        $canredoquestions = null,
+        $navmethod = null,
+        $questionsperpage = null,
+        $shuffleanswers = null,
+        $showuserpicture = null,
+        $showblocks = null,
+        $delay1 = null,
+        $delay2 = null,
+        $completionattemptsexhausted = null,
+        $completionpass = null,
+        $allowofflineattempts = null
+    ) {
+        global $DB, $USER;
+
+        // Build parameters array, only including non-null values.
+        $paramarray = ['quizid' => $quizid];
+        $paramnames = [
+            'name', 'intro', 'introformat', 'visible', 'timeopen', 'timeclose', 'timelimit',
+            'quizpassword', 'subnet', 'browsersecurity', 'attempts', 'attemptonlast', 'grademethod',
+            'grade', 'decimalpoints', 'questiondecimalpoints', 'preferredbehaviour', 'overduehandling',
+            'graceperiod', 'canredoquestions', 'navmethod', 'questionsperpage', 'shuffleanswers',
+            'showuserpicture', 'showblocks', 'delay1', 'delay2', 'completionattemptsexhausted',
+            'completionpass', 'allowofflineattempts'
+        ];
+
+        foreach ($paramnames as $paramname) {
+            if ($$paramname !== null) {
+                $paramarray[$paramname] = $$paramname;
+            }
+        }
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::update_quiz_parameters(), $paramarray);
+
+        // Validate quiz exists and user has permission.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+        require_capability('moodle/course:manageactivities', $context);
+
+        // Get current quiz data and copy all fields to preserve existing values.
+        $currentquiz = $DB->get_record('quiz', ['id' => $params['quizid']], '*', MUST_EXIST);
+
+        // Start with current quiz data, then override with provided values.
+        $quizupdate = clone $currentquiz;
+        $quizupdate->instance = $params['quizid']; // Required by quiz_update_instance
+        $quizupdate->coursemodule = $cm->id;
+        $quizupdate->timemodified = time();
+
+        // Override only provided fields.
+        if (isset($params['name'])) {
+            $quizupdate->name = $params['name'];
+        }
+        if (isset($params['intro'])) {
+            $quizupdate->intro = $params['intro'];
+        }
+        if (isset($params['introformat'])) {
+            $quizupdate->introformat = $params['introformat'];
+        }
+        if (isset($params['timeopen'])) {
+            $quizupdate->timeopen = $params['timeopen'];
+        }
+        if (isset($params['timeclose'])) {
+            $quizupdate->timeclose = $params['timeclose'];
+        }
+        if (isset($params['timelimit'])) {
+            $quizupdate->timelimit = $params['timelimit'];
+        }
+        if (isset($params['quizpassword'])) {
+            $quizupdate->quizpassword = $params['quizpassword'];
+        }
+        if (isset($params['subnet'])) {
+            $quizupdate->subnet = $params['subnet'];
+        }
+        if (isset($params['browsersecurity'])) {
+            $quizupdate->browsersecurity = $params['browsersecurity'];
+        }
+        if (isset($params['attempts'])) {
+            $quizupdate->attempts = $params['attempts'];
+        }
+        if (isset($params['attemptonlast'])) {
+            $quizupdate->attemptonlast = $params['attemptonlast'];
+        }
+        if (isset($params['grademethod'])) {
+            $quizupdate->grademethod = $params['grademethod'];
+        }
+        if (isset($params['grade'])) {
+            $quizupdate->grade = $params['grade'];
+        }
+        if (isset($params['decimalpoints'])) {
+            $quizupdate->decimalpoints = $params['decimalpoints'];
+        }
+        if (isset($params['questiondecimalpoints'])) {
+            $quizupdate->questiondecimalpoints = $params['questiondecimalpoints'];
+        }
+        if (isset($params['preferredbehaviour'])) {
+            $quizupdate->preferredbehaviour = $params['preferredbehaviour'];
+        }
+        if (isset($params['overduehandling'])) {
+            $quizupdate->overduehandling = $params['overduehandling'];
+        }
+        if (isset($params['graceperiod'])) {
+            $quizupdate->graceperiod = $params['graceperiod'];
+        }
+        if (isset($params['canredoquestions'])) {
+            $quizupdate->canredoquestions = $params['canredoquestions'];
+        }
+        if (isset($params['navmethod'])) {
+            $quizupdate->navmethod = $params['navmethod'];
+        }
+        if (isset($params['questionsperpage'])) {
+            $quizupdate->questionsperpage = $params['questionsperpage'];
+        }
+        if (isset($params['shuffleanswers'])) {
+            $quizupdate->shuffleanswers = $params['shuffleanswers'];
+        }
+        if (isset($params['showuserpicture'])) {
+            $quizupdate->showuserpicture = $params['showuserpicture'];
+        }
+        if (isset($params['showblocks'])) {
+            $quizupdate->showblocks = $params['showblocks'];
+        }
+        if (isset($params['delay1'])) {
+            $quizupdate->delay1 = $params['delay1'];
+        }
+        if (isset($params['delay2'])) {
+            $quizupdate->delay2 = $params['delay2'];
+        }
+        if (isset($params['completionattemptsexhausted'])) {
+            $quizupdate->completionattemptsexhausted = $params['completionattemptsexhausted'];
+        }
+        if (isset($params['allowofflineattempts'])) {
+            $quizupdate->allowofflineattempts = $params['allowofflineattempts'];
+        }
+
+        // Update quiz using Moodle's standard function.
+        $result = quiz_update_instance($quizupdate, null);
+        if ($result !== true) {
+            throw new moodle_exception('quizupdatefailed', 'quiz', '', null, $result);
+        }
+
+        // Update course module visibility if provided.
+        if (isset($params['visible'])) {
+            $cm->visible = $params['visible'];
+            $DB->update_record('course_modules', $cm);
+        }
+
+        // Update completion pass grade if provided.
+        if (isset($params['completionpass'])) {
+            $cm->completionpassgrade = $params['completionpass'];
+            $DB->update_record('course_modules', $cm);
+        }
+
+        // Rebuild course cache.
+        rebuild_course_cache($course->id);
+
+        return [
+            'status' => 'success',
+            'quizid' => $params['quizid'],
+            'cmid' => $cm->id
+        ];
+    }
+
+    /**
+     * Describes the update_quiz return value.
+     *
+     * @return external_single_structure
+     */
+    public static function update_quiz_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'quizid' => new external_value(PARAM_INT, 'ID of the updated quiz'),
+            'cmid'   => new external_value(PARAM_INT, 'Course module id of the quiz'),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for get_quiz_data.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_quiz_data_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'ID of the quiz'),
+        ]);
+    }
+
+    /**
+     * Returns all data about a quiz for editing purposes.
+     *
+     * @param int $quizid The ID of the quiz
+     * @return array Complete quiz data
+     * @throws moodle_exception
+     */
+    public static function get_quiz_data($quizid) {
+        global $DB, $USER;
+
+        $warnings = [];
+
+        $params = self::validate_parameters(self::get_quiz_data_parameters(), ['quizid' => $quizid]);
+
+        // Validate quiz exists and user has permission.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+        require_capability('moodle/course:manageactivities', $context);
+
+        // Get course module info.
+        $sectioninfo = $DB->get_record('course_sections', ['id' => $cm->section], 'section');
+
+        // Prepare comprehensive quiz data.
+        $quizdata = [
+            'quizid' => $quiz->id,
+            'courseid' => $quiz->course,
+            'cmid' => $cm->id,
+            'section' => $sectioninfo ? $sectioninfo->section : 0,
+            'name' => $quiz->name,
+            'intro' => $quiz->intro,
+            'introformat' => $quiz->introformat,
+            'visible' => $cm->visible,
+            // Timing.
+            'timeopen' => $quiz->timeopen,
+            'timeclose' => $quiz->timeclose,
+            'timelimit' => $quiz->timelimit,
+            // Access restrictions.
+            'quizpassword' => $quiz->password,
+            'subnet' => $quiz->subnet,
+            'browsersecurity' => $quiz->browsersecurity,
+            // Attempts.
+            'attempts' => $quiz->attempts,
+            'attemptonlast' => $quiz->attemptonlast,
+            'grademethod' => $quiz->grademethod,
+            // Grading.
+            'grade' => $quiz->grade,
+            'decimalpoints' => $quiz->decimalpoints,
+            'questiondecimalpoints' => $quiz->questiondecimalpoints,
+            // Behaviour.
+            'preferredbehaviour' => $quiz->preferredbehaviour,
+            'overduehandling' => $quiz->overduehandling,
+            'graceperiod' => $quiz->graceperiod,
+            'canredoquestions' => $quiz->canredoquestions,
+            // Display.
+            'navmethod' => $quiz->navmethod,
+            'questionsperpage' => $quiz->questionsperpage,
+            'shuffleanswers' => $quiz->shuffleanswers,
+            'showuserpicture' => $quiz->showuserpicture,
+            'showblocks' => $quiz->showblocks,
+            // Delays.
+            'delay1' => $quiz->delay1,
+            'delay2' => $quiz->delay2,
+            // Completion.
+            'completionattemptsexhausted' => $quiz->completionattemptsexhausted,
+            'completionpass' => $cm->completionpassgrade ?? 0,
+            // Other.
+            'allowofflineattempts' => $quiz->allowofflineattempts,
+            // Additional read-only info.
+            'timecreated' => $quiz->timecreated,
+            'timemodified' => $quiz->timemodified,
+            'sumgrades' => $quiz->sumgrades,
+        ];
+
+        // Get review options.
+        $quizdata['reviewattempt'] = $quiz->reviewattempt ?? 0;
+        $quizdata['reviewcorrectness'] = $quiz->reviewcorrectness ?? 0;
+        $quizdata['reviewmaxmarks'] = $quiz->reviewmaxmarks ?? 0;
+        $quizdata['reviewmarks'] = $quiz->reviewmarks ?? 0;
+        $quizdata['reviewspecificfeedback'] = $quiz->reviewspecificfeedback ?? 0;
+        $quizdata['reviewgeneralfeedback'] = $quiz->reviewgeneralfeedback ?? 0;
+        $quizdata['reviewrightanswer'] = $quiz->reviewrightanswer ?? 0;
+        $quizdata['reviewoverallfeedback'] = $quiz->reviewoverallfeedback ?? 0;
+
+        return [
+            'quiz' => $quizdata,
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Describes the get_quiz_data return value.
+     *
+     * @return external_single_structure
+     */
+    public static function get_quiz_data_returns() {
+        return new external_single_structure([
+            'quiz' => new external_single_structure([
+                'quizid' => new external_value(PARAM_INT, 'ID of the quiz'),
+                'courseid' => new external_value(PARAM_INT, 'ID of the course'),
+                'cmid' => new external_value(PARAM_INT, 'Course module id'),
+                'section' => new external_value(PARAM_INT, 'Section number'),
+                'name' => new external_value(PARAM_TEXT, 'Name of the quiz'),
+                'intro' => new external_value(PARAM_RAW, 'Quiz introduction'),
+                'introformat' => new external_value(PARAM_INT, 'Intro format'),
+                'visible' => new external_value(PARAM_INT, 'Whether the quiz is visible'),
+                'timeopen' => new external_value(PARAM_INT, 'The time when this quiz opens'),
+                'timeclose' => new external_value(PARAM_INT, 'The time when this quiz closes'),
+                'timelimit' => new external_value(PARAM_INT, 'The time limit for quiz attempts'),
+                'quizpassword' => new external_value(PARAM_RAW, 'Password required to access'),
+                'subnet' => new external_value(PARAM_RAW, 'IP address restrictions'),
+                'browsersecurity' => new external_value(PARAM_ALPHANUMEXT, 'Browser security restriction'),
+                'attempts' => new external_value(PARAM_INT, 'Maximum number of attempts'),
+                'attemptonlast' => new external_value(PARAM_INT, 'Whether subsequent attempts start from previous'),
+                'grademethod' => new external_value(PARAM_INT, 'Grading method'),
+                'grade' => new external_value(PARAM_FLOAT, 'Total grade the quiz is scaled to'),
+                'decimalpoints' => new external_value(PARAM_INT, 'Decimal points for displaying grades'),
+                'questiondecimalpoints' => new external_value(PARAM_INT, 'Decimal points for question grades'),
+                'preferredbehaviour' => new external_value(PARAM_ALPHANUMEXT, 'Question behaviour'),
+                'overduehandling' => new external_value(PARAM_ALPHA, 'Method to handle overdue attempts'),
+                'graceperiod' => new external_value(PARAM_INT, 'Grace period after time limit'),
+                'canredoquestions' => new external_value(PARAM_INT, 'Allows students to redo questions'),
+                'navmethod' => new external_value(PARAM_ALPHA, 'Navigation method'),
+                'questionsperpage' => new external_value(PARAM_INT, 'Questions per page'),
+                'shuffleanswers' => new external_value(PARAM_INT, 'Shuffle question parts'),
+                'showuserpicture' => new external_value(PARAM_INT, 'Show user picture'),
+                'showblocks' => new external_value(PARAM_INT, 'Show blocks'),
+                'delay1' => new external_value(PARAM_INT, 'Delay between first and second attempt'),
+                'delay2' => new external_value(PARAM_INT, 'Delay between second and subsequent attempts'),
+                'completionattemptsexhausted' => new external_value(PARAM_INT, 'Mark complete when attempts exhausted'),
+                'completionpass' => new external_value(PARAM_INT, 'Require passing grade'),
+                'allowofflineattempts' => new external_value(PARAM_INT, 'Allow offline attempts'),
+                'timecreated' => new external_value(PARAM_INT, 'Time created'),
+                'timemodified' => new external_value(PARAM_INT, 'Time modified'),
+                'sumgrades' => new external_value(PARAM_FLOAT, 'Sum of all question grades'),
+                'reviewattempt' => new external_value(PARAM_INT, 'Review attempt setting'),
+                'reviewcorrectness' => new external_value(PARAM_INT, 'Review correctness setting'),
+                'reviewmaxmarks' => new external_value(PARAM_INT, 'Review max marks setting'),
+                'reviewmarks' => new external_value(PARAM_INT, 'Review marks setting'),
+                'reviewspecificfeedback' => new external_value(PARAM_INT, 'Review specific feedback setting'),
+                'reviewgeneralfeedback' => new external_value(PARAM_INT, 'Review general feedback setting'),
+                'reviewrightanswer' => new external_value(PARAM_INT, 'Review right answer setting'),
+                'reviewoverallfeedback' => new external_value(PARAM_INT, 'Review overall feedback setting'),
+            ]),
+            'warnings' => new external_warnings(),
         ]);
     }
 
@@ -2564,8 +3100,8 @@ class mod_quiz_external extends external_api {
             'quizid'     => new external_value(PARAM_INT, 'Quiz instance ID'),
             'userid'     => new external_value(PARAM_INT, 'User ID whose attempt will be updated'),
             'questionid' => new external_value(PARAM_INT, 'Question ID to update'),
-            'grade'      => new external_value(PARAM_FLOAT, 'Grade as a fraction (0.0 to 1.0)'),
-            'maxmark'    => new external_value(PARAM_FLOAT, 'Max Grade'),
+            'grade'      => new external_value(PARAM_FLOAT, 'Grade value provided by user'),
+            'maxmark'    => new external_value(PARAM_FLOAT, 'Max mark provided by user (used for proportion calculation)'),
             'comment'    => new external_value(PARAM_RAW, 'Optional comment', VALUE_DEFAULT, '')
         ]);
     }
@@ -2601,8 +3137,13 @@ class mod_quiz_external extends external_api {
             $params['userid'] = $USER->id;
         }
     
-        // 1. Retrieve the question attempt ID for given quiz, user, and question.
-        $sql_qa = "SELECT qa.id AS questionattemptid
+        // Validate user-provided maxmark is positive.
+        if ($params['maxmark'] <= 0) {
+            throw new invalid_parameter_exception('maxmark must be greater than 0');
+        }
+    
+        // 1. Retrieve the question attempt ID and maxmark from database.
+        $sql_qa = "SELECT qa.id AS questionattemptid, qa.maxmark
                    FROM {question_attempts} qa
                    JOIN {quiz_attempts} quiza ON quiza.uniqueid = qa.questionusageid
                    WHERE quiza.quiz = :quizid AND quiza.userid = :userid AND qa.questionid = :questionid";
@@ -2615,35 +3156,64 @@ class mod_quiz_external extends external_api {
             throw new moodle_exception('questionattemptnotfound', 'error', '', null, 'No matching question attempt found.');
         }
         $questionattemptid = $qa_record->questionattemptid;
+        $maxmark_from_db = (float)$qa_record->maxmark;
+        
+        if ($maxmark_from_db <= 0) {
+            throw new moodle_exception('invalidmaxmark', 'quiz', '', null, 'Invalid maxmark found in database.');
+        }
     
-        // 2. Determine the next sequence number.
+        // 2. Calculate final grade: (grade / maxmark) * maxmark_from_db
+        // This scales the user's grade proportionally to the database maxmark.
+        // Ensure grade doesn't exceed user's maxmark (cap it).
+        $user_grade = $params['grade'];
+        if ($user_grade > $params['maxmark']) {
+            $user_grade = $params['maxmark'];
+        }
+        if ($user_grade < 0) {
+            $user_grade = 0;
+        }
+        
+        // Calculate proportion and scale to database maxmark.
+        $proportion = $user_grade / $params['maxmark'];
+        $finalgrade = $proportion * $maxmark_from_db;
+        
+        // Ensure final grade doesn't exceed maxmark_from_db (shouldn't happen, but safety check).
+        if ($finalgrade > $maxmark_from_db) {
+            $finalgrade = $maxmark_from_db;
+        }
+        if ($finalgrade < 0) {
+            $finalgrade = 0;
+        }
+    
+        // 3. Determine the next sequence number.
         $maxseq = $DB->get_field_sql(
             "SELECT COALESCE(MAX(sequencenumber),0) FROM {question_attempt_steps} WHERE questionattemptid = ?",
             [$questionattemptid]
         );
         $nextseq = $maxseq + 1;
     
-        // 3. Decide on the state based on the grade fraction.
-        $state = ($grade === 1.0) ? 'gradedright'
-               : (($grade === 0.0) ? 'gradedwrong' : 'mangrpartial');
+        // 4. Calculate fraction and decide on the state.
+        $fraction = $finalgrade / $maxmark_from_db;
+        $state = ($fraction >= 1.0) ? 'gradedright'
+               : (($fraction <= 0.0) ? 'gradedwrong' : 'mangrpartial');
         $timestamp = time();
     
-        // 4. Insert a new attempt step and get the new step ID.
+        // 5. Insert a new attempt step and get the new step ID.
         $step = new stdClass();
         $step->questionattemptid = $questionattemptid;
         $step->sequencenumber    = $nextseq;
         $step->state             = $state;
-        $step->fraction          = $grade/$maxmark;
+        $step->fraction          = $fraction;
         $step->timecreated       = $timestamp;
         $step->userid            = $USER->id;
         $newstepid = $DB->insert_record('question_attempt_steps', $step, true);
     
-        // 5. Insert related step data.
+        // 6. Insert related step data.
         $datapairs = [
             '-comment'       => $params['comment'],
-            '-mark'          => $grade,
+            '-mark'          => $finalgrade,
             '-commentformat' => 1,
-            '-maxmark'       => $maxmark
+            '-maxmark'       => $maxmark_from_db
         ];
     
         foreach ($datapairs as $name => $value) {
@@ -2793,5 +3363,882 @@ class mod_quiz_external extends external_api {
             'messages' => new external_value(PARAM_TEXT, 'Any messages'),
         ]);
     }
+
+
+    public static function get_quiz_seb_file_parameters() {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Course Module ID of the quiz'),
+        ]);
+    }
+
+    public static function get_quiz_seb_file($cmid) {
+        self::validate_parameters(self::get_quiz_seb_file_parameters(), ['cmid' => $cmid]);
+
+        $cm = get_coursemodule_from_id('quiz', $cmid, 0, false, MUST_EXIST);
+        $context = context_module::instance($cmid);
+        require_capability('mod/quiz:view', $context);
+
+        $emptyresponse = function(string $status, string $message) {
+            return [
+                'status' => $status,
+                'message' => $message,
+                'filename' => '',
+                'mimetype' => '',
+                'content' => '',
+            ];
+        };
+
+        if (!class_exists('\quizaccess_seb\seb_quiz_settings')) {
+            return $emptyresponse('plugin_missing', get_string('wsgetquizsebfile_pluginmissing', 'quiz'));
+        }
+
+        $quizid = (int) $cm->instance;
+        $settings = \quizaccess_seb\seb_quiz_settings::get_by_quiz_id($quizid);
+        if (!$settings) {
+            return $emptyresponse('not_seb', get_string('wsgetquizsebfile_notseb', 'quiz'));
+        }
+
+        $requireseb = (int) $settings->get('requiresafeexambrowser');
+        if ($requireseb === \quizaccess_seb\settings_provider::USE_SEB_NO) {
+            return $emptyresponse('not_seb', get_string('wsgetquizsebfile_notseb', 'quiz'));
+        }
+
+        $config = \quizaccess_seb\seb_quiz_settings::get_config_by_quiz_id($quizid);
+        if ($config === null || $config === '') {
+            return $emptyresponse('no_config', get_string('wsgetquizsebfile_noconfig', 'quiz'));
+        }
+
+        return [
+            'status' => 'ok',
+            'message' => '',
+            'filename' => "quiz-$cmid.seb",
+            'mimetype' => 'application/x-seb',
+            'content'  => base64_encode($config),
+        ];
+    }
+
+    public static function get_quiz_seb_file_returns() {
+        return new external_single_structure([
+            'status' => new external_value(
+                PARAM_ALPHANUMEXT,
+                'ok if a file is returned; not_seb, no_config, or plugin_missing otherwise'
+            ),
+            'message' => new external_value(PARAM_TEXT, 'Empty when status is ok; otherwise explains why no file is returned'),
+            'filename' => new external_value(PARAM_FILE, 'File name of the SEB configuration (empty if no file)'),
+            'mimetype' => new external_value(PARAM_TEXT, 'MIME type of the file (empty if no file)'),
+            'content'  => new external_value(PARAM_RAW, 'Base64 encoded SEB configuration content (empty if no file)'),
+        ]);
+    }
+
+    public static function save_quiz_as_seb_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Course module id of the quiz'),
+            'activateurlfiltering' => new external_value(PARAM_BOOL, 'Enable URL filtering', VALUE_DEFAULT, false),
+            'expressionsallowed' => new external_value(PARAM_RAW, 'Expressions allowed (newline-separated). Required if activateurlfiltering is true', VALUE_DEFAULT, ''),
+        ]);
+    }
+
+    public static function save_quiz_as_seb($cmid, $activateurlfiltering = false, $expressionsallowed = '') {
+        global $DB, $USER;
+
+        // Validate params (assumes you defined execute_parameters()).
+        $params = self::validate_parameters(self::save_quiz_as_seb_parameters(), [
+            'cmid' => $cmid,
+            'activateurlfiltering' => $activateurlfiltering,
+            'expressionsallowed' => $expressionsallowed,
+        ]);
+
+        // Resolve quiz from cmid and check capability.
+        $cm = get_coursemodule_from_id('quiz', $params['cmid'], 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('mod/quiz:manage', $context);
+
+        $quizid = (int)$cm->instance;
+        $now = time();
+
+        // Upsert: update if a row exists for this quiz, else insert.
+        $existing = $DB->get_record('quizaccess_seb_quizsettings', ['quizid' => $quizid]);
+        
+        if ($existing) {
+            // Update existing record - merge with existing data to preserve other fields.
+            $record = clone $existing;
+            $record->activateurlfiltering = $params['activateurlfiltering'] ? 1 : 0;
+            // Set expressionsallowed: if URL filtering is enabled, use provided value (empty string is OK), otherwise NULL.
+            if ($params['activateurlfiltering']) {
+                $record->expressionsallowed = trim($params['expressionsallowed']) !== '' 
+                    ? $params['expressionsallowed'] 
+                    : '';
+            } else {
+                $record->expressionsallowed = null;
+            }
+            $record->usermodified = (int)$USER->id;
+            $record->timemodified = $now;
+            $DB->update_record('quizaccess_seb_quizsettings', $record);
+            $updated = true;
+        } else {
+            // Insert new record.
+            $record = (object)[
+                'quizid'                  => $quizid,
+                'cmid'                    => $cm->id,
+                'templateid'              => 0,
+                'requiresafeexambrowser'  => 1,
+                'showsebtaskbar'          => 1,
+                'showwificontrol'         => 0,
+                'showreloadbutton'        => 1,
+                'showtime'                => 1,
+                'showkeyboardlayout'      => 1,
+                'allowuserquitseb'        => 1,
+                'quitpassword'            => null,
+                'linkquitseb'             => null,
+                'userconfirmquit'         => 1,
+                'enableaudiocontrol'      => 0,
+                'muteonstartup'           => 0,
+                'allowspellchecking'      => 0,
+                'allowreloadinexam'       => 1,
+                'activateurlfiltering'    => $params['activateurlfiltering'] ? 1 : 0,
+                'filterembeddedcontent'   => 0,
+                'expressionsallowed'      => $params['activateurlfiltering'] 
+                    ? (trim($params['expressionsallowed']) !== '' ? $params['expressionsallowed'] : '')
+                    : null,
+                'regexallowed'            => null,
+                'expressionsblocked'      => null,
+                'regexblocked'            => null,
+                'allowedbrowserexamkeys'  => null,
+                'showsebdownloadlink'     => 1,
+                'usermodified'            => (int)$USER->id,
+                'timemodified'            => $now,
+                'timecreated'             => $now,
+            ];
+            $DB->insert_record('quizaccess_seb_quizsettings', $record);
+            $updated = false;
+        }
+
+        // Return a minimal echo.
+        return [
+            'quizid'  => $quizid,
+            'cmid'    => $cm->id,
+            'updated' => $updated,
+        ];
+    }
+
+
+    public static function save_quiz_as_seb_returns(): external_single_structure {
+        return new external_single_structure([
+            'quizid' => new external_value(PARAM_INT, 'Quiz id'),
+            'cmid' => new external_value(PARAM_INT, 'Course module id'),
+            'updated' => new external_value(PARAM_BOOL, 'True if updated, false if created'),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for core_question_delete_questions.
+     *
+     * @return external_function_parameters
+     */
+    public static function core_question_delete_questions_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'The ID of the quiz'),
+            'questionids' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Question ID to delete'),
+                'Array of question IDs to delete from the quiz'
+            ),
+        ]);
+    }
+
+    /**
+     * Delete questions from a quiz.
+     *
+     * @param int $quizid The ID of the quiz
+     * @param array $questionids Array of question IDs to delete
+     * @return array Result of the operation
+     * @throws moodle_exception
+     */
+    public static function core_question_delete_questions($quizid, $questionids) {
+        global $DB, $USER;
+
+        $warnings = [];
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::core_question_delete_questions_parameters(), [
+            'quizid' => $quizid,
+            'questionids' => $questionids,
+        ]);
+
+        // Validate quiz exists and user has permission.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+        require_capability('mod/quiz:manage', $context);
+
+        // Check if quiz has attempts.
+        $attempts = $DB->get_records('quiz_attempts', ['quiz' => $quiz->id, 'preview' => 0], '', 'id', 0, 1);
+        if (!empty($attempts)) {
+            throw new moodle_exception('attemptsexist', 'quiz', '', null, 
+                'You cannot remove questions because this quiz has been attempted.');
+        }
+
+        // Get quiz structure.
+        $quizobj = quiz_settings::create($quiz->id, $USER->id);
+        $structure = structure::create_for_quiz($quizobj);
+
+        $deleted = [];
+        $failed = [];
+
+        // Process each question ID.
+        foreach ($params['questionids'] as $questionid) {
+            try {
+                // Find the slot(s) containing this question.
+                $slots = $DB->get_records_sql(
+                    "SELECT qs.id, qs.slot, qs.quizid
+                     FROM {quiz_slots} qs
+                     JOIN {question_references} qr ON qr.itemid = qs.id
+                     JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+                     WHERE qs.quizid = :quizid AND qv.questionid = :questionid
+                     AND qr.component = 'mod_quiz' AND qr.questionarea = 'slot'",
+                    ['quizid' => $quiz->id, 'questionid' => $questionid]
+                );
+
+                if (empty($slots)) {
+                    $warnings[] = [
+                        'item' => 'question',
+                        'itemid' => $questionid,
+                        'warningcode' => 'notfound',
+                        'message' => 'Question ' . $questionid . ' not found in quiz'
+                    ];
+                    $failed[] = $questionid;
+                    continue;
+                }
+
+                // Remove each slot containing this question.
+                foreach ($slots as $slot) {
+                    try {
+                        $structure->remove_slot($slot->slot);
+                        $deleted[] = $questionid;
+                    } catch (\Exception $e) {
+                        $warnings[] = [
+                            'item' => 'question',
+                            'itemid' => $questionid,
+                            'warningcode' => 'removefailed',
+                            'message' => 'Failed to remove question ' . $questionid . ': ' . $e->getMessage()
+                        ];
+                        $failed[] = $questionid;
+                    }
+                }
+            } catch (\Exception $e) {
+                $warnings[] = [
+                    'item' => 'question',
+                    'itemid' => $questionid,
+                    'warningcode' => 'error',
+                    'message' => 'Error processing question ' . $questionid . ': ' . $e->getMessage()
+                ];
+                $failed[] = $questionid;
+            }
+        }
+
+        // Update quiz sumgrades after deletions.
+        if (!empty($deleted)) {
+            quiz_update_sumgrades($quiz);
+        }
+
+        return [
+            'status' => 'success',
+            'deleted' => array_unique($deleted),
+            'failed' => array_unique($failed),
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Describes the core_question_delete_questions return value.
+     *
+     * @return external_single_structure
+     */
+    public static function core_question_delete_questions_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'deleted' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Question ID that was deleted'),
+                'List of successfully deleted question IDs'
+            ),
+            'failed' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Question ID that failed to delete'),
+                'List of question IDs that failed to delete'
+            ),
+            'warnings' => new external_warnings(),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for reorder_quiz_questions.
+     *
+     * @return external_function_parameters
+     */
+    public static function reorder_quiz_questions_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'The ID of the quiz'),
+            'questionid' => new external_value(PARAM_INT, 'The ID of the question to move'),
+            'afterquestionid' => new external_value(PARAM_INT, 'The ID of the question to move after (0 to move to the beginning)', VALUE_DEFAULT, 0),
+            'page' => new external_value(PARAM_INT, 'The target page number (0 to use default)', VALUE_DEFAULT, 0),
+        ]);
+    }
+
+    /**
+     * Reorder questions in a quiz by moving a question to a new position.
+     *
+     * @param int $quizid The ID of the quiz
+     * @param int $questionid The ID of the question to move
+     * @param int $afterquestionid The ID of the question to move after (0 to move to beginning)
+     * @param int $page The target page number (0 to use default)
+     * @return array Result of the operation
+     * @throws moodle_exception
+     */
+    public static function reorder_quiz_questions($quizid, $questionid, $afterquestionid = 0, $page = 0) {
+        global $DB, $USER;
+
+        $warnings = [];
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::reorder_quiz_questions_parameters(), [
+            'quizid' => $quizid,
+            'questionid' => $questionid,
+            'afterquestionid' => $afterquestionid,
+            'page' => $page,
+        ]);
+
+        // Validate quiz exists and user has permission.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+        require_capability('mod/quiz:manage', $context);
+
+        // Check if quiz has attempts.
+        $attempts = $DB->get_records('quiz_attempts', ['quiz' => $quiz->id, 'preview' => 0], '', 'id', 0, 1);
+        if (!empty($attempts)) {
+            throw new moodle_exception('attemptsexist', 'quiz', '', null, 
+                'You cannot reorder questions because this quiz has been attempted.');
+        }
+
+        // Get quiz structure.
+        $quizobj = quiz_settings::create($quiz->id, $USER->id);
+        $structure = structure::create_for_quiz($quizobj);
+
+        // Find the slot ID for the question to move.
+        $moveslot = $DB->get_record_sql(
+            "SELECT qs.id, qs.slot, qs.page
+             FROM {quiz_slots} qs
+             JOIN {question_references} qr ON qr.itemid = qs.id
+             JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+             WHERE qs.quizid = :quizid AND qv.questionid = :questionid
+             AND qr.component = 'mod_quiz' AND qr.questionarea = 'slot'
+             LIMIT 1",
+            ['quizid' => $quiz->id, 'questionid' => $params['questionid']]
+        );
+
+        if (!$moveslot) {
+            throw new moodle_exception('Question not found in quiz', 'quiz', '', null, 
+                'Question ' . $params['questionid'] . ' is not in this quiz.');
+        }
+
+        $moveslotid = $moveslot->id;
+        $targetpage = $params['page'] > 0 ? $params['page'] : $moveslot->page;
+
+        // Find the slot ID for the question to move after.
+        $afterslotid = null;
+        if ($params['afterquestionid'] > 0) {
+            $afterslot = $DB->get_record_sql(
+                "SELECT qs.id, qs.slot, qs.page
+                 FROM {quiz_slots} qs
+                 JOIN {question_references} qr ON qr.itemid = qs.id
+                 JOIN {question_versions} qv ON qv.questionbankentryid = qr.questionbankentryid
+                 WHERE qs.quizid = :quizid AND qv.questionid = :questionid
+                 AND qr.component = 'mod_quiz' AND qr.questionarea = 'slot'
+                 LIMIT 1",
+                ['quizid' => $quiz->id, 'questionid' => $params['afterquestionid']]
+            );
+
+            if (!$afterslot) {
+                throw new moodle_exception('Target question not found in quiz', 'quiz', '', null, 
+                    'Question ' . $params['afterquestionid'] . ' is not in this quiz.');
+            }
+
+            $afterslotid = $afterslot->id;
+            // If page not specified, use the page of the question we're moving after.
+            if ($params['page'] == 0) {
+                $targetpage = $afterslot->page;
+            }
+        }
+
+        // Move the slot.
+        try {
+            $structure->move_slot($moveslotid, $afterslotid, $targetpage);
+        } catch (\Exception $e) {
+            throw new moodle_exception('Failed to move question', 'quiz', '', null, $e->getMessage());
+        }
+
+        // Get the new slot number for the moved question.
+        $newslot = $DB->get_record('quiz_slots', ['id' => $moveslotid], 'slot, page', MUST_EXIST);
+
+        return [
+            'status' => 'success',
+            'questionid' => $params['questionid'],
+            'newslot' => $newslot->slot,
+            'newpage' => $newslot->page,
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Describes the reorder_quiz_questions return value.
+     *
+     * @return external_single_structure
+     */
+    public static function reorder_quiz_questions_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'questionid' => new external_value(PARAM_INT, 'The ID of the question that was moved'),
+            'newslot' => new external_value(PARAM_INT, 'The new slot number of the question'),
+            'newpage' => new external_value(PARAM_INT, 'The new page number of the question'),
+            'warnings' => new external_warnings(),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for delete_quiz.
+     *
+     * @return external_function_parameters
+     */
+    public static function delete_quiz_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'ID of the quiz to delete'),
+        ]);
+    }
+
+    /**
+     * Delete a quiz activity.
+     *
+     * @param int $quizid The ID of the quiz to delete
+     * @return array Result of the delete operation
+     * @throws moodle_exception
+     */
+    public static function delete_quiz($quizid) {
+        global $CFG;
+
+        $warnings = [];
+
+        $params = self::validate_parameters(self::delete_quiz_parameters(), ['quizid' => $quizid]);
+
+        // Validate quiz exists and user has permission.
+        list($quiz, $course, $cm, $context) = self::validate_quiz($params['quizid']);
+        require_capability('moodle/course:manageactivities', $context);
+
+        // Use Moodle's standard course module deletion function.
+        // This will automatically call quiz_delete_instance() which handles all cleanup.
+        require_once($CFG->dirroot . '/course/lib.php');
+        course_delete_module($cm->id);
+
+        // Rebuild course cache.
+        rebuild_course_cache($course->id);
+
+        return [
+            'status' => 'success',
+            'quizid' => $params['quizid'],
+            'cmid' => $cm->id,
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Describes the delete_quiz return value.
+     *
+     * @return external_single_structure
+     */
+    public static function delete_quiz_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'quizid' => new external_value(PARAM_INT, 'ID of the deleted quiz'),
+            'cmid' => new external_value(PARAM_INT, 'Course module id of the deleted quiz'),
+            'warnings' => new external_warnings(),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for local_question_update_with_files.
+     *
+     * @return external_function_parameters
+     */
+    public static function local_question_update_with_files_parameters() {
+        return new external_function_parameters([
+            'questionid' => new external_value(PARAM_INT, 'The question ID'),
+            'questiontext' => new external_value(PARAM_RAW, 'The question text with @PLUGINFILE@ placeholders'),
+            'questiontextformat' => new external_value(PARAM_INT, 'Format (1 = HTML)', VALUE_DEFAULT, FORMAT_HTML),
+            'questiontextdraftid' => new external_value(PARAM_INT, 'The draft item ID containing the files'),
+        ]);
+    }
+
+    /**
+     * Update a question's text and move files from draft area to question file area.
+     *
+     * @param int $questionid The question ID
+     * @param string $questiontext The question text with @PLUGINFILE@ placeholders
+     * @param int $questiontextformat Format (1 = HTML)
+     * @param int $questiontextdraftid The draft item ID containing the files
+     * @return array Result of the operation
+     * @throws moodle_exception
+     */
+    public static function local_question_update_with_files(
+        $questionid,
+        $questiontext,
+        $questiontextformat = FORMAT_HTML,
+        $questiontextdraftid = 0
+    ) {
+        global $DB, $USER, $CFG;
+
+        require_once($CFG->dirroot . '/lib/filelib.php');
+        require_once($CFG->dirroot . '/question/type/questiontypebase.php');
+
+        $warnings = [];
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::local_question_update_with_files_parameters(), [
+            'questionid' => $questionid,
+            'questiontext' => $questiontext,
+            'questiontextformat' => $questiontextformat,
+            'questiontextdraftid' => $questiontextdraftid,
+        ]);
+
+        // Load the question.
+        $question = $DB->get_record('question', ['id' => $params['questionid']], '*', MUST_EXIST);
+
+        // Get the question's category and context.
+        $sql = "SELECT qc.*
+                  FROM {question} q
+                  JOIN {question_versions} qv ON qv.questionid = q.id
+                  JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+                  JOIN {question_categories} qc ON qc.id = qbe.questioncategoryid
+                 WHERE q.id = :id";
+        $category = $DB->get_record_sql($sql, ['id' => $params['questionid']]);
+        
+        if (!$category) {
+            throw new moodle_exception('invalidquestion', 'question', '', null, 
+                'Question category not found for question ' . $params['questionid']);
+        }
+
+        $context = \context::instance_by_id($category->contextid);
+
+        // Validate context and capability.
+        self::validate_context($context);
+        require_capability('moodle/question:editall', $context);
+
+        // Check if the question belongs to the current user or user has permission to edit all questions.
+        if ($question->createdby != $USER->id) {
+            require_capability('moodle/question:editall', $context);
+        }
+
+        // Prepare file options for question text.
+        $fileoptions = [
+            'subdirs' => true,
+            'maxfiles' => -1,
+            'maxbytes' => -1,
+        ];
+
+        // Update question text and move files from draft area.
+        $transaction = $DB->start_delegated_transaction();
+        
+        try {
+            // Update the question text in the database.
+            $question->questiontext = $params['questiontext'];
+            $question->questiontextformat = $params['questiontextformat'];
+            $question->timemodified = time();
+            $question->modifiedby = $USER->id;
+            
+            // Move files from draft area to question file area.
+            if (!empty($params['questiontextdraftid'])) {
+                $question->questiontext = file_save_draft_area_files(
+                    $params['questiontextdraftid'],
+                    $context->id,
+                    'question',
+                    'questiontext',
+                    $question->id,
+                    $fileoptions,
+                    $question->questiontext
+                );
+            }
+            
+            // Update the question record.
+            $DB->update_record('question', $question);
+            
+            $transaction->allow_commit();
+            
+        } catch (\Exception $e) {
+            $transaction->rollback($e);
+            throw new moodle_exception('errorupdatingquestion', 'question', '', null, $e->getMessage());
+        }
+
+        return [
+            'status' => 'success',
+            'questionid' => $question->id,
+            'warnings' => $warnings
+        ];
+    }
+
+    /**
+     * Describes the local_question_update_with_files return value.
+     *
+     * @return external_single_structure
+     */
+    public static function local_question_update_with_files_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'questionid' => new external_value(PARAM_INT, 'The question ID that was updated'),
+            'warnings' => new external_warnings(),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for get_help.
+     *
+     * @return external_function_parameters
+     */
+    public static function get_help_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'Quiz ID'),
+            'prompt' => new external_value(PARAM_TEXT, 'User prompt/question'),
+            'sessionid' => new external_value(PARAM_TEXT, 'Session ID', VALUE_DEFAULT, ''),
+        ]);
+    }
+
+    /**
+     * Get LLM help for a quiz based on its configured help level.
+     * Returns 0 if quizid does not exist in the table.
+     *
+     * @param int $quizid Quiz ID
+     * @param string $prompt User prompt
+     * @return array Response from model server or 0 if quiz not found
+     */
+    public static function get_help($quizid, $prompt, $sessionid = '') {
+        global $DB, $USER, $CFG;
+
+        require_once($CFG->dirroot . '/lib/filelib.php');
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::get_help_parameters(), [
+            'quizid' => $quizid,
+            'prompt' => $prompt,
+            'sessionid' => $sessionid,
+        ]);
+
+        $quizid = $params['quizid'];
+        $userprompt = $params['prompt'];
+        $sessionid = $params['sessionid'];
+
+        // Validate quiz exists and user has access.
+        $quiz = $DB->get_record('quiz', ['id' => $quizid], '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($quizid, 'quiz');
+        $context = \context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('mod/quiz:attempt', $context);
+
+        // Check if quiz has help level configured.
+        $helpconfig = $DB->get_record('local_quizhelp_levels', ['quizid' => $quizid]);
+
+        // If no level is configured (or invalid), use level 0 and still call the endpoint.
+        $helplevel = 0;
+        if ($helpconfig && isset($helpconfig->help_level)) {
+            $configuredlevel = (int)$helpconfig->help_level;
+            if ($configuredlevel >= 1 && $configuredlevel <= 3) {
+                $helplevel = $configuredlevel;
+            }
+        }
+
+        // Get quiz-help endpoint URL from config.
+        // This endpoint is independent from the llmctf endpoint.
+        $baseurl = get_config('local_quizhelp', 'baseurl');
+        $endpointpath = get_config('local_quizhelp', 'endpointpath');
+        if (empty($endpointpath)) {
+            $endpointpath = '/chat';
+        }
+        $endpoint = '';
+        if (!empty($baseurl)) {
+            $endpoint = rtrim($baseurl, '/') . '/' . ltrim($endpointpath, '/');
+        }
+
+        if (empty($endpoint)) {
+            return [
+                'response' => 'Error: Quiz help endpoint URL not configured',
+                'help_level' => $helplevel
+            ];
+        }
+
+        // Call quiz-help endpoint:
+        // - expects: level and user_prompt
+        $requestdata = array(
+            'level' => $helplevel,
+            'user_prompt' => $userprompt,
+            'sessionid' => $sessionid,
+        );
+
+        $curl = new curl(array('ignoresecurity' => true));
+        $curl->setHeader(array('Content-Type: application/json'));
+        // Set timeouts to prevent hanging requests
+        $curl->setopt(array(
+            'CURLOPT_TIMEOUT' => 60,        // Total timeout: 60 seconds (LLM can be slow)
+            'CURLOPT_CONNECTTIMEOUT' => 15, // Connection timeout: 15 seconds
+        ));
+
+        $jsonpayload = json_encode($requestdata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        // Log request attempt
+        error_log("Quiz Help [Quiz:{$quizid} Level:{$helplevel}] Sending request to quiz-help endpoint: {$endpoint}");
+
+        $response = $curl->post($endpoint, $jsonpayload);
+        $curl_errno = $curl->get_errno();
+        $curl_error = $curl->error;
+
+        if ($curl_errno) {
+            error_log("Quiz Help [Quiz:{$quizid} Level:{$helplevel}] CURL Error #{$curl_errno}: {$curl_error}");
+            return [
+                'response' => 'Error: ' . $curl_error,
+                'help_level' => $helplevel,
+            ];
+        }
+
+        // Check HTTP status.
+        $info = $curl->get_info();
+        $httpcode = isset($info['http_code']) ? (int)$info['http_code'] : 0;
+        error_log("Quiz Help [Quiz:{$quizid} Level:{$helplevel}] HTTP Status Code: {$httpcode}");
+
+        if ($httpcode < 200 || $httpcode >= 300) {
+            error_log("Quiz Help [Quiz:{$quizid} Level:{$helplevel}] HTTP Error {$httpcode}. Response preview: " . substr($response, 0, 500));
+            return [
+                'response' => 'Error: HTTP error ' . $httpcode . (strlen($response) > 0 ? ' - ' . substr($response, 0, 200) : ''),
+                'help_level' => $helplevel,
+            ];
+        }
+
+        // Parse JSON response.
+        $responsedata = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [
+                'response' => 'Error: Invalid JSON from model server',
+                'help_level' => $helplevel,
+            ];
+        }
+
+        // Extract response from model server. Must be a string for external API (PARAM_TEXT).
+        $assistantmessage = '';
+        if (isset($responsedata['answer'])) {
+            $assistantmessage = $responsedata['answer'];
+        } else if (isset($responsedata['response'])) {
+            $assistantmessage = $responsedata['response'];
+        } else {
+            $assistantmessage = 'Error: Unexpected response format from quiz-help endpoint';
+        }
+        $assistantmessage = (string)$assistantmessage;
+
+        $returnedlevel = $helplevel;
+        if (isset($responsedata['level'])) {
+            $returnedlevel = (int)$responsedata['level'];
+        } else if (isset($responsedata['help_level'])) {
+            $returnedlevel = (int)$responsedata['help_level'];
+        }
+
+        return [
+            'response' => $assistantmessage,
+            'help_level' => (int) $returnedlevel,
+        ];
+    }
+
+    /**
+     * Describes the return value for get_help.
+     *
+     * @return external_single_structure
+     */
+    public static function get_help_returns() {
+        return new external_single_structure([
+            'response' => new external_value(PARAM_TEXT, 'Response from model server or "0" if quiz not found'),
+            'help_level' => new external_value(PARAM_INT, 'Help level (0 if quiz not found, 1-3 otherwise)'),
+        ]);
+    }
+
+    /**
+     * Describes the parameters for set_help_level.
+     *
+     * @return external_function_parameters
+     */
+    public static function set_help_level_parameters() {
+        return new external_function_parameters([
+            'quizid' => new external_value(PARAM_INT, 'Quiz ID'),
+            'level' => new external_value(PARAM_INT, 'Help level (1=syntax, 2=bug finding, 3=hints)'),
+        ]);
+    }
+
+    /**
+     * Set the help level for a quiz.
+     *
+     * @param int $quizid Quiz ID
+     * @param int $level Help level (1, 2, or 3)
+     * @return array Status and help level
+     */
+    public static function set_help_level($quizid, $level) {
+        global $DB;
+
+        // Validate parameters.
+        $params = self::validate_parameters(self::set_help_level_parameters(), [
+            'quizid' => $quizid,
+            'level' => $level,
+        ]);
+
+        $quizid = $params['quizid'];
+        $level = $params['level'];
+
+        // Validate level (must be 1, 2, or 3).
+        if ($level < 1 || $level > 3) {
+            throw new invalid_parameter_exception('Help level must be 1, 2, or 3');
+        }
+
+        // Validate quiz exists and user has permission to manage it.
+        $quiz = $DB->get_record('quiz', ['id' => $quizid], '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($quizid, 'quiz');
+        $context = \context_module::instance($cm->id);
+        self::validate_context($context);
+        require_capability('mod/quiz:manage', $context);
+
+        // Check if record already exists.
+        $existing = $DB->get_record('local_quizhelp_levels', ['quizid' => $quizid]);
+
+        $now = time();
+
+        if ($existing) {
+            // Update existing record.
+            $existing->help_level = $level;
+            $existing->timemodified = $now;
+            $DB->update_record('local_quizhelp_levels', $existing);
+        } else {
+            // Create new record.
+            $record = new \stdClass();
+            $record->quizid = $quizid;
+            $record->help_level = $level;
+            $record->timecreated = $now;
+            $record->timemodified = $now;
+            $DB->insert_record('local_quizhelp_levels', $record);
+        }
+
+        return [
+            'status' => 'success',
+            'quizid' => $quizid,
+            'help_level' => $level,
+        ];
+    }
+
+    /**
+     * Describes the return value for set_help_level.
+     *
+     * @return external_single_structure
+     */
+    public static function set_help_level_returns() {
+        return new external_single_structure([
+            'status' => new external_value(PARAM_TEXT, 'Operation status'),
+            'quizid' => new external_value(PARAM_INT, 'Quiz ID'),
+            'help_level' => new external_value(PARAM_INT, 'Help level that was set'),
+        ]);
+    }
+
     
 }

@@ -1049,6 +1049,79 @@ class core_course_external extends external_api {
     }
 
     /**
+     * Returns description of method parameters for create_courses_and_enrol_creator.
+     *
+     * Same as {@see self::create_courses_parameters()} plus optional role for the creator enrolment.
+     *
+     * @return external_function_parameters
+     */
+    public static function create_courses_and_enrol_creator_parameters() {
+        $base = self::create_courses_parameters();
+        $keys = $base->keys;
+        // 0 = use first role with archetype editingteacher (same idea as default teacher in new courses).
+        $keys['creatorroleid'] = new external_value(
+            PARAM_INT,
+            'Role id to assign to the calling user in each new course; 0 = use editing teacher archetype',
+            VALUE_DEFAULT,
+            0
+        );
+        return new external_function_parameters($keys);
+    }
+
+    /**
+     * Create courses (same rules as {@see self::create_courses}) and enrol the calling user in each new course.
+     *
+     * Uses internal manual enrolment ({@see enrol_try_internal_enrol}) so callers do not need enrol/manual:enrol.
+     * Requires manual enrol to be enabled site-wide and a default manual enrol instance on new courses (Moodle default).
+     *
+     * @param array $courses same structure as create_courses()
+     * @param int $creatorroleid role id or 0 for editing teacher archetype
+     * @return array list of ['id' => int, 'shortname' => string]
+     */
+    public static function create_courses_and_enrol_creator($courses, $creatorroleid = 0) {
+        global $CFG, $USER, $DB;
+
+        $params = self::validate_parameters(
+            self::create_courses_and_enrol_creator_parameters(),
+            ['courses' => $courses, 'creatorroleid' => $creatorroleid]
+        );
+
+        require_once($CFG->libdir . '/enrollib.php');
+
+        $created = self::create_courses($params['courses']);
+
+        $roleid = (int) $params['creatorroleid'];
+        if ($roleid < 1) {
+            $roles = get_archetype_roles('editingteacher');
+            if (empty($roles)) {
+                throw new moodle_exception('invalidroleid', 'error');
+            }
+            $role = reset($roles);
+            $roleid = (int) $role->id;
+        } else if (!$DB->record_exists('role', ['id' => $roleid])) {
+            throw new invalid_parameter_exception('Invalid value for creatorroleid');
+        }
+
+        foreach ($created as $courserecord) {
+            $courseid = (int) $courserecord['id'];
+            if (!enrol_try_internal_enrol($courseid, $USER->id, $roleid)) {
+                throw new moodle_exception('couldnotenrolcreator', 'course', '', $courseid);
+            }
+        }
+
+        return $created;
+    }
+
+    /**
+     * Return value description for create_courses_and_enrol_creator (same as create_courses).
+     *
+     * @return \core_external\external_description
+     */
+    public static function create_courses_and_enrol_creator_returns() {
+        return self::create_courses_returns();
+    }
+
+    /**
      * Update courses
      *
      * @return external_function_parameters
